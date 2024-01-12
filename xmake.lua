@@ -13,6 +13,10 @@ if is_config("kind", "shared") then
   add_defines("MIRAGE_BUILD_SHARED")
 end
 
+if is_mode("debug") then
+  add_defines("MIRAGE_BUILD_DEBUG")
+end
+
 target("mirage_engine")
   add_defines("MIRAGE_BUILD")
   set_kind(get_config("kind"))
