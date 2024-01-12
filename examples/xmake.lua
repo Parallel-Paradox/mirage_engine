@@ -1,0 +1,6 @@
+target("example.hello_world")
+    set_kind("binary")
+    set_targetdir("../build/examples")
+    add_deps("mirage_engine")
+    add_files("hello_world.cpp")
+target_end()

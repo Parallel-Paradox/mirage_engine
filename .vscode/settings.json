@@ -1,0 +1,32 @@
+{
+    "editor.formatOnSave": true,
+    "editor.rulers": [
+        80
+    ],
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "cSpell.words": [
+        "initializable",
+        "noexcept",
+        "streq",
+        "unretained",
+        "xmake"
+    ],
+    "xmake.additionalConfigArguments": [
+        "--test=yes",
+        "--examples=yes",
+        "--kind=shared"
+    ],
+    "clangd.arguments": [
+        "--background-index",
+        "--compile-commands-dir=.vscode",
+        "--clang-tidy",
+        "--clang-tidy-checks=performance-*,bugprone-*",
+        "--all-scopes-completion",
+        "--completion-style=detailed",
+        "--header-insertion=iwyu"
+    ],
+    "files.eol": "\n",
+    "editor.tabSize": 2,
+    "testMate.cpp.test.executables": "build/tests/test.**"
+}
