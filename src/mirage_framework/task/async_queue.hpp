@@ -57,7 +57,7 @@ class AsyncQueue {
 
   std::optional<T> Pop() {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (IsEmpty()) {
+    if (raw_queue_.empty()) {
       return std::nullopt;
     }
     T val(std::move(raw_queue_.front()));
