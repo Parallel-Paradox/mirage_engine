@@ -5,4 +5,6 @@ build/
 # MacOS Cache
 .DS_Store
 
-
+# Generated when xmake.lua is changed.
+.vscode/compile_commands.json
+.vscode/.cache
