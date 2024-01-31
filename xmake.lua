@@ -36,7 +36,7 @@ end
 
 task("test_all")
   on_run(function ()
-    os.exec("xmake config -m release --kind=shared --test=yes")
+    os.exec("xmake config -m debug --kind=shared --test=yes")
     os.exec("xmake build -g test")
     os.exec("xmake run -g test")
   end)

@@ -24,6 +24,5 @@
         "--header-insertion=iwyu"
     ],
     "files.eol": "\n",
-    "editor.tabSize": 2,
-    "testMate.cpp.test.executables": "build/tests/test.**"
+    "editor.tabSize": 2
 }
