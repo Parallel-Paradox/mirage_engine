@@ -10,7 +10,8 @@
         "xmake"
     ],
     "xmake.additionalConfigArguments": [
-        "--kind=shared"
+        "--kind=shared",
+        "--test=yes"
     ],
     "clangd.arguments": [
         "--background-index",
@@ -22,5 +23,6 @@
         "--header-insertion=iwyu"
     ],
     "files.eol": "\n",
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "testMate.cpp.test.executables": "build/tests/test.**"
 }

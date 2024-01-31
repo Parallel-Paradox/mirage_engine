@@ -1,0 +1,46 @@
+#ifndef MIRAGE_FRAMEWORK_BASE_AUTO_PTR_DESTRUCTOR
+#define MIRAGE_FRAMEWORK_BASE_AUTO_PTR_DESTRUCTOR
+
+#include <functional>
+
+#include "mirage_framework/define.hpp"
+
+template class MIRAGE_API std::function<void(void*)>;  // NOLINT: Instantiate
+
+namespace mirage {
+
+class MIRAGE_API Destructor {
+ public:
+  ~Destructor() = default;
+  Destructor(const Destructor& other) = default;
+
+  template <typename T>
+  static Destructor Default() {
+    Destructor destructor;
+    destructor.delegate_ = [](void* raw_ptr) {
+      delete static_cast<T*>(raw_ptr);
+    };
+    return destructor;
+  }
+
+  template <typename T>
+  static Destructor New(std::function<void(T*)> delegate) {
+    MIRAGE_DCHECK(delegate != nullptr);
+    Destructor destructor;
+    destructor.delegate_ = [delegate](void* raw_ptr) {
+      delegate(static_cast<T*>(raw_ptr));
+    };
+    return destructor;
+  }
+
+  inline void operator()(void* raw_ptr) { delegate_(raw_ptr); }
+
+ private:
+  Destructor() = default;
+
+  std::function<void(void*)> delegate_;
+};
+
+}  // namespace mirage
+
+#endif

@@ -5,6 +5,7 @@
     "llvm-vs-code-extensions.vscode-clangd",
     "streetsidesoftware.code-spell-checker",
     "vadimcn.vscode-lldb",
-    "tboox.xmake-vscode"
+    "tboox.xmake-vscode",
+    "matepek.vscode-catch2-test-adapter"
   ]
 }
