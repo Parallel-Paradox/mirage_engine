@@ -29,7 +29,7 @@ class Owned {
     return Owned(new T(args...));
   }
 
-  Owned(const Owned& other) = delete;
+  Owned(const Owned&) = delete;
 
   Owned(Owned&& other) noexcept
       : raw_ptr_(other.raw_ptr_), destructor_(other.destructor_) {

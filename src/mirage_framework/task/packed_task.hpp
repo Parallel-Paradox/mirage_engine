@@ -12,6 +12,8 @@ namespace mirage {
 class MIRAGE_API PackedTask {
  public:
   PackedTask() = default;
+  PackedTask(const PackedTask&) = delete;
+  PackedTask(PackedTask&& other);
   explicit PackedTask(Owned<Task>&& task);
 
   void Update();

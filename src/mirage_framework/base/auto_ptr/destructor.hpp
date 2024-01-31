@@ -12,7 +12,7 @@ namespace mirage {
 class MIRAGE_API Destructor {
  public:
   ~Destructor() = default;
-  Destructor(const Destructor& other) = default;
+  Destructor(const Destructor&) = default;
 
   template <typename T>
   static Destructor Default() {

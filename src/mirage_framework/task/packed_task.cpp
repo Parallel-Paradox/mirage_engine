@@ -2,6 +2,9 @@
 
 using namespace mirage;
 
+PackedTask::PackedTask(PackedTask&& other)
+    : task_(std::move(other.task_)), status_(other.status_) {}
+
 PackedTask::PackedTask(Owned<Task>&& task)
     : task_(std::move(task)), status_(Task::Running) {}
 
