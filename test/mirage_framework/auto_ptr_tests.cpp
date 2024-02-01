@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <sys/_types/_int32_t.h>
 
 #include <atomic>
 #include <thread>

@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "mirage_framework/base/util/meta_type.hpp"
 #include "mirage_framework/task/packed_task.hpp"
 
 using namespace mirage;
@@ -33,4 +34,12 @@ TEST(TaskTests, ExecutePackedTask) {
   task.Update();
   EXPECT_EQ(cnt, 1);
   EXPECT_EQ(task.GetStatus(), Task::Done);
+}
+
+TEST(UtilTests, MetaType) {
+  MetaType type(MetaType::Of<int32_t>());
+  EXPECT_STREQ(type.GetName(), typeid(int32_t).name());
+  EXPECT_EQ(type.GetTypeId(), MetaType::Of<int32_t>().GetTypeId());
+  EXPECT_EQ(type, MetaType::Of<int32_t>());
+  EXPECT_NE(type, MetaType::Of<int64_t>());
 }

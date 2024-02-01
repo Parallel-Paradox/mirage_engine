@@ -8,6 +8,7 @@
     "cSpell.words": [
         "dcheck",
         "initializable",
+        "streq",
         "xmake"
     ],
     "xmake.additionalConfigArguments": [
