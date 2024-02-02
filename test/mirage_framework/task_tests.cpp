@@ -37,9 +37,9 @@ TEST(TaskTests, ExecutePackedTask) {
 }
 
 TEST(UtilTests, MetaType) {
-  MetaType type(MetaType::Of<int32_t>());
-  EXPECT_STREQ(type.GetName(), typeid(int32_t).name());
-  EXPECT_EQ(type.GetTypeId(), MetaType::Of<int32_t>().GetTypeId());
-  EXPECT_EQ(type, MetaType::Of<int32_t>());
-  EXPECT_NE(type, MetaType::Of<int64_t>());
+  const MetaType* type_info = MetaType::Of<int32_t>();
+  EXPECT_STREQ(type_info->GetName(), typeid(int32_t).name());
+  EXPECT_EQ(type_info->GetSize(), sizeof(int32_t));
+  EXPECT_EQ(type_info, MetaType::Of<int32_t>());
+  EXPECT_NE(type_info, MetaType::Of<int64_t>());
 }

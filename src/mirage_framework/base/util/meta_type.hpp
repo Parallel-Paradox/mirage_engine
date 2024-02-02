@@ -9,30 +9,24 @@ namespace mirage {
 
 class MIRAGE_API MetaType {
  public:
-  using TypeId = void*;
-
-  MetaType() = default;
-  MetaType(const MetaType&) = default;
+  MetaType() = delete;
+  MetaType(const MetaType&) = delete;
   ~MetaType() = default;
 
   template <typename T>
-  static const MetaType& Of() {
-    static MetaType meta_type(typeid(T).name(),
-                              static_cast<TypeId>(&meta_type));
-    return meta_type;
+  static const MetaType* Of() {
+    static MetaType meta_type(typeid(T).name(), sizeof(T));
+    return &meta_type;
   }
 
-  bool operator==(const MetaType& rhs) const;
-  bool operator!=(const MetaType& rhs) const;
-
   const char* GetName() const;
-  TypeId GetTypeId() const;
+  size_t GetSize() const;
 
  private:
-  MetaType(const char* name, TypeId type_id);
+  MetaType(const char* name, size_t size);
 
   const char* name_{nullptr};
-  TypeId type_id_{nullptr};
+  size_t size_{0};
 };
 
 }  // namespace mirage

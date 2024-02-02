@@ -2,21 +2,12 @@
 
 using namespace mirage;
 
-bool MetaType::operator==(const MetaType& rhs) const {
-  return type_id_ == rhs.type_id_;
-}
-
-bool MetaType::operator!=(const MetaType& rhs) const {
-  return type_id_ != rhs.type_id_;
-}
-
 const char* MetaType::GetName() const {
   return name_;
 }
 
-MetaType::TypeId MetaType::GetTypeId() const {
-  return type_id_;
+size_t MetaType::GetSize() const {
+  return size_;
 }
 
-MetaType::MetaType(const char* name, TypeId type_id)
-    : name_(name), type_id_(type_id) {}
+MetaType::MetaType(const char* name, size_t size) : name_(name), size_(size) {}
