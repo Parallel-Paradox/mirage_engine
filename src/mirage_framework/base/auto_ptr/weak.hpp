@@ -6,12 +6,12 @@
 #include "mirage_framework/define.hpp"
 
 #define INSTANTIATE_WEAK_LOCAL(Type) \
-  INSTANTIATE_SHARED_LOCAL(Type)     \
-  template class MIRAGE_API mirage::Weak<Type, mirage::RefCountLocal>;
+  INSTANTIATE_SHARED_LOCAL(Type);    \
+  template class MIRAGE_API mirage::Weak<Type, mirage::RefCountLocal>
 
 #define INSTANTIATE_WEAK_ASYNC(Type) \
-  INSTANTIATE_SHARED_ASYNC(Type)     \
-  template class MIRAGE_API mirage::Weak<Type, mirage::RefCountAsync>;
+  INSTANTIATE_SHARED_ASYNC(Type);    \
+  template class MIRAGE_API mirage::Weak<Type, mirage::RefCountAsync>
 
 namespace mirage {
 

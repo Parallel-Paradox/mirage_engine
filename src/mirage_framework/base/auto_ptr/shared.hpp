@@ -6,10 +6,10 @@
 #include "mirage_framework/define.hpp"
 
 #define INSTANTIATE_SHARED_LOCAL(Type) \
-  template class MIRAGE_API mirage::Shared<Type, mirage::RefCountLocal>;
+  template class MIRAGE_API mirage::Shared<Type, mirage::RefCountLocal>
 
 #define INSTANTIATE_SHARED_ASYNC(Type) \
-  template class MIRAGE_API mirage::Shared<Type, mirage::RefCountAsync>;
+  template class MIRAGE_API mirage::Shared<Type, mirage::RefCountAsync>
 
 namespace mirage {
 

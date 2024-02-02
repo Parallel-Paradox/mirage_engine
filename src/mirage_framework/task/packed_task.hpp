@@ -5,7 +5,7 @@
 #include "mirage_framework/define.hpp"
 #include "mirage_framework/task/task.hpp"
 
-INSTANTIATE_OWNED(mirage::Task)
+INSTANTIATE_OWNED(mirage::Task);
 
 namespace mirage {
 
