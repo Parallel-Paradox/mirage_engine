@@ -16,6 +16,8 @@ class MIRAGE_API PackedTask {
   PackedTask(PackedTask&& other);
   explicit PackedTask(Owned<Task>&& task);
 
+  PackedTask& operator=(PackedTask&& other);
+
   void Update();
   Task::Status GetStatus();
 

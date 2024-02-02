@@ -8,6 +8,14 @@ PackedTask::PackedTask(PackedTask&& other)
 PackedTask::PackedTask(Owned<Task>&& task)
     : task_(std::move(task)), status_(Task::Running) {}
 
+PackedTask& PackedTask::operator=(PackedTask&& other) {
+  if (this != &other) {
+    this->~PackedTask();
+    new (this) PackedTask(std::move(other));
+  }
+  return *this;
+}
+
 void PackedTask::Update() {
   MIRAGE_DCHECK(!task_.IsNull());
   if (status_ == Task::Done) {
