@@ -8,6 +8,7 @@
     "cSpell.words": [
         "dcheck",
         "initializable",
+        "srwlock",
         "streq",
         "xmake"
     ],

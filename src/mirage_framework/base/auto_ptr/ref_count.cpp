@@ -27,21 +27,21 @@ bool RefCountLocal::TryRelease() {
 }
 
 size_t RefCountAsync::GetCnt() {
-  std::lock_guard<std::mutex> lock(lock_);
+  LockGuard lock(lock_);
   return RefCountLocal::GetCnt();
 }
 
 void RefCountAsync::Increase() {
-  std::lock_guard<std::mutex> lock(lock_);
+  LockGuard lock(lock_);
   RefCountLocal::Increase();
 }
 
 bool RefCountAsync::TryIncrease() {
-  std::lock_guard<std::mutex> lock(lock_);
+  LockGuard lock(lock_);
   return RefCountLocal::TryIncrease();
 }
 
 bool RefCountAsync::TryRelease() {
-  std::lock_guard<std::mutex> lock(lock_);
+  LockGuard lock(lock_);
   return RefCountLocal::TryRelease();
 }

@@ -2,11 +2,9 @@
 #define MIRAGE_FRAMEWORK_BASE_AUTO_PTR_REF_COUNT
 
 #include <concepts>
-#include <mutex>
+#include "mirage_framework/base/synchronize/lock.hpp"
 
 #include "mirage_framework/define.hpp"
-
-template struct MIRAGE_API std::atomic<size_t>;
 
 namespace mirage {
 
@@ -42,7 +40,7 @@ class MIRAGE_API RefCountAsync : public RefCountLocal {
   bool TryRelease() override;
 
  private:
-  std::mutex lock_;
+  Lock lock_;
 };
 
 template <typename R>

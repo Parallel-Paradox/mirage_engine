@@ -13,6 +13,8 @@ class MIRAGE_API LockImpl {
  public:
 #if defined(OS_APPLE)
   using NativeHandle = pthread_mutex_t;
+#elif defined(OS_WIN)
+  using NativeHandle = void*;
 #endif
 
   LockImpl();

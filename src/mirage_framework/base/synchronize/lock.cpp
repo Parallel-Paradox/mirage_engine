@@ -1,4 +1,4 @@
-#include "mirage_framework/base/synchronize/lock.h"
+#include "mirage_framework/base/synchronize/lock.hpp"
 
 using namespace mirage;
 
@@ -11,5 +11,13 @@ void Lock::Acquire() {
 }
 
 void Lock::Release() {
+  lock_.Release();
+}
+
+LockGuard::LockGuard(Lock& lock) : lock_(lock) {
+  lock.Acquire();
+}
+
+LockGuard::~LockGuard() {
   lock_.Release();
 }
