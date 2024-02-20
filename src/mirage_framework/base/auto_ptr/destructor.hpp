@@ -5,7 +5,7 @@
 
 #include "mirage_framework/define.hpp"
 
-template class MIRAGE_API std::function<void(void*)>;  // NOLINT: Instantiate
+template class MIRAGE_API std::function<void(void*)>;
 
 namespace mirage {
 

@@ -16,12 +16,16 @@ class Array {
  public:
   Array() = default;
 
-  Array(const Array& other) requires std::copyable<T> {
-    size_ = other.size_;
-    capacity_ = other.capacity_;
-    data_ = new T[capacity_]();
-    for (size_t i = 0; i < size_; ++i) {
-      data_[i] = other.data_[i];
+  Array(const Array& other) {
+    if constexpr (!std::copyable<T>) {
+      MIRAGE_DCHECK(false);  // This type is supposed to be copyable.
+    } else {
+      size_ = other.size_;
+      capacity_ = other.capacity_;
+      data_ = new T[capacity_]();
+      for (size_t i = 0; i < size_; ++i) {
+        data_[i] = other.data_[i];
+      }
     }
   }
 
@@ -48,7 +52,13 @@ class Array {
     capacity_ = 0;
   }
 
-  void Push(const T& val) requires std::copyable<T> { Emplace(T(val)); }
+  void Push(const T& val) {
+    if constexpr (!std::copyable<T>) {
+      MIRAGE_DCHECK(false);  // This type is supposed to be copyable.
+    } else {
+      Emplace(T(val));
+    }
+  }
 
   void Emplace(T&& val) {
     EnsureNotFull();
@@ -81,6 +91,7 @@ class Array {
       }
       return true;
     }
+    return false;
   }
 
   void Reserve(size_t capacity) {
