@@ -26,6 +26,8 @@ class MIRAGE_API LockImpl {
   void Release();
 
  private:
+  void AcquireInternal();
+
   NativeHandle native_handle_;
 };
 
