@@ -17,14 +17,15 @@ class Array {
   Array() = default;
 
   Array(const Array& other) {
-    if constexpr (!std::copyable<T>) {
+    if constexpr (!std::copy_constructible<T>) {
       MIRAGE_DCHECK(false);  // This type is supposed to be copyable.
     } else {
       size_ = other.size_;
       capacity_ = other.capacity_;
       data_ = new T[capacity_]();
       for (size_t i = 0; i < size_; ++i) {
-        data_[i] = other.data_[i];
+        (data_ + i)->~T();
+        new (data_ + i) T(other.data_[i]);
       }
     }
   }
@@ -53,7 +54,7 @@ class Array {
   }
 
   void Push(const T& val) {
-    if constexpr (!std::copyable<T>) {
+    if constexpr (!std::copy_constructible<T>) {
       MIRAGE_DCHECK(false);  // This type is supposed to be copyable.
     } else {
       Emplace(T(val));
@@ -62,7 +63,8 @@ class Array {
 
   void Emplace(T&& val) {
     EnsureNotFull();
-    data_[size_] = std::move(val);
+    (data_ + size_)->~T();
+    new (data_ + size_) T(std::move(val));
     ++size_;
   }
 
@@ -82,7 +84,7 @@ class Array {
       return true;
     }
     if constexpr (!std::equality_comparable<T>) {
-      MIRAGE_DCHECK(false);  // Can't be compared.
+      return false;  // Can't be compared.
     } else {
       for (size_t i = 0; i < size_; ++i) {
         if (data_[i] != other.data_[i]) {
@@ -130,7 +132,8 @@ class Array {
     T* data = new T[capacity]();
     size_t size = capacity < size_ ? capacity : size_;
     for (size_t i = 0; i < size; ++i) {
-      data[i] = std::move(data_[i]);
+      (data + i)->~T();
+      new (data + i) T(std::move(data_[i]));
     }
     delete[] data_;
 
