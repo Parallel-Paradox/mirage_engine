@@ -5,11 +5,9 @@
 
 #include "mirage_framework/define.hpp"
 
-template class MIRAGE_API std::function<void(void*)>;
-
 namespace mirage {
 
-class MIRAGE_API Destructor {
+class Destructor {
  public:
   ~Destructor() = default;
   Destructor(const Destructor&) = default;

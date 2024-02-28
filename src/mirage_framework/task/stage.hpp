@@ -8,17 +8,13 @@
 
 namespace mirage {
 
-class Stage;
-
-DECL_ARRAY(WeakAsync<Stage>);
-DECL_ARRAY(SharedAsync<Stage>);
-
-class MIRAGE_API Stage {
+class Stage {
  public:
-  Stage() = default;
+  MIRAGE_API Stage() = default;
+  MIRAGE_API Stage(Stage&& other);
+  MIRAGE_API ~Stage() = default;
+
   Stage(const Stage&) = delete;
-  Stage(Stage&& other);
-  ~Stage() = default;
 
  private:
   Array<WeakAsync<Stage>> prev_;

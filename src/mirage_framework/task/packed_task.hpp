@@ -7,19 +7,18 @@
 
 namespace mirage {
 
-DECL_OWNED(Task);
-
-class MIRAGE_API PackedTask {
+class PackedTask {
  public:
-  PackedTask() = default;
+  MIRAGE_API PackedTask() = default;
+  MIRAGE_API PackedTask(PackedTask&& other);
+  MIRAGE_API explicit PackedTask(Owned<Task>&& task);
+
+  MIRAGE_API PackedTask& operator=(PackedTask&& other);
+
+  MIRAGE_API void Update();
+  MIRAGE_API Task::Status GetStatus();
+
   PackedTask(const PackedTask&) = delete;
-  PackedTask(PackedTask&& other);
-  explicit PackedTask(Owned<Task>&& task);
-
-  PackedTask& operator=(PackedTask&& other);
-
-  void Update();
-  Task::Status GetStatus();
 
  private:
   Owned<Task> task_{nullptr};

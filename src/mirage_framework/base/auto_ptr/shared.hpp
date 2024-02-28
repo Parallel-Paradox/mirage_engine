@@ -5,16 +5,6 @@
 #include "mirage_framework/base/auto_ptr/ref_count.hpp"
 #include "mirage_framework/define.hpp"
 
-#define DECL_SHARED_LOCAL(Type) \
-  extern template class MIRAGE_API mirage::Shared<Type, mirage::RefCountLocal>
-#define INST_SHARED_LOCAL(Type) \
-  template class MIRAGE_API mirage::Shared<Type, mirage::RefCountLocal>
-
-#define DECL_SHARED_ASYNC(Type) \
-  extern template class MIRAGE_API mirage::Shared<Type, mirage::RefCountAsync>
-#define INST_SHARED_ASYNC(Type) \
-  template class MIRAGE_API mirage::Shared<Type, mirage::RefCountAsync>
-
 namespace mirage {
 
 template <typename T, AsRefCount R>
