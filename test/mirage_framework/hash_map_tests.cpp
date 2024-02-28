@@ -11,8 +11,6 @@ struct ContextHash {
   size_t num_{0};
 
   bool operator==(const ContextHash& other) const { return num_ == other.num_; }
-
-  bool operator!=(const ContextHash& other) const { return !(*this == other); }
 };
 
 template <>

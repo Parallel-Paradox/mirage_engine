@@ -7,13 +7,11 @@
 #include "mirage_framework/define.hpp"
 
 namespace mirage {
+
 class Stage;
-}
 
-INSTANTIATE_ARRAY(mirage::WeakAsync<mirage::Stage>);
-INSTANTIATE_ARRAY(mirage::SharedAsync<mirage::Stage>);
-
-namespace mirage {
+DECL_ARRAY(WeakAsync<Stage>);
+DECL_ARRAY(SharedAsync<Stage>);
 
 class MIRAGE_API Stage {
  public:

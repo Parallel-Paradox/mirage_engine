@@ -7,7 +7,8 @@
 #include "mirage_framework/base/container/concept.hpp"
 #include "mirage_framework/define.hpp"
 
-#define INSTANTIATE_ARRAY(Type) template class MIRAGE_API mirage::Array<Type>
+#define DECL_ARRAY(Type) extern template class MIRAGE_API mirage::Array<Type>
+#define INST_ARRAY(Type) template class MIRAGE_API mirage::Array<Type>
 
 namespace mirage {
 

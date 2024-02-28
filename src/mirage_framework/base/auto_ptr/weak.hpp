@@ -5,11 +5,29 @@
 #include "mirage_framework/base/auto_ptr/shared.hpp"
 #include "mirage_framework/define.hpp"
 
-#define INSTANTIATE_WEAK_LOCAL(Type) \
+#define DECL_WEAK_LOCAL(Type) \
+  extern template class MIRAGE_API mirage::Weak<Type, mirage::RefCountLocal>
+#define INST_WEAK_LOCAL(Type) \
   template class MIRAGE_API mirage::Weak<Type, mirage::RefCountLocal>
 
-#define INSTANTIATE_WEAK_ASYNC(Type) \
+#define DECL_WEAK_ASYNC(Type) \
+  extern template class MIRAGE_API mirage::Weak<Type, mirage::RefCountAsync>
+#define INST_WEAK_ASYNC(Type) \
   template class MIRAGE_API mirage::Weak<Type, mirage::RefCountAsync>
+
+#define DECL_SHARED_WEAK_LOCAL(Type) \
+  DECL_SHARED_LOCAL(Type);           \
+  DECL_WEAK_LOCAL(Type)
+#define INST_SHARED_WEAK_LOCAL(Type) \
+  INST_SHARED_LOCAL(Type);           \
+  INST_WEAK_LOCAL(Type);
+
+#define DECL_SHARED_WEAK_ASYNC(Type) \
+  DECL_SHARED_ASYNC(Type);           \
+  DECL_WEAK_ASYNC(Type)
+#define INST_SHARED_WEAK_ASYNC(Type) \
+  INST_SHARED_ASYNC(Type);           \
+  INST_WEAK_ASYNC(Type);
 
 namespace mirage {
 

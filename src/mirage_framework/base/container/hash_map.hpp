@@ -10,6 +10,8 @@ namespace mirage {
 template <HashKeyType Key, BasicValueType Val>
 class HashMap {
  public:
+  HashMap() = default;
+
  private:
   size_t size_{0};
 };

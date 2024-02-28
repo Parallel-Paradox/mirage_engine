@@ -5,9 +5,9 @@
 #include "mirage_framework/define.hpp"
 #include "mirage_framework/task/task.hpp"
 
-INSTANTIATE_OWNED(mirage::Task);
-
 namespace mirage {
+
+DECL_OWNED(Task);
 
 class MIRAGE_API PackedTask {
  public:

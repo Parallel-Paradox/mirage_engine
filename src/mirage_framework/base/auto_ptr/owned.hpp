@@ -4,7 +4,8 @@
 #include "mirage_framework/base/auto_ptr/destructor.hpp"
 #include "mirage_framework/define.hpp"
 
-#define INSTANTIATE_OWNED(Type) template class MIRAGE_API mirage::Owned<Type>
+#define DECL_OWNED(Type) extern template class MIRAGE_API mirage::Owned<Type>
+#define INST_OWNED(Type) template class MIRAGE_API mirage::Owned<Type>
 
 namespace mirage {
 
