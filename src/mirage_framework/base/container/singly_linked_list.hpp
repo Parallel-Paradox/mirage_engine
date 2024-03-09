@@ -20,7 +20,7 @@ struct Node {
   Node() = default;
   ~Node() = default;
 
-  Node(T&& val) : val_(val) {}
+  Node(T&& val) : val_(std::move(val)) {}
 
   Node(const T& val) {
     if constexpr (!std::copy_constructible<T>) {
@@ -77,6 +77,30 @@ class Iterator {
   }
 
   bool operator==(const Iterator& other) const { return here_ == other.here_; }
+
+  template <typename... Args>
+  void EmplaceAfter(Args&&... args) {
+    Node* new_node = new Node(T(std::forward<Args>(args)...));
+    new_node->next_ = here_->next_;
+    here_->next_ = new_node;
+  }
+
+  void InsertAfter(const T& val) {
+    if constexpr (!std::copy_constructible<T>) {
+      MIRAGE_DCHECK(false);  // This type is supposed to be copyable.
+    } else {
+      EmplaceAfter(T(val));
+    }
+  }
+
+  T RemoveAfter() {
+    MIRAGE_DCHECK(here_ != nullptr && here_->next_ != nullptr);
+    T val(std::move(here_->next_->val_));
+    Node* next = here_->next_;
+    here_->next_ = nullptr;
+    delete next;
+    return std::move(val);
+  }
 
  private:
   friend class ConstIterator<T>;
@@ -171,6 +195,30 @@ class SinglyLinkedList {
       delete ptr;
       ptr = next;
     }
+  }
+
+  template <typename... Args>
+  void EmplaceHead(Args&&... args) {
+    Node* new_head = new Node(T(std::forward<Args>(args)...));
+    new_head->next_ = head_;
+    head_ = new_head;
+  }
+
+  void PushHead(const T& val) {
+    if constexpr (!std::copy_constructible<T>) {
+      MIRAGE_DCHECK(false);  // This type is supposed to be copyable.
+    } else {
+      EmplaceHead(T(val));
+    }
+  }
+
+  T RemoveHead() {
+    MIRAGE_DCHECK(head_ != nullptr);
+    T val(std::move(head_->val_));
+    Node* head = head_;
+    head_ = head_->next_;
+    delete head;
+    return std::move(val);
   }
 
   Iterator begin() { return Iterator(head_); }

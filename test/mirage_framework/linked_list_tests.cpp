@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "mirage_framework/base/auto_ptr/owned.hpp"
 #include "mirage_framework/base/container/singly_linked_list.hpp"
 
 using namespace mirage;
@@ -31,4 +32,25 @@ TEST(SinglyLinkedListTests, Iterate) {
     EXPECT_EQ(cnt, *iter);
     ++cnt;
   }
+}
+
+TEST(SinglyLinkedListTests, Destruct) {
+  int32_t destruct_cnt = 0;
+  auto destructor = [](int32_t* ptr) {
+    *ptr += 1;
+  };
+
+  {
+    SinglyLinkedList<Owned<int32_t>> list;
+    list.EmplaceHead(Owned<int32_t>(&destruct_cnt, destructor));
+    list.begin().EmplaceAfter(Owned<int32_t>(&destruct_cnt, destructor));
+  }
+  EXPECT_EQ(destruct_cnt, 2);
+}
+
+TEST(SinglyLinkedListTests, Remove) {
+  SinglyLinkedList<int32_t> list = {0, 1};
+  EXPECT_EQ(list.begin().RemoveAfter(), 1);
+  EXPECT_EQ(list.RemoveHead(), 0);
+  EXPECT_EQ(list.begin(), list.end());
 }
