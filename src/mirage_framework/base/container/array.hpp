@@ -59,10 +59,11 @@ class Array {
     }
   }
 
-  void Emplace(T&& val) {
+  template <typename... Args>
+  void Emplace(Args&&... args) {
     EnsureNotFull();
     (data_ + size_)->~T();
-    new (data_ + size_) T(std::move(val));
+    new (data_ + size_) T(std::forward<Args>(args)...);
     ++size_;
   }
 
