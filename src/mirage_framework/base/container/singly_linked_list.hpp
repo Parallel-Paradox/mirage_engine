@@ -159,6 +159,8 @@ class ConstIterator {
   Node* here_{nullptr};
 };
 
+}  // namespace
+
 template <BasicValueType T>
 class SinglyLinkedList {
  public:
@@ -232,8 +234,6 @@ class SinglyLinkedList {
  private:
   Node* head_{nullptr};
 };
-
-}  // namespace
 
 }  // namespace mirage
 
