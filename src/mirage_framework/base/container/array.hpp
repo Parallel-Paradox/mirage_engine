@@ -3,27 +3,231 @@
 
 #include <concepts>
 #include <initializer_list>
+#include <iterator>
 
 #include "mirage_framework/base/container/concept.hpp"
 #include "mirage_framework/define.hpp"
 
 namespace mirage {
 
+namespace {
+
+template <BasicValueType T>
+class ConstIterator;
+
+template <BasicValueType T>
+class Iterator {
+ public:
+  using iterator_concept = std::contiguous_iterator_tag;
+  using iterator_category = std::random_access_iterator_tag;
+  using iterator_type = Iterator;
+  using difference_type = ptrdiff_t;
+  using value_type = T;
+  using pointer = value_type*;
+  using reference = value_type&;
+
+  Iterator() = default;
+  ~Iterator() = default;
+
+  Iterator(const Iterator& other) : ptr_(other.ptr_) {}
+
+  explicit Iterator(pointer ptr) : ptr_(ptr) {}
+
+  reference operator*() const { return *ptr_; }
+
+  pointer operator->() const { return ptr_; }
+
+  reference operator[](difference_type diff) const { return ptr_[diff]; }
+
+  iterator_type& operator++() {
+    if (ptr_ != nullptr) {
+      ++ptr_;
+    }
+    return *this;
+  }
+
+  iterator_type operator++(int) {
+    iterator_type temp(*this);
+    ++(*this);
+    return temp;
+  }
+
+  iterator_type& operator--() {
+    --ptr_;
+    return *this;
+  }
+
+  iterator_type operator--(int) {
+    iterator_type temp(*this);
+    --(*this);
+    return temp;
+  }
+
+  iterator_type& operator+=(difference_type diff) {
+    ptr_ += diff;
+    return *this;
+  }
+
+  iterator_type operator+(difference_type diff) const {
+    iterator_type temp(*this);
+    temp += diff;
+    return temp;
+  }
+
+  iterator_type& operator-=(difference_type diff) {
+    ptr_ -= diff;
+    return *this;
+  }
+
+  iterator_type operator-(difference_type diff) const {
+    iterator_type temp(*this);
+    temp -= diff;
+    return temp;
+  }
+
+  difference_type operator-(const iterator_type& other) const {
+    return ptr_ - other.ptr_;
+  }
+
+  bool operator==(const iterator_type& other) const {
+    return ptr_ == other.ptr_;
+  }
+
+  bool operator<(const iterator_type& other) const { return ptr_ < other.ptr_; }
+
+  bool operator>(const iterator_type& other) const { return other < *this; }
+
+  bool operator>=(const iterator_type& other) const { return !(*this < other); }
+
+  bool operator<=(const iterator_type& other) const { return !(other < *this); }
+
+ private:
+  friend class ConstIterator<T>;
+
+  pointer ptr_{nullptr};
+};
+
+template <BasicValueType T>
+Iterator<T> operator+(typename Iterator<T>::difference_type diff,
+                      Iterator<T> iter) {
+  return iter + diff;
+}
+
+template <BasicValueType T>
+class ConstIterator {
+ public:
+  using iterator_concept = std::contiguous_iterator_tag;
+  using iterator_category = std::random_access_iterator_tag;
+  using iterator_type = ConstIterator;
+  using difference_type = ptrdiff_t;
+  using value_type = const T;
+  using pointer = value_type*;
+  using reference = value_type&;
+
+  ConstIterator() = default;
+  ~ConstIterator() = default;
+
+  ConstIterator(const ConstIterator& other) : ptr_(other.ptr_) {}
+
+  explicit ConstIterator(const Iterator<T>& iter) : ptr_(iter.ptr_) {}
+
+  explicit ConstIterator(pointer ptr) : ptr_(ptr) {}
+
+  reference operator*() const { return *ptr_; }
+
+  pointer operator->() const { return ptr_; }
+
+  reference operator[](difference_type diff) const { return ptr_[diff]; }
+
+  iterator_type& operator++() {
+    if (ptr_ != nullptr) {
+      ++ptr_;
+    }
+    return *this;
+  }
+
+  iterator_type operator++(int) {
+    iterator_type temp(*this);
+    ++(*this);
+    return temp;
+  }
+
+  iterator_type& operator--() {
+    --ptr_;
+    return *this;
+  }
+
+  iterator_type operator--(int) {
+    iterator_type temp(*this);
+    --(*this);
+    return temp;
+  }
+
+  iterator_type& operator+=(difference_type diff) {
+    ptr_ += diff;
+    return *this;
+  }
+
+  iterator_type operator+(difference_type diff) const {
+    iterator_type temp(*this);
+    temp += diff;
+    return temp;
+  }
+
+  iterator_type& operator-=(difference_type diff) {
+    ptr_ -= diff;
+    return *this;
+  }
+
+  iterator_type operator-(difference_type diff) const {
+    iterator_type temp(*this);
+    temp -= diff;
+    return temp;
+  }
+
+  difference_type operator-(const iterator_type& other) const {
+    return ptr_ - other.ptr_;
+  }
+
+  bool operator==(const iterator_type& other) const {
+    return ptr_ == other.ptr_;
+  }
+
+  bool operator<(const iterator_type& other) const { return ptr_ < other.ptr_; }
+
+  bool operator>(const iterator_type& other) const { return other < *this; }
+
+  bool operator>=(const iterator_type& other) const { return !(*this < other); }
+
+  bool operator<=(const iterator_type& other) const { return !(other < *this); }
+
+ private:
+  pointer ptr_{nullptr};
+};
+
+template <BasicValueType T>
+ConstIterator<T> operator+(typename ConstIterator<T>::difference_type diff,
+                           ConstIterator<T> iter) {
+  return iter + diff;
+}
+
+}  // namespace
+
 template <BasicValueType T>
 class Array {
  public:
+  using Iterator = Iterator<T>;
+  using ConstIterator = ConstIterator<T>;
+
   Array() = default;
 
   Array(const Array& other) {
     if constexpr (!std::copy_constructible<T>) {
       MIRAGE_DCHECK(false);  // This type is supposed to be copyable.
     } else {
-      size_ = other.size_;
-      capacity_ = other.capacity_;
-      data_ = new T[capacity_]();
-      for (size_t i = 0; i < size_; ++i) {
-        (data_ + i)->~T();
-        new (data_ + i) T(other.data_[i]);
+      Reserve(other.size_);
+      for (const T& val : other) {
+        Push(val);
       }
     }
   }
@@ -37,8 +241,8 @@ class Array {
 
   Array(std::initializer_list<T> list) {
     Reserve(list.size());
-    for (const T& item : list) {
-      Push(std::move(item));
+    for (const T& val : list) {
+      Push(val);
     }
   }
 
@@ -140,6 +344,14 @@ class Array {
     size_ = size;
     capacity_ = capacity;
   }
+
+  Iterator begin() { return Iterator(data_); }
+
+  Iterator end() { return Iterator(data_ + size_); }
+
+  ConstIterator begin() const { return ConstIterator(data_); }
+
+  ConstIterator end() const { return ConstIterator(data_ + size_); }
 
  private:
   void EnsureNotFull() {

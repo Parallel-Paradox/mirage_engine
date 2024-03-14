@@ -69,3 +69,21 @@ TEST(ArrayTests, CompareEquality) {
   EXPECT_EQ(array_a, array_a);
   EXPECT_NE(array_a, array_b);
 }
+
+TEST(ArrayTests, IterateArray) {
+  EXPECT_TRUE(std::contiguous_iterator<Array<int32_t>::Iterator>);
+  EXPECT_TRUE(std::contiguous_iterator<Array<int32_t>::ConstIterator>);
+  Array<int32_t> array = {0, 1, 2};
+  for (auto iter = array.begin(); iter != array.end(); ++iter) {
+    *iter += 1;
+  }
+  for (auto& num : array) {
+    num += 1;
+  }
+  const Array<int32_t> compare = {2, 3, 4};
+  auto arr_iter = array.begin();
+  auto cmp_iter = compare.begin();
+  for (int32_t i = 0; i < 3; ++i) {
+    EXPECT_EQ(arr_iter[i], cmp_iter[i]);
+  }
+}
