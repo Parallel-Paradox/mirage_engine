@@ -76,7 +76,9 @@ class Iterator {
     }
   }
 
-  bool operator==(const Iterator& other) const { return here_ == other.here_; }
+  bool operator==(const iterator_type& other) const {
+    return here_ == other.here_;
+  }
 
   template <typename... Args>
   void EmplaceAfter(Args&&... args) {
@@ -151,7 +153,7 @@ class ConstIterator {
     }
   }
 
-  bool operator==(const ConstIterator& other) const {
+  bool operator==(const iterator_type& other) const {
     return here_ == other.here_;
   }
 
@@ -169,6 +171,30 @@ class SinglyLinkedList {
   using ConstIterator = ConstIterator<T>;
 
   SinglyLinkedList() = default;
+
+  SinglyLinkedList(SinglyLinkedList&& other) : head_(other.head_) {
+    other.head_ = nullptr;
+  }
+
+  SinglyLinkedList(const SinglyLinkedList& other) {
+    if constexpr (!std::copy_constructible<T>) {
+      MIRAGE_DCHECK(false);  // This type is supposed to be copyable.
+    } else {
+      auto iter = other.begin();
+      if (iter == other.end()) {
+        return;
+      }
+      Node* ptr = new Node(*iter);
+      head_ = ptr;
+      ++iter;
+      while (iter != other.end()) {
+        Node* next = new Node(*iter);
+        ptr->next_ = next;
+        ptr = next;
+        ++iter;
+      }
+    }
+  }
 
   SinglyLinkedList(std::initializer_list<T> list) {
     if constexpr (!std::copy_constructible<T>) {

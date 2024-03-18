@@ -19,12 +19,14 @@ TEST(SinglyLinkedListTests, Iterate) {
     EXPECT_EQ(cnt, num);
     ++cnt;
   }
+  EXPECT_EQ(cnt, 3);
 
   cnt = 0;
   for (Iter iter = list.begin(); iter != list.end(); ++iter) {
     EXPECT_EQ(cnt, *iter);
     ++cnt;
   }
+  EXPECT_EQ(cnt, 3);
 
   cnt = 0;
   const SinglyLinkedList<int32_t>& const_list = list;
@@ -32,6 +34,7 @@ TEST(SinglyLinkedListTests, Iterate) {
     EXPECT_EQ(cnt, *iter);
     ++cnt;
   }
+  EXPECT_EQ(cnt, 3);
 }
 
 TEST(SinglyLinkedListTests, Destruct) {
@@ -53,4 +56,26 @@ TEST(SinglyLinkedListTests, Remove) {
   EXPECT_EQ(list.begin().RemoveAfter(), 1);
   EXPECT_EQ(list.RemoveHead(), 0);
   EXPECT_EQ(list.begin(), list.end());
+}
+
+TEST(SinglyLinkedListTests, MoveAndCopy) {
+  SinglyLinkedList<int32_t> list = {0, 1};
+  SinglyLinkedList<int32_t> move_list(std::move(list));
+  SinglyLinkedList<int32_t> copy_list(move_list);
+
+  EXPECT_EQ(list.begin(), list.end());
+
+  int cnt = 0;
+  for (int32_t num : move_list) {
+    EXPECT_EQ(cnt, num);
+    ++cnt;
+  }
+  EXPECT_EQ(cnt, 2);
+
+  cnt = 0;
+  for (int32_t num : copy_list) {
+    EXPECT_EQ(cnt, num);
+    ++cnt;
+  }
+  EXPECT_EQ(cnt, 2);
 }
