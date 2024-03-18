@@ -10,28 +10,26 @@
 
 namespace mirage {
 
-namespace {
+template <BasicValueType T>
+class ArrayConstIterator;
 
 template <BasicValueType T>
-class ConstIterator;
-
-template <BasicValueType T>
-class Iterator {
+class ArrayIterator {
  public:
   using iterator_concept = std::contiguous_iterator_tag;
   using iterator_category = std::random_access_iterator_tag;
-  using iterator_type = Iterator;
+  using iterator_type = ArrayIterator;
   using difference_type = ptrdiff_t;
   using value_type = T;
   using pointer = value_type*;
   using reference = value_type&;
 
-  Iterator() = default;
-  ~Iterator() = default;
+  ArrayIterator() = default;
+  ~ArrayIterator() = default;
 
-  Iterator(const Iterator& other) : ptr_(other.ptr_) {}
+  ArrayIterator(const ArrayIterator& other) : ptr_(other.ptr_) {}
 
-  explicit Iterator(pointer ptr) : ptr_(ptr) {}
+  explicit ArrayIterator(pointer ptr) : ptr_(ptr) {}
 
   reference operator*() const { return *ptr_; }
 
@@ -102,36 +100,36 @@ class Iterator {
   bool operator<=(const iterator_type& other) const { return !(other < *this); }
 
  private:
-  friend class ConstIterator<T>;
+  friend class ArrayConstIterator<T>;
 
   pointer ptr_{nullptr};
 };
 
 template <BasicValueType T>
-Iterator<T> operator+(typename Iterator<T>::difference_type diff,
-                      Iterator<T> iter) {
+ArrayIterator<T> operator+(typename ArrayIterator<T>::difference_type diff,
+                           ArrayIterator<T> iter) {
   return iter + diff;
 }
 
 template <BasicValueType T>
-class ConstIterator {
+class ArrayConstIterator {
  public:
   using iterator_concept = std::contiguous_iterator_tag;
   using iterator_category = std::random_access_iterator_tag;
-  using iterator_type = ConstIterator;
+  using iterator_type = ArrayConstIterator;
   using difference_type = ptrdiff_t;
   using value_type = const T;
   using pointer = value_type*;
   using reference = value_type&;
 
-  ConstIterator() = default;
-  ~ConstIterator() = default;
+  ArrayConstIterator() = default;
+  ~ArrayConstIterator() = default;
 
-  ConstIterator(const ConstIterator& other) : ptr_(other.ptr_) {}
+  ArrayConstIterator(const ArrayConstIterator& other) : ptr_(other.ptr_) {}
 
-  explicit ConstIterator(const Iterator<T>& iter) : ptr_(iter.ptr_) {}
+  explicit ArrayConstIterator(const ArrayIterator<T>& iter) : ptr_(iter.ptr_) {}
 
-  explicit ConstIterator(pointer ptr) : ptr_(ptr) {}
+  explicit ArrayConstIterator(pointer ptr) : ptr_(ptr) {}
 
   reference operator*() const { return *ptr_; }
 
@@ -206,18 +204,17 @@ class ConstIterator {
 };
 
 template <BasicValueType T>
-ConstIterator<T> operator+(typename ConstIterator<T>::difference_type diff,
-                           ConstIterator<T> iter) {
+ArrayConstIterator<T> operator+(
+    typename ArrayConstIterator<T>::difference_type diff,
+    ArrayConstIterator<T> iter) {
   return iter + diff;
 }
-
-}  // namespace
 
 template <BasicValueType T>
 class Array {
  public:
-  using Iterator = Iterator<T>;
-  using ConstIterator = ConstIterator<T>;
+  using Iterator = ArrayIterator<T>;
+  using ConstIterator = ArrayConstIterator<T>;
 
   Array() = default;
 

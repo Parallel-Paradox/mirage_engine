@@ -10,19 +10,17 @@
 
 namespace mirage {
 
-namespace {
-
 template <BasicValueType T>
-struct Node {
+struct SinglyLinkedListNode {
   T val_;
-  Node* next_{nullptr};
+  SinglyLinkedListNode* next_{nullptr};
 
-  Node() = default;
-  ~Node() = default;
+  SinglyLinkedListNode() = default;
+  ~SinglyLinkedListNode() = default;
 
-  Node(T&& val) : val_(std::move(val)) {}
+  SinglyLinkedListNode(T&& val) : val_(std::move(val)) {}
 
-  Node(const T& val) {
+  SinglyLinkedListNode(const T& val) {
     if constexpr (!std::copy_constructible<T>) {
       MIRAGE_DCHECK(false);  // This type is supposed to be copyable.
     } else {
@@ -33,27 +31,28 @@ struct Node {
 };
 
 template <BasicValueType T>
-class ConstIterator;
+class SinglyLinkedListConstIterator;
 
 template <BasicValueType T>
-class Iterator {
+class SinglyLinkedListIterator {
  public:
   using iterator_concept = std::forward_iterator_tag;
   using iterator_category = std::forward_iterator_tag;
-  using iterator_type = Iterator;
+  using iterator_type = SinglyLinkedListIterator;
   using difference_type = int64_t;
   using value_type = T;
   using pointer = value_type*;
   using reference = value_type&;
 
-  using Node = Node<T>;
+  using Node = SinglyLinkedListNode<T>;
 
-  Iterator() = default;
-  ~Iterator() = default;
+  SinglyLinkedListIterator() = default;
+  ~SinglyLinkedListIterator() = default;
 
-  Iterator(const Iterator& other) : here_(other.here_) {}
+  SinglyLinkedListIterator(const SinglyLinkedListIterator& other)
+      : here_(other.here_) {}
 
-  explicit Iterator(Node* here) : here_(here) {}
+  explicit SinglyLinkedListIterator(Node* here) : here_(here) {}
 
   reference operator*() const { return here_->val_; }
 
@@ -105,32 +104,35 @@ class Iterator {
   }
 
  private:
-  friend class ConstIterator<T>;
+  friend class SinglyLinkedListConstIterator<T>;
 
   Node* here_{nullptr};
 };
 
 template <BasicValueType T>
-class ConstIterator {
+class SinglyLinkedListConstIterator {
  public:
   using iterator_concept = std::forward_iterator_tag;
   using iterator_category = std::forward_iterator_tag;
-  using iterator_type = ConstIterator;
+  using iterator_type = SinglyLinkedListConstIterator;
   using difference_type = int64_t;
   using value_type = const T;
   using pointer = value_type*;
   using reference = value_type&;
 
-  using Node = Node<T>;
+  using Node = SinglyLinkedListNode<T>;
 
-  ConstIterator() = default;
-  ~ConstIterator() = default;
+  SinglyLinkedListConstIterator() = default;
+  ~SinglyLinkedListConstIterator() = default;
 
-  ConstIterator(const ConstIterator& other) : here_(other.here_) {}
+  SinglyLinkedListConstIterator(const SinglyLinkedListConstIterator& other)
+      : here_(other.here_) {}
 
-  explicit ConstIterator(Node* here) : here_(here) {}
+  explicit SinglyLinkedListConstIterator(Node* here) : here_(here) {}
 
-  explicit ConstIterator(const Iterator<T>& iter) : here_(iter.here_) {}
+  explicit SinglyLinkedListConstIterator(
+      const SinglyLinkedListIterator<T>& iter)
+      : here_(iter.here_) {}
 
   reference operator*() const { return here_->val_; }
 
@@ -161,14 +163,12 @@ class ConstIterator {
   Node* here_{nullptr};
 };
 
-}  // namespace
-
 template <BasicValueType T>
 class SinglyLinkedList {
  public:
-  using Node = Node<T>;
-  using Iterator = Iterator<T>;
-  using ConstIterator = ConstIterator<T>;
+  using Node = SinglyLinkedListNode<T>;
+  using Iterator = SinglyLinkedListIterator<T>;
+  using ConstIterator = SinglyLinkedListConstIterator<T>;
 
   SinglyLinkedList() = default;
 
