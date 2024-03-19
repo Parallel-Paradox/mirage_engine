@@ -18,7 +18,7 @@ class Shared {
 
   template <typename... Args>
   static Shared New(Args&&... args) {
-    return Shared(new T(args...));
+    return Shared(new T(std::forward<Args>(args)...));
   }
 
   explicit Shared(T* raw_ptr)

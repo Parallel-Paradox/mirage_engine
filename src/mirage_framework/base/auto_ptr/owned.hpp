@@ -10,6 +10,7 @@ template <typename T>
 class Owned {
  public:
   Owned() = default;
+  Owned(const Owned&) = delete;
 
   explicit Owned(T* raw_ptr)
       : raw_ptr_(raw_ptr), destructor_(Destructor::Default<T>()) {
@@ -24,10 +25,8 @@ class Owned {
 
   template <typename... Args>
   static Owned New(Args&&... args) {
-    return Owned(new T(args...));
+    return Owned(new T(std::forward<Args>(args)...));
   }
-
-  Owned(const Owned&) = delete;
 
   Owned(Owned&& other) noexcept
       : raw_ptr_(other.raw_ptr_), destructor_(other.destructor_) {
