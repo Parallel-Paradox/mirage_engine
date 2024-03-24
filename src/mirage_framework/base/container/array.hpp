@@ -303,9 +303,9 @@ class Array {
     SetCapacity(capacity);
   }
 
-  [[nodiscard]] T* GetRawPtr() const { return data_; }
+  T* GetRawPtr() const { return data_; }
 
-  [[nodiscard]] size_t GetSize() const { return size_; }
+  size_t GetSize() const { return size_; }
 
   void SetSize(size_t size) {
     if (size == size_) {
@@ -320,9 +320,9 @@ class Array {
     }
   }
 
-  [[nodiscard]] bool IsEmpty() const { return size_ == 0; }
+  bool IsEmpty() const { return size_ == 0; }
 
-  [[nodiscard]] size_t GetCapacity() const { return capacity_; }
+  size_t GetCapacity() const { return capacity_; }
 
   void SetCapacity(size_t capacity) {
     if (capacity == capacity_) {

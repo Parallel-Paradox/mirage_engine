@@ -14,19 +14,21 @@ class Optional {
 
   Optional(Optional&& other) : is_valid_(other.is_valid_) {
     if (other.is_valid_) {
-      new (&val_) T(std::move(other.Unwrap()));
+      new (buffer_) T(std::move(other.Unwrap()));
     }
-    other.is_valid_ = false;
   }
 
   ~Optional() {
     is_valid_ = false;
-    ((T*)(&val_))->~T();
+    ((T*)(buffer_))->~T();
   }
 
   template <typename... Args>
   static Optional New(Args&&... args) {
-    return Optional(T(std::forward<Args>(args)...));
+    Optional result;
+    result.is_valid_ = true;
+    new (result.buffer_) T(T(std::forward<Args>(args)...));
+    return std::move(result);
   }
 
   static Optional None() { return Optional(); }
@@ -35,18 +37,15 @@ class Optional {
 
   T Unwrap() {
     MIRAGE_DCHECK(is_valid_);
-    return std::move(*(T*)(&val_));
+    is_valid_ = false;
+    return std::move(*(T*)(&buffer_));
   }
 
  private:
-  using Type = std::aligned_storage<sizeof(T), alignof(T)>;
-
   Optional() = default;
 
-  Optional(T&& val) : is_valid_(true) { new (&val_) T(std::move(val)); }
-
   bool is_valid_{false};
-  Type val_;
+  alignas(T) std::byte buffer_[sizeof(T)];
 };
 
 }  // namespace mirage

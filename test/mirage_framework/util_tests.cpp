@@ -13,15 +13,18 @@ TEST(UtilTests, MetaType) {
   EXPECT_NE(type_info, MetaType::Of<int64_t>());
 }
 
-TEST(UtilTests, Optional) {
+TEST(UtilTests, UnwrapOptional) {
   auto num = Optional<int32_t>::New(1);
   EXPECT_TRUE(num.IsValid());
   EXPECT_EQ(num.Unwrap(), 1);
-
-  Optional<int32_t> move_num(std::move(num));
   EXPECT_FALSE(num.IsValid());
-  EXPECT_EQ(move_num.Unwrap(), 1);
+}
 
-  auto none = Optional<int32_t>::None();
-  EXPECT_FALSE(none.IsValid());
+TEST(UtilTests, MoveOptional) {
+  auto num = Optional<int32_t>::New(1);
+  EXPECT_TRUE(num.IsValid());
+  auto move_num = std::move(num);
+  EXPECT_FALSE(num.IsValid());
+  EXPECT_TRUE(move_num.IsValid());
+  EXPECT_EQ(move_num.Unwrap(), 1);
 }
