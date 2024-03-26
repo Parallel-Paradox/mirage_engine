@@ -3,6 +3,7 @@
 
 #include <concepts>
 
+#include "mirage_framework/base/util/aligned_memory.hpp"
 #include "mirage_framework/define.hpp"
 
 namespace mirage {
@@ -14,20 +15,22 @@ class Optional {
 
   Optional(Optional&& other) : is_valid_(other.is_valid_) {
     if (other.is_valid_) {
-      new (buffer_) T(std::move(other.Unwrap()));
+      new (obj.GetPtr()) T(std::move(other.Unwrap()));
     }
   }
 
   ~Optional() {
+    if (is_valid_) {
+      obj.GetPtr()->~T();
+    }
     is_valid_ = false;
-    ((T*)(buffer_))->~T();
   }
 
   template <typename... Args>
   static Optional New(Args&&... args) {
     Optional result;
     result.is_valid_ = true;
-    new (result.buffer_) T(T(std::forward<Args>(args)...));
+    new (result.obj.GetPtr()) T(T(std::forward<Args>(args)...));
     return std::move(result);
   }
 
@@ -38,14 +41,14 @@ class Optional {
   T Unwrap() {
     MIRAGE_DCHECK(is_valid_);
     is_valid_ = false;
-    return std::move(*(T*)(&buffer_));
+    return std::move(*obj.GetPtr());
   }
 
  private:
   Optional() = default;
 
   bool is_valid_{false};
-  alignas(T) std::byte buffer_[sizeof(T)];
+  AlignedMemory<T> obj;
 };
 
 }  // namespace mirage
