@@ -5,15 +5,15 @@
 #include <initializer_list>
 #include <iterator>
 
-#include "mirage_framework/base/container/concept.hpp"
+#include "mirage_framework/base/util/aligned_memory.hpp"
 #include "mirage_framework/define.hpp"
 
 namespace mirage {
 
-template <BasicValueType T>
+template <std::move_constructible T>
 class ArrayConstIterator;
 
-template <BasicValueType T>
+template <std::move_constructible T>
 class ArrayIterator {
  public:
   using iterator_concept = std::contiguous_iterator_tag;
@@ -105,13 +105,13 @@ class ArrayIterator {
   pointer ptr_{nullptr};
 };
 
-template <BasicValueType T>
+template <std::move_constructible T>
 ArrayIterator<T> operator+(typename ArrayIterator<T>::difference_type diff,
                            ArrayIterator<T> iter) {
   return iter + diff;
 }
 
-template <BasicValueType T>
+template <std::move_constructible T>
 class ArrayConstIterator {
  public:
   using iterator_concept = std::contiguous_iterator_tag;
@@ -203,14 +203,14 @@ class ArrayConstIterator {
   pointer ptr_{nullptr};
 };
 
-template <BasicValueType T>
+template <std::move_constructible T>
 ArrayConstIterator<T> operator+(
     typename ArrayConstIterator<T>::difference_type diff,
     ArrayConstIterator<T> iter) {
   return iter + diff;
 }
 
-template <BasicValueType T>
+template <std::move_constructible T>
 class Array {
  public:
   using Iterator = ArrayIterator<T>;
@@ -246,6 +246,9 @@ class Array {
   ~Array() noexcept { Clear(); }
 
   void Clear() {
+    for (int i = 0; i < size_; ++i) {
+      data_[i].GetPtr()->~T();
+    }
     delete[] data_;
     data_ = nullptr;
     size_ = 0;
@@ -263,18 +266,17 @@ class Array {
   template <typename... Args>
   void Emplace(Args&&... args) {
     EnsureNotFull();
-    (data_ + size_)->~T();
-    new (data_ + size_) T(std::forward<Args>(args)...);
+    new (data_[size_].GetPtr()) T(std::forward<Args>(args)...);
     ++size_;
   }
 
   T Pop() {
     MIRAGE_DCHECK(size_ != 0);
     --size_;
-    return std::move(data_[size_]);
+    return std::move(data_[size_].GetRef());
   }
 
-  T& operator[](size_t index) { return data_[index]; }
+  T& operator[](size_t index) { return data_[index].GetRef(); }
 
   bool operator==(const Array& other) const {
     if (size_ != other.size_) {
@@ -287,7 +289,7 @@ class Array {
       return false;  // Can't be compared.
     } else {
       for (size_t i = 0; i < size_; ++i) {
-        if (data_[i] != other.data_[i]) {
+        if (data_[i].GetRef() != other.data_[i].GetRef()) {
           return false;
         }
       }
@@ -303,20 +305,24 @@ class Array {
     SetCapacity(capacity);
   }
 
-  T* GetRawPtr() const { return data_; }
+  T* GetRawPtr() const { return (T*)data_; }
 
   size_t GetSize() const { return size_; }
 
   void SetSize(size_t size) {
-    if (size == size_) {
-      return;
-    } else if (size > size_) {
-      Reserve(size);
-      size_ = size;
-      return;
-    }
-    while (size_ > size) {
-      Pop();
+    if constexpr (!std::move_constructible<T>) {
+      MIRAGE_DCHECK(false);
+    } else {
+      if (size == size_) {
+        return;
+      } else if (size > size_) {
+        Reserve(size);
+        size_ = size;
+        return;
+      }
+      while (size_ > size) {
+        Pop();
+      }
     }
   }
 
@@ -329,11 +335,12 @@ class Array {
       return;
     }
 
-    T* data = new T[capacity]();
+    AlignedMemory<T>* data = new AlignedMemory<T>[capacity]();
     size_t size = capacity < size_ ? capacity : size_;
     for (size_t i = 0; i < size; ++i) {
-      (data + i)->~T();
-      new (data + i) T(std::move(data_[i]));
+      T* ptr = data_[i].GetPtr();
+      new (data[i].GetPtr()) T(std::move(*ptr));
+      ptr->~T();
     }
     delete[] data_;
 
@@ -342,25 +349,25 @@ class Array {
     capacity_ = capacity;
   }
 
-  Iterator begin() { return Iterator(data_); }
+  Iterator begin() { return Iterator(GetRawPtr()); }
 
-  Iterator end() { return Iterator(data_ + size_); }
+  Iterator end() { return Iterator(GetRawPtr() + size_); }
 
-  ConstIterator begin() const { return ConstIterator(data_); }
+  ConstIterator begin() const { return ConstIterator(GetRawPtr()); }
 
-  ConstIterator end() const { return ConstIterator(data_ + size_); }
+  ConstIterator end() const { return ConstIterator(GetRawPtr() + size_); }
 
  private:
   void EnsureNotFull() {
     if (capacity_ == 0) {
       capacity_ = 1;
-      data_ = new T[1]();
+      data_ = new AlignedMemory<T>[1]();
     } else if (size_ == capacity_) {
       SetCapacity(2 * capacity_);
     }
   }
 
-  T* data_{nullptr};
+  AlignedMemory<T>* data_{nullptr};
   size_t size_{0};
   size_t capacity_{0};
 };
