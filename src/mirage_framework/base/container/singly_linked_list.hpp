@@ -5,17 +5,18 @@
 #include <initializer_list>
 #include <iterator>
 
-#include "mirage_framework/base/container/concept.hpp"
 #include "mirage_framework/define.hpp"
 
 namespace mirage {
 
-template <BasicValueType T>
+template <std::move_constructible T>
 struct SinglyLinkedListNode {
   T val_;
   SinglyLinkedListNode* next_{nullptr};
 
-  SinglyLinkedListNode() = default;
+  SinglyLinkedListNode() = delete;
+  SinglyLinkedListNode(SinglyLinkedListNode&&) = delete;
+  SinglyLinkedListNode(const SinglyLinkedListNode&) = delete;
   ~SinglyLinkedListNode() = default;
 
   SinglyLinkedListNode(T&& val) : val_(std::move(val)) {}
@@ -30,10 +31,10 @@ struct SinglyLinkedListNode {
   }
 };
 
-template <BasicValueType T>
+template <std::move_constructible T>
 class SinglyLinkedListConstIterator;
 
-template <BasicValueType T>
+template <std::move_constructible T>
 class SinglyLinkedListIterator {
  public:
   using iterator_concept = std::forward_iterator_tag;
@@ -56,7 +57,7 @@ class SinglyLinkedListIterator {
 
   reference operator*() const { return here_->val_; }
 
-  pointer operator->() const { return &(here_->val); }
+  pointer operator->() const { return &(here_->val_); }
 
   iterator_type& operator++() {
     if (here_ != nullptr) {
@@ -109,7 +110,7 @@ class SinglyLinkedListIterator {
   Node* here_{nullptr};
 };
 
-template <BasicValueType T>
+template <std::move_constructible T>
 class SinglyLinkedListConstIterator {
  public:
   using iterator_concept = std::forward_iterator_tag;
@@ -136,7 +137,7 @@ class SinglyLinkedListConstIterator {
 
   reference operator*() const { return here_->val_; }
 
-  pointer operator->() const { return &(here_->val); }
+  pointer operator->() const { return &(here_->val_); }
 
   iterator_type& operator++() {
     if (here_ != nullptr) {
@@ -163,7 +164,7 @@ class SinglyLinkedListConstIterator {
   Node* here_{nullptr};
 };
 
-template <BasicValueType T>
+template <std::move_constructible T>
 class SinglyLinkedList {
  public:
   using Node = SinglyLinkedListNode<T>;
