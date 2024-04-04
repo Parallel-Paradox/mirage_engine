@@ -1,6 +1,7 @@
 #ifndef MIRAGE_FRAMEWORK_BASE_CONTAINER_ARRAY
 #define MIRAGE_FRAMEWORK_BASE_CONTAINER_ARRAY
 
+#include <__concepts/constructible.h>
 #include <concepts>
 #include <initializer_list>
 #include <iterator>
@@ -310,18 +311,23 @@ class Array {
   size_t GetSize() const { return size_; }
 
   void SetSize(size_t size) {
-    if constexpr (!std::move_constructible<T>) {
+    if (size == size_) {
+      return;
+    } else if (size < size_) {
+      while (size < size_) {
+        --size_;
+        data_[size_].GetPtr()->~T();
+      }
+      return;
+    }
+
+    if constexpr (!std::default_initializable<T>) {
       MIRAGE_DCHECK(false);
     } else {
-      if (size == size_) {
-        return;
-      } else if (size > size_) {
-        Reserve(size);
-        size_ = size;
-        return;
-      }
-      while (size_ > size) {
-        Pop();
+      Reserve(size);
+      while (size > size_) {
+        new (data_[size_].GetPtr()) T();
+        ++size_;
       }
     }
   }
