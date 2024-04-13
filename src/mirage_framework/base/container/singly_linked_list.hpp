@@ -20,15 +20,6 @@ struct SinglyLinkedListNode {
   ~SinglyLinkedListNode() = default;
 
   SinglyLinkedListNode(T&& val) : val_(std::move(val)) {}
-
-  SinglyLinkedListNode(const T& val) {
-    if constexpr (!std::copy_constructible<T>) {
-      MIRAGE_DCHECK(false);  // This type is supposed to be copyable.
-    } else {
-      (&val_)->~T();
-      new (&val_) T(val);
-    }
-  }
 };
 
 template <std::move_constructible T>
@@ -185,11 +176,11 @@ class SinglyLinkedList {
       if (iter == other.end()) {
         return;
       }
-      Node* ptr = new Node(*iter);
+      Node* ptr = new Node(T(*iter));
       head_ = ptr;
       ++iter;
       while (iter != other.end()) {
-        Node* next = new Node(*iter);
+        Node* next = new Node(T(*iter));
         ptr->next_ = next;
         ptr = next;
         ++iter;
@@ -205,11 +196,11 @@ class SinglyLinkedList {
         return;
       }
       auto iter = list.begin();
-      Node* ptr = new Node(*iter);
+      Node* ptr = new Node(T(*iter));
       head_ = ptr;
       ++iter;
       while (iter != list.end()) {
-        Node* next = new Node(*iter);
+        Node* next = new Node(T(*iter));
         ptr->next_ = next;
         ptr = next;
         ++iter;

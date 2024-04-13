@@ -1,7 +1,6 @@
 #ifndef MIRAGE_FRAMEWORK_BASE_CONTAINER_ARRAY
 #define MIRAGE_FRAMEWORK_BASE_CONTAINER_ARRAY
 
-#include <__concepts/constructible.h>
 #include <concepts>
 #include <initializer_list>
 #include <iterator>

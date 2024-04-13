@@ -13,6 +13,11 @@ TEST(UtilTests, MetaType) {
   EXPECT_NE(type_info, MetaType::Of<int64_t>());
 }
 
+TEST(UtilTests, NonOptional) {
+  auto num = Optional<int32_t>::None();
+  EXPECT_FALSE(num.IsValid());
+}
+
 TEST(UtilTests, UnwrapOptional) {
   auto num = Optional<int32_t>::New(1);
   EXPECT_TRUE(num.IsValid());
