@@ -1,9 +1,11 @@
 #include <gtest/gtest.h>
 
-#include "mirage_framework/base/container/concept.hpp"
+#include "mirage_framework/base/container/hash_map.hpp"
 #include "mirage_framework/base/util/hash.hpp"
 
 using namespace mirage;
+
+namespace {
 
 struct UnHash {};
 
@@ -12,6 +14,8 @@ struct ContextHash {
 
   bool operator==(const ContextHash& other) const { return num_ == other.num_; }
 };
+
+}  // namespace
 
 template <>
 struct Hash<ContextHash> {

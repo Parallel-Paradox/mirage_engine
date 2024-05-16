@@ -38,6 +38,8 @@ TEST(AutoPtrTests, OwnedConstruct) {
   EXPECT_EQ(x, 1);  // Destructor will be called since move_owned is destructed.
 }
 
+namespace {
+
 struct Base {
   bool* base_destructed_{nullptr};
 
@@ -54,6 +56,8 @@ struct Derive : public Base {
 
   ~Derive() override { *derive_destructed_ = true; }
 };
+
+}  // namespace
 
 TEST(AutoPtrTests, OwnedConvertDeriveToBase) {
   bool base_destructed = false;

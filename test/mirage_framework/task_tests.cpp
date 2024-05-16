@@ -4,6 +4,8 @@
 
 using namespace mirage;
 
+namespace {
+
 struct CountUpdate : public Task {
   uint32_t* cnt_{nullptr};
   bool* stop_{nullptr};
@@ -18,6 +20,8 @@ struct CountUpdate : public Task {
     return Task::Running;
   }
 };
+
+}  // namespace
 
 TEST(TaskTests, ExecutePackedTask) {
   uint32_t cnt = 0;
