@@ -1,0 +1,10 @@
+# MacOS cache
+.DS_Store
+
+# Build cache
+/build
+/.cache
+
+# IDE config
+/.vscode
+/.idea
