@@ -16,6 +16,8 @@ message(STATUS "Building test.mirage_base...")
 add_executable(test.mirage_base
     mirage_base/auto_ptr/owned_tests.cpp
     mirage_base/container/array_tests.cpp
+    mirage_base/container/hash_map_tests.cpp
+    mirage_base/container/hash_set_tests.cpp
     mirage_base/container/singly_linked_list.cpp
     mirage_base/util/optional_tests.cpp
 )

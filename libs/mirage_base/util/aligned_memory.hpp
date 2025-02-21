@@ -5,7 +5,7 @@
 
 namespace mirage::base {
 
-template <typename T>
+template <std::move_constructible T>
 class AlignedMemory {
  public:
   AlignedMemory() = default;

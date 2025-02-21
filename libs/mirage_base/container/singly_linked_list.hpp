@@ -75,11 +75,15 @@ class SinglyLinkedList<T>::Iterator {
   Iterator() = default;
   ~Iterator() = default;
 
-  Iterator(const Iterator& other);
+  Iterator(const Iterator&) = default;
+  Iterator(Iterator&&) noexcept = default;
+
+  Iterator(std::nullptr_t);  // NOLINT: Convert from nullptr
 
   explicit Iterator(Node* here);
 
-  iterator_type& operator=(const iterator_type& other);
+  iterator_type& operator=(const iterator_type&) = default;
+  iterator_type& operator=(iterator_type&&) noexcept = default;
   iterator_type& operator=(std::nullptr_t);
   reference operator*() const;
   pointer operator->() const;
@@ -115,14 +119,18 @@ class SinglyLinkedList<T>::ConstIterator {
   ConstIterator() = default;
   ~ConstIterator() = default;
 
-  ConstIterator(const ConstIterator& other);
+  ConstIterator(const ConstIterator&) = default;
+  ConstIterator(ConstIterator&&) = default;
+
+  ConstIterator(std::nullptr_t);  // NOLINT: Convert from nullptr
 
   explicit ConstIterator(Node* here);
 
   // NOLINTNEXTLINE: Convert to const
   ConstIterator(const Iterator& iter);
 
-  iterator_type& operator=(const iterator_type& other);
+  iterator_type& operator=(const iterator_type&) = default;
+  iterator_type& operator=(iterator_type&&) noexcept = default;
   iterator_type& operator=(std::nullptr_t);
   reference operator*() const;
   pointer operator->() const;
@@ -264,20 +272,10 @@ typename SinglyLinkedList<T>::ConstIterator SinglyLinkedList<T>::end() const {
 }
 
 template <std::move_constructible T>
-SinglyLinkedList<T>::Iterator::Iterator(const Iterator& other)
-    : here_(other.here_) {}
+SinglyLinkedList<T>::Iterator::Iterator(std::nullptr_t) : here_(nullptr) {}
 
 template <std::move_constructible T>
 SinglyLinkedList<T>::Iterator::Iterator(Node* here) : here_(here) {}
-
-template <std::move_constructible T>
-typename SinglyLinkedList<T>::Iterator::iterator_type&
-SinglyLinkedList<T>::Iterator::operator=(const iterator_type& other) {
-  if (this != &other) {
-    here_ = other.here_;
-  }
-  return *this;
-}
 
 template <std::move_constructible T>
 typename SinglyLinkedList<T>::Iterator::iterator_type&
@@ -360,8 +358,8 @@ T SinglyLinkedList<T>::Iterator::RemoveAfter() {
 }
 
 template <std::move_constructible T>
-SinglyLinkedList<T>::ConstIterator::ConstIterator(const ConstIterator& other)
-    : here_(other.here_) {}
+SinglyLinkedList<T>::ConstIterator::ConstIterator(std::nullptr_t)
+    : here_(nullptr) {}
 
 template <std::move_constructible T>
 SinglyLinkedList<T>::ConstIterator::ConstIterator(Node* here) : here_(here) {}
@@ -369,15 +367,6 @@ SinglyLinkedList<T>::ConstIterator::ConstIterator(Node* here) : here_(here) {}
 template <std::move_constructible T>
 SinglyLinkedList<T>::ConstIterator::ConstIterator(const Iterator& iter)
     : here_(iter.here_) {}
-
-template <std::move_constructible T>
-typename SinglyLinkedList<T>::ConstIterator::iterator_type&
-SinglyLinkedList<T>::ConstIterator::operator=(const iterator_type& other) {
-  if (this != &other) {
-    here_ = other.here_;
-  }
-  return *this;
-}
 
 template <std::move_constructible T>
 typename SinglyLinkedList<T>::ConstIterator::iterator_type&

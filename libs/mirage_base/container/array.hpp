@@ -83,10 +83,13 @@ class Array<T>::Iterator {
   Iterator() = default;
   ~Iterator() = default;
 
-  Iterator(const Iterator& other);
+  Iterator(const Iterator&) = default;
+  Iterator(Iterator&&) = default;
+
   explicit Iterator(value_type* ptr);
 
-  iterator_type& operator=(const iterator_type& other);
+  iterator_type& operator=(const iterator_type&) = default;
+  iterator_type& operator=(iterator_type&&) noexcept = default;
   iterator_type& operator=(std::nullptr_t);
   reference operator*() const;
   pointer operator->() const;
@@ -102,6 +105,7 @@ class Array<T>::Iterator {
   iterator_type operator-(difference_type diff) const;
   difference_type operator-(const iterator_type& other) const;
   std::strong_ordering operator<=>(const iterator_type& other) const = default;
+  explicit operator bool() const;
 
  private:
   friend class ConstIterator;
@@ -124,12 +128,17 @@ class Array<T>::ConstIterator {
   ConstIterator() = default;
   ~ConstIterator() = default;
 
-  ConstIterator(const ConstIterator& other);
+  ConstIterator(const ConstIterator&) = default;
+  ConstIterator(ConstIterator&&) = default;
+
   explicit ConstIterator(value_type* ptr);
 
   // NOLINTNEXTLINE: Convert to const
   ConstIterator(const typename Array<T>::Iterator& iter);
 
+  iterator_type& operator=(const iterator_type&) = default;
+  iterator_type& operator=(iterator_type&&) noexcept = default;
+  iterator_type& operator=(std::nullptr_t);
   reference operator*() const;
   pointer operator->() const;
   reference operator[](difference_type diff) const;
@@ -144,6 +153,7 @@ class Array<T>::ConstIterator {
   iterator_type operator-(difference_type diff) const;
   difference_type operator-(const iterator_type& other) const;
   std::strong_ordering operator<=>(const iterator_type& other) const = default;
+  explicit operator bool() const;
 
  private:
   pointer ptr_{nullptr};
@@ -371,19 +381,7 @@ void Array<T>::EnsureNotFull() {
 }
 
 template <std::move_constructible T>
-Array<T>::Iterator::Iterator(const Iterator& other) : ptr_(other.ptr_) {}
-
-template <std::move_constructible T>
 Array<T>::Iterator::Iterator(value_type* const ptr) : ptr_(ptr) {}
-
-template <std::move_constructible T>
-typename Array<T>::Iterator::iterator_type& Array<T>::Iterator::operator=(
-    const iterator_type& other) {
-  if (this != &other) {
-    ptr_ = other.ptr_;
-  }
-  return *this;
-}
 
 template <std::move_constructible T>
 typename Array<T>::Iterator::iterator_type& Array<T>::Iterator::operator=(
@@ -479,8 +477,9 @@ typename Array<T>::Iterator::difference_type Array<T>::Iterator::operator-(
 }
 
 template <std::move_constructible T>
-Array<T>::ConstIterator::ConstIterator(const ConstIterator& other)
-    : ptr_(other.ptr_) {}
+Array<T>::Iterator::operator bool() const {
+  return ptr_ != nullptr;
+}
 
 template <std::move_constructible T>
 Array<T>::ConstIterator::ConstIterator(const Iterator& iter)
@@ -488,6 +487,13 @@ Array<T>::ConstIterator::ConstIterator(const Iterator& iter)
 
 template <std::move_constructible T>
 Array<T>::ConstIterator::ConstIterator(value_type* const ptr) : ptr_(ptr) {}
+
+template <std::move_constructible T>
+typename Array<T>::ConstIterator::iterator_type&
+Array<T>::ConstIterator::operator=(std::nullptr_t) {
+  ptr_ = nullptr;
+  return *this;
+}
 
 template <std::move_constructible T>
 typename Array<T>::ConstIterator::reference Array<T>::ConstIterator::operator*()
@@ -580,6 +586,11 @@ template <std::move_constructible T>
 typename Array<T>::ConstIterator::difference_type
 Array<T>::ConstIterator::operator-(const iterator_type& other) const {
   return ptr_ - other.ptr_;
+}
+
+template <std::move_constructible T>
+Array<T>::ConstIterator::operator bool() const {
+  return ptr_ != nullptr;
 }
 
 }  // namespace mirage::base
