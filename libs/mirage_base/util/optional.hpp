@@ -39,7 +39,7 @@ class Optional {
     Optional result;
     result.is_valid_ = true;
     new (result.obj.GetPtr()) T(std::forward<Args>(args)...);
-    return std::move(result);
+    return result;
   }
 
   static Optional None() { return Optional(); }

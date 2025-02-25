@@ -2,6 +2,7 @@
 #define MIRAGE_BASE_UTIL_ALIGNED_MEMORY
 
 #include <cstddef>
+#include <concepts>
 
 namespace mirage::base {
 

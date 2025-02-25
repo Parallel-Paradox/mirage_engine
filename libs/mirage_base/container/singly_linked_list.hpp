@@ -1,7 +1,9 @@
 #ifndef MIRAGE_BASE_CONTAINER_SINGLY_LINKED_LIST
 #define MIRAGE_BASE_CONTAINER_SINGLY_LINKED_LIST
 
+#include <concepts>
 #include <initializer_list>
+#include <iterator>
 
 #include "mirage_base/define.hpp"
 
@@ -237,7 +239,7 @@ T SinglyLinkedList<T>::RemoveHead() {
   const Node* head = head_;
   head_ = head_->next;
   delete head;
-  return std::move(val);
+  return val;
 }
 
 template <std::move_constructible T>
@@ -354,7 +356,7 @@ T SinglyLinkedList<T>::Iterator::RemoveAfter() {
   const Node* next = here_->next;
   here_->next = nullptr;
   delete next;
-  return std::move(val);
+  return val;
 }
 
 template <std::move_constructible T>

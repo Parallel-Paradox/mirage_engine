@@ -1,7 +1,9 @@
 #ifndef MIRAGE_BASE_CONTAINER_ARRAY
 #define MIRAGE_BASE_CONTAINER_ARRAY
 
+#include <concepts>
 #include <initializer_list>
+#include <iterator>
 
 #include "mirage_base/define.hpp"
 #include "mirage_base/util/aligned_memory.hpp"

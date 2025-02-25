@@ -1,6 +1,8 @@
 #ifndef MIRAGE_BASE_UTIL_HASH
 #define MIRAGE_BASE_UTIL_HASH
 
+#include <concepts>
+
 namespace mirage::base {
 
 template <typename T>  // NOLINT: Unused empty type.
