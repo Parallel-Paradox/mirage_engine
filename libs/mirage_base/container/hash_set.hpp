@@ -1,6 +1,10 @@
 #ifndef MIRAGE_BASE_CONTAINER_HASH_SET
 #define MIRAGE_BASE_CONTAINER_HASH_SET
 
+#include <concepts>
+#include <initializer_list>
+#include <iterator>
+
 #include "mirage_base/container/array.hpp"
 #include "mirage_base/container/singly_linked_list.hpp"
 #include "mirage_base/util/hash.hpp"
@@ -22,15 +26,19 @@ class HashSet {
   HashSet(std::initializer_list<T> list)
     requires std::copy_constructible<T>;
 
-  Optional<T> Insert(T&& val);
+  Optional<T> Insert(T val);
   Optional<T> Remove(const T& val);
-  Optional<T> Remove(const ConstIterator& target);
 
   ConstIterator TryFind(const T& val) const;
 
   void Clear();
   [[nodiscard]] bool IsEmpty() const;
   [[nodiscard]] size_t GetSize() const;
+
+  [[nodiscard]] float GetMaxLoadFactor() const;
+  void SetMaxLoadFactor(float load_factor);
+
+  [[nodiscard]] size_t GetBucketSize() const;
 
   ConstIterator begin() const;
   ConstIterator end() const;
@@ -90,27 +98,117 @@ class HashSet<T>::ConstIterator {
 };
 
 template <HashSetValType T>
-Optional<T> HashSet<T>::Insert(T&& val) {
-  // TODO
-  Optional<T> rv = Optional<T>::None();
+HashSet<T>::HashSet(std::initializer_list<T> list)
+  requires std::copy_constructible<T>
+{
+  for (const auto& val : list) {
+    Insert(T(val));
+  }
+}
+
+template <HashSetValType T>
+Optional<T> HashSet<T>::Insert(T val) {
   ConstIterator iter = TryFind(val);
   if (iter != end()) {
+    auto rv = Optional<T>::New(std::move(const_cast<T&>(*iter)));
+    new (const_cast<T*>(iter.operator->())) T(std::move(val));
+    return rv;
   }
 
+  ++size_;
   if (buckets_.IsEmpty()) {
     buckets_.SetSize(16);
   }
-
   if (const float load_factor = static_cast<float>(size_) / buckets_.GetSize();
       load_factor > max_load_factor_) {
     ExtendAndRehash();
   }
+
+  const size_t hash = hasher_(val);
+  const size_t mask = buckets_.GetSize() - 1;
+  auto& bucket = buckets_[hash & mask];
+  bucket.EmplaceHead(Entry{std::move(val), hash});
   return Optional<T>::None();
+}
+
+template <HashSetValType T>
+Optional<T> HashSet<T>::Remove(const T& val) {
+  if (size_ == 0) {
+    return Optional<T>::None();
+  }
+  const size_t hash = hasher_(val);
+  const size_t mask = buckets_.GetSize() - 1;
+  auto& bucket = buckets_[hash & mask];
+
+  auto iter = bucket.begin();
+  auto iter_prev = iter;
+  while (iter != bucket.end()) {
+    if (iter->hash != hash || iter->val != val) {
+      iter_prev = iter;
+      ++iter;
+      continue;
+    }
+    auto rv = Optional<T>::New(std::move(iter->val));
+    if (iter_prev == iter) {
+      bucket.RemoveHead();
+    } else {
+      iter_prev.RemoveAfter();
+    }
+    --size_;
+    return rv;
+  }
+}
+
+template <HashSetValType T>
+typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T& val) const {
+  if (size_ == 0) {
+    return end();
+  }
+  const size_t hash = hasher_(val);
+  const size_t mask = buckets_.GetSize() - 1;
+  const size_t bucket_index = hash & mask;
+  auto bucket_iter = buckets_.begin() + bucket_index;
+  for (auto iter = bucket_iter->begin(); iter != bucket_iter->end(); ++iter) {
+    if (iter->hash == hash && iter->val == val) {
+      return ConstIterator(bucket_iter, buckets_.end(), iter);
+    }
+  }
+  return end();
+}
+
+template <HashSetValType T>
+void HashSet<T>::Clear() {
+  buckets_.Clear();
+  size_ = 0;
 }
 
 template <HashSetValType T>
 bool HashSet<T>::IsEmpty() const {
   return size_ == 0;
+}
+
+template <HashSetValType T>
+size_t HashSet<T>::GetSize() const {
+  return size_;
+}
+
+template <HashSetValType T>
+float HashSet<T>::GetMaxLoadFactor() const {
+  return max_load_factor_;
+}
+
+template <HashSetValType T>
+void HashSet<T>::SetMaxLoadFactor(float load_factor) {
+  max_load_factor_ = load_factor;
+  if (const float load_factor = static_cast<float>(size_) / buckets_.GetSize();
+      load_factor > max_load_factor_) {
+    ExtendAndRehash();
+  }
+}
+
+template <HashSetValType T>
+size_t HashSet<T>::GetBucketSize() const {
+  return buckets_.GetSize();
 }
 
 template <HashSetValType T>
@@ -130,10 +228,12 @@ typename HashSet<T>::ConstIterator HashSet<T>::end() const {
 
 template <HashSetValType T>
 void HashSet<T>::ExtendAndRehash() {
-  MIRAGE_DCHECK(!buckets_.IsEmpty());
-
   const size_t old_size = buckets_.GetSize();
-  if (constexpr size_t overflow_mask = static_cast<size_t>(1) << 63;
+  MIRAGE_DCHECK(old_size != 0);
+  MIRAGE_DCHECK((old_size & (old_size - 1)) == 0);  // size should be 2^n
+
+  if (constexpr size_t overflow_mask = static_cast<size_t>(1)
+                                       << (sizeof(size_t) * 8 - 1);
       (old_size & overflow_mask) != 0) {
     return;
   }
@@ -155,14 +255,18 @@ void HashSet<T>::ExtendAndRehash() {
         ++iter;
         continue;
       }
-      // const size_t new_bucket_index = old_size + i;
-      // TODO: move
 
+      auto& new_bucket = buckets_[old_size + i];
       if (iter_prev == iter) {
+        new_bucket.EmplaceHead(bucket.RemoveHead());
+        iter = bucket.begin();
+        iter_prev = bucket.begin();
+      } else {
+        ++iter;
+        new_bucket.EmplaceHead(iter_prev.RemoveAfter());
       }
     }
   }
-  // TODO
 }
 
 template <HashSetValType T>

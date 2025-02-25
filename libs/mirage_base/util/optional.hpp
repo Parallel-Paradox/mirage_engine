@@ -47,9 +47,14 @@ class Optional {
   [[nodiscard]] bool IsValid() const { return is_valid_; }
 
   T Unwrap() {
-    MIRAGE_CHECK(is_valid_);
+    MIRAGE_DCHECK(is_valid_);
     is_valid_ = false;
     return std::move(obj.GetRef());
+  }
+
+  T& GetRef() {
+    MIRAGE_DCHECK(is_valid_);
+    return obj.GetRef();
   }
 
  private:

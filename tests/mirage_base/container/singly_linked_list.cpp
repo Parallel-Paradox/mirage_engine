@@ -5,8 +5,6 @@
 
 using namespace mirage::base;
 
-namespace {
-
 struct Counter final {
   int32_t* base_destructed{nullptr};
 
@@ -15,8 +13,6 @@ struct Counter final {
 
   ~Counter() { *base_destructed += 1; }
 };
-
-}  // namespace
 
 TEST(SinglyLinkedListTests, Iterate) {
   using Iter = SinglyLinkedList<int32_t>::Iterator;

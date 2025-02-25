@@ -1,6 +1,8 @@
 #ifndef MIRAGE_BASE_CONTAINER_SINGLY_LINKED_LIST
 #define MIRAGE_BASE_CONTAINER_SINGLY_LINKED_LIST
 
+#include <__concepts/constructible.h>
+
 #include <concepts>
 #include <initializer_list>
 #include <iterator>
@@ -39,6 +41,7 @@ class SinglyLinkedList {
 
   T RemoveHead();
   void Clear();
+  [[nodiscard]] bool IsEmpty() const;
 
   Iterator begin();
   Iterator end();
@@ -251,6 +254,11 @@ void SinglyLinkedList<T>::Clear() {
     ptr = next;
   }
   head_ = nullptr;
+}
+
+template <std::move_constructible T>
+bool SinglyLinkedList<T>::IsEmpty() const {
+  return begin() == end();
 }
 
 template <std::move_constructible T>
