@@ -5,7 +5,7 @@
 using namespace mirage::base;
 
 TEST(HashSetTests, ListConstruct) {
-  HashSet<size_t> set = {1, 2, 3};
+  const HashSet<size_t> set = {1, 2, 3};
   EXPECT_EQ(set.GetSize(), 3);
   EXPECT_EQ(set.GetMaxLoadFactor(), 1.0);
   EXPECT_FALSE(set.IsEmpty());
@@ -37,12 +37,12 @@ struct Mark {
   size_t val;
   size_t mark;
   Mark(Mark&&) = default;
-  Mark(size_t v, size_t m) : val(v), mark(m) {}
+  Mark(const size_t v, const size_t m) : val(v), mark(m) {}
   bool operator==(const Mark& other) const { return val == other.val; }
 };
 
 template <>
-struct Hash<Mark> {
+struct mirage::base::Hash<Mark> {
   size_t operator()(const Mark& mark) const { return mark.val; }
 };
 

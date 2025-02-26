@@ -36,7 +36,7 @@ class HashSet {
   [[nodiscard]] size_t GetSize() const;
 
   [[nodiscard]] float GetMaxLoadFactor() const;
-  void SetMaxLoadFactor(float load_factor);
+  void SetMaxLoadFactor(float max_load_factor);
 
   [[nodiscard]] size_t GetBucketSize() const;
 
@@ -157,6 +157,7 @@ Optional<T> HashSet<T>::Remove(const T& val) {
     --size_;
     return rv;
   }
+  return Optional<T>::None();
 }
 
 template <HashSetValType T>
@@ -198,8 +199,8 @@ float HashSet<T>::GetMaxLoadFactor() const {
 }
 
 template <HashSetValType T>
-void HashSet<T>::SetMaxLoadFactor(float load_factor) {
-  max_load_factor_ = load_factor;
+void HashSet<T>::SetMaxLoadFactor(const float max_load_factor) {
+  max_load_factor_ = max_load_factor;
   if (const float load_factor = static_cast<float>(size_) / buckets_.GetSize();
       load_factor > max_load_factor_) {
     ExtendAndRehash();
