@@ -1,8 +1,6 @@
 #ifndef MIRAGE_BASE_CONTAINER_SINGLY_LINKED_LIST
 #define MIRAGE_BASE_CONTAINER_SINGLY_LINKED_LIST
 
-#include <__concepts/constructible.h>
-
 #include <concepts>
 #include <initializer_list>
 #include <iterator>
