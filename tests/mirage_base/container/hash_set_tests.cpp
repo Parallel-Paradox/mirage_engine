@@ -70,3 +70,12 @@ TEST(HashSetTests, Remove) {
   EXPECT_EQ(rv.GetRef().mark, 2);
   EXPECT_EQ(set.GetSize(), 0);
 }
+
+TEST(HashSetTests, Iterate) {
+  EXPECT_TRUE(std::forward_iterator<HashSet<size_t>::Iterator>);
+  EXPECT_TRUE(std::forward_iterator<HashSet<size_t>::ConstIterator>);
+
+  for (const HashSet<size_t> set = {1, 2, 3}; auto num : set) {
+    EXPECT_NE(set.TryFind(num), set.end());
+  }
+}

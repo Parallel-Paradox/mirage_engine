@@ -82,7 +82,6 @@ class SinglyLinkedList<T>::Iterator {
   Iterator(Iterator&&) noexcept = default;
 
   Iterator(std::nullptr_t);  // NOLINT: Convert from nullptr
-
   explicit Iterator(Node* here);
 
   iterator_type& operator=(const iterator_type&) = default;
@@ -126,11 +125,9 @@ class SinglyLinkedList<T>::ConstIterator {
   ConstIterator(ConstIterator&&) = default;
 
   ConstIterator(std::nullptr_t);  // NOLINT: Convert from nullptr
-
   explicit ConstIterator(Node* here);
 
-  // NOLINTNEXTLINE: Convert to const
-  ConstIterator(const Iterator& iter);
+  ConstIterator(const Iterator& iter);  // NOLINT: Convert to const
 
   iterator_type& operator=(const iterator_type&) = default;
   iterator_type& operator=(iterator_type&&) noexcept = default;

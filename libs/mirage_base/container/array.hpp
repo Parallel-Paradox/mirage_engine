@@ -88,6 +88,7 @@ class Array<T>::Iterator {
   Iterator(const Iterator&) = default;
   Iterator(Iterator&&) = default;
 
+  Iterator(std::nullptr_t);  // NOLINT: Convert from nullptr
   explicit Iterator(value_type* ptr);
 
   iterator_type& operator=(const iterator_type&) = default;
@@ -133,10 +134,10 @@ class Array<T>::ConstIterator {
   ConstIterator(const ConstIterator&) = default;
   ConstIterator(ConstIterator&&) = default;
 
+  ConstIterator(std::nullptr_t);  // NOLINT: Convert from nullptr
   explicit ConstIterator(value_type* ptr);
 
-  // NOLINTNEXTLINE: Convert to const
-  ConstIterator(const typename Array<T>::Iterator& iter);
+  ConstIterator(const Iterator& iter);  // NOLINT: Convert to const
 
   iterator_type& operator=(const iterator_type&) = default;
   iterator_type& operator=(iterator_type&&) noexcept = default;
@@ -383,6 +384,9 @@ void Array<T>::EnsureNotFull() {
 }
 
 template <std::move_constructible T>
+Array<T>::Iterator::Iterator(std::nullptr_t) : ptr_(nullptr) {}
+
+template <std::move_constructible T>
 Array<T>::Iterator::Iterator(value_type* const ptr) : ptr_(ptr) {}
 
 template <std::move_constructible T>
@@ -486,6 +490,9 @@ Array<T>::Iterator::operator bool() const {
 template <std::move_constructible T>
 Array<T>::ConstIterator::ConstIterator(const Iterator& iter)
     : ptr_(iter.ptr_) {}
+
+template <std::move_constructible T>
+Array<T>::ConstIterator::ConstIterator(std::nullptr_t) : ptr_(nullptr) {}
 
 template <std::move_constructible T>
 Array<T>::ConstIterator::ConstIterator(value_type* const ptr) : ptr_(ptr) {}
