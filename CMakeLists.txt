@@ -37,6 +37,7 @@ endif ()
 include_directories(libs)
 
 add_subdirectory(libs/mirage_base)
+add_subdirectory(libs/mirage_ecs)
 
 # Build examples and tests if library standalone
 string(COMPARE EQUAL

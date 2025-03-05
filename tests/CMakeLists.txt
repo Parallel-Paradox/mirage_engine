@@ -19,7 +19,12 @@ add_executable(test.mirage_base
     mirage_base/container/hash_map_tests.cpp
     mirage_base/container/hash_set_tests.cpp
     mirage_base/container/singly_linked_list.cpp
-    mirage_base/util/optional_tests.cpp
-)
+    mirage_base/util/optional_tests.cpp)
 gtest_discover_tests(test.mirage_base)
 target_link_libraries(test.mirage_base mirage_base)
+
+message(STATUS "Building test.mirage_ecs...")
+add_executable(test.mirage_ecs
+    mirage_ecs/archetype/meta_type_tests.cpp)
+gtest_discover_tests(test.mirage_ecs)
+target_link_libraries(test.mirage_ecs mirage_ecs)
