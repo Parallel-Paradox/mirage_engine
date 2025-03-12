@@ -21,11 +21,19 @@ add_executable(test.mirage_base
     mirage_base/container/singly_linked_list.cpp
     mirage_base/util/optional_tests.cpp)
 gtest_discover_tests(test.mirage_base)
-target_link_libraries(test.mirage_base mirage_base)
+if (MIRAGE_BUILD_SPLIT)
+  target_link_libraries(test.mirage_base mirage_base)
+else ()
+  target_link_libraries(test.mirage_base mirage_engine)
+endif ()
 
 message(STATUS "Building test.mirage_ecs...")
 add_executable(test.mirage_ecs
     mirage_ecs/archetype/archetype_tests.cpp
     mirage_ecs/archetype/type_meta_tests.cpp)
 gtest_discover_tests(test.mirage_ecs)
-target_link_libraries(test.mirage_ecs mirage_ecs)
+if (MIRAGE_BUILD_SPLIT)
+  target_link_libraries(test.mirage_ecs mirage_ecs)
+else ()
+  target_link_libraries(test.mirage_base mirage_engine)
+endif ()

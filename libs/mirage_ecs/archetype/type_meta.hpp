@@ -1,6 +1,8 @@
 #ifndef MIRAGE_ECS_META_TYPE
 #define MIRAGE_ECS_META_TYPE
 
+#include <cstddef>
+
 #include "mirage_ecs/define.hpp"
 
 namespace mirage::ecs {

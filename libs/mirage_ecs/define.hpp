@@ -4,7 +4,7 @@
 #include "mirage_base/define.hpp"
 
 #if defined(MIRAGE_BUILD_SHARED) && defined(MIRAGE_BUILD_MSVC)
-#if defined(MIRAGE_BUILD_ECS)
+#if defined(MIRAGE_BUILD_ECS) || defined(MIRAGE_BUILD_ENGINE)
 #define MIRAGE_ECS __declspec(dllexport)
 #else
 #define MIRAGE_ECS __declspec(dllimport)

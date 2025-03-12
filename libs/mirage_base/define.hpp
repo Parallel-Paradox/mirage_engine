@@ -6,7 +6,7 @@
 #endif
 
 #if defined(MIRAGE_BUILD_SHARED) && defined(MIRAGE_BUILD_MSVC)
-#if defined(MIRAGE_BUILD_BASE)
+#if defined(MIRAGE_BUILD_BASE) || defined(MIRAGE_BUILD_ENGINE)
 #define MIRAGE_BASE __declspec(dllexport)
 #else
 #define MIRAGE_BASE __declspec(dllimport)

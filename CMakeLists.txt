@@ -26,7 +26,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 # --- Options ---
 
 option(MIRAGE_BUILD_SHARED "Build shared mirage engine" ON)
+option(MIRAGE_BUILD_SPLIT "Build split mirage engine, depend on MIRAGE_BUILD_SHARED" ON)
 option(MIRAGE_BUILD_TESTS "Build mirage engine tests" ON)
+
+if (MIRAGE_BUILD_SPLIT AND NOT MIRAGE_BUILD_SHARED)
+  message(FATAL_ERROR "MIRAGE_BUILD_SPLIT must be OFF when MIRAGE_BUILD_SHARED is OFF")
+endif ()
 
 # --- Dependencies ---
 
@@ -37,7 +42,7 @@ FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
     GIT_TAG v1.15.1)
-if (MIRAGE_BUILD_SHARED)
+if (MIRAGE_BUILD_SPLIT)
   set(SPDLOG_BUILD_SHARED ON)
 endif ()
 FetchContent_MakeAvailable(spdlog)
@@ -51,6 +56,16 @@ endif ()
 if (MIRAGE_BUILD_SHARED)
   message(STATUS "Build shared mirage engine...")
   add_compile_definitions(MIRAGE_BUILD_SHARED)
+endif ()
+
+if (NOT MIRAGE_BUILD_SPLIT)
+  if (MIRAGE_BUILD_SHARED)
+    add_library(mirage_engine SHARED)
+  else ()
+    add_library(mirage_engine STATIC)
+  endif ()
+  target_compile_definitions(mirage_engine PRIVATE MIRAGE_BUILD_ENGINE)
+  target_link_libraries(mirage_engine PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 endif ()
 
 include_directories(libs)

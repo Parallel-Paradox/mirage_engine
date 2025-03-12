@@ -4,14 +4,12 @@ set(SRC
     archetype/type_meta.cpp
     archetype/archetype.cpp)
 
-if (MIRAGE_BUILD_SHARED)
+if (MIRAGE_BUILD_SPLIT)
   add_library(mirage_ecs SHARED ${SRC})
+  target_compile_definitions(mirage_ecs PRIVATE MIRAGE_BUILD_ECS)
+  target_link_libraries(mirage_ecs
+      PRIVATE mirage_base
+      PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 else ()
-  add_library(mirage_ecs STATIC ${SRC})
+  target_sources(mirage_engine PRIVATE ${SRC})
 endif ()
-
-target_compile_definitions(mirage_ecs PRIVATE MIRAGE_BUILD_ECS)
-
-target_link_libraries(mirage_ecs
-    PRIVATE mirage_base
-    PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
