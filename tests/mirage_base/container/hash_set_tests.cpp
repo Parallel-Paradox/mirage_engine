@@ -25,7 +25,7 @@ TEST(HashSetTests, ExtendAndRehash) {
   set.Insert(16);
   EXPECT_EQ(set.GetBucketSize(), 16);
 
-  set.SetMaxLoadFactor(0.1);
+  set.SetMaxLoadFactor(0.1f);
   EXPECT_EQ(set.GetBucketSize(), 32);
 
   set.Insert(1);

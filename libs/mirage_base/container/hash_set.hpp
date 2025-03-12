@@ -30,7 +30,7 @@ class HashSet {
   Optional<T> Insert(T val);
   Optional<T> Remove(const T& val);
 
-  ConstIterator TryFind(const T& val) const;
+  ConstIterator TryFind(const T& val) const;  // TODO: TryFind non const
 
   void Clear();
   [[nodiscard]] bool IsEmpty() const;
@@ -98,11 +98,11 @@ class HashSet<T>::ConstIterator {
  private:
   friend class HashSet;
 
-  ConstIterator(BucketIter bucket_iter, BucketIter bucket_end,
+  ConstIterator(const HashSet* set_ptr, BucketIter bucket_iter,
                 EntryIter entry_iter);
 
+  const HashSet* set_ptr_;
   BucketIter bucket_iter_;
-  BucketIter bucket_end_;
   EntryIter entry_iter_;
 };
 
@@ -117,7 +117,7 @@ class HashSet<T>::Iterator {
   using pointer = value_type*;
   using reference = value_type&;
 
-  using BucketIter = typename Array<SinglyLinkedList<Entry>>::ConstIterator;
+  using BucketIter = typename Array<SinglyLinkedList<Entry>>::Iterator;
   using EntryIter = typename SinglyLinkedList<Entry>::Iterator;
 
   Iterator() = default;
@@ -146,10 +146,10 @@ class HashSet<T>::Iterator {
   friend class HashSet;
   friend class ConstIterator;
 
-  Iterator(BucketIter bucket_iter, BucketIter bucket_end, EntryIter entry_iter);
+  Iterator(HashSet* set_ptr, BucketIter bucket_iter, EntryIter entry_iter);
 
+  HashSet* set_ptr_;
   BucketIter bucket_iter_;
-  BucketIter bucket_end_;
   EntryIter entry_iter_;
 };
 
@@ -227,7 +227,7 @@ typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T& val) const {
   auto bucket_iter = buckets_.begin() + bucket_index;
   for (auto iter = bucket_iter->begin(); iter != bucket_iter->end(); ++iter) {
     if (iter->hash == hash && iter->val == val) {
-      return ConstIterator(bucket_iter, buckets_.end(), iter);
+      return ConstIterator(this, bucket_iter, iter);
     }
   }
   return end();
@@ -273,14 +273,14 @@ typename HashSet<T>::ConstIterator HashSet<T>::begin() const {
   if (IsEmpty()) {
     return end();
   }
-  ConstIterator rv(buckets_.begin(), buckets_.end(), buckets_.begin()->begin());
+  ConstIterator rv(this, buckets_.begin(), buckets_.begin()->begin());
   if (!rv) ++rv;
   return rv;
 }
 
 template <HashSetValType T>
 typename HashSet<T>::ConstIterator HashSet<T>::end() const {
-  return ConstIterator(buckets_.end(), buckets_.end(), nullptr);
+  return ConstIterator(this, buckets_.end(), nullptr);
 }
 
 template <HashSetValType T>
@@ -288,14 +288,14 @@ typename HashSet<T>::Iterator HashSet<T>::begin() {
   if (IsEmpty()) {
     return end();
   }
-  Iterator rv(buckets_.begin(), buckets_.end(), buckets_.begin()->begin());
+  Iterator rv(this, buckets_.begin(), buckets_.begin()->begin());
   if (!rv) ++rv;
   return rv;
 }
 
 template <HashSetValType T>
 typename HashSet<T>::Iterator HashSet<T>::end() {
-  return Iterator(buckets_.end(), buckets_.end(), nullptr);
+  return Iterator(this, buckets_.end(), nullptr);
 }
 
 template <HashSetValType T>
@@ -343,19 +343,19 @@ void HashSet<T>::ExtendAndRehash() {
 
 template <HashSetValType T>
 HashSet<T>::ConstIterator::ConstIterator(std::nullptr_t)
-    : bucket_iter_(nullptr), bucket_end_(nullptr), entry_iter_(nullptr) {}
+    : set_ptr_(nullptr), bucket_iter_(nullptr), entry_iter_(nullptr) {}
 
 template <HashSetValType T>
 HashSet<T>::ConstIterator::ConstIterator(const Iterator& iter)
-    : bucket_iter_(iter.bucket_iter_),
-      bucket_end_(iter.bucket_end_),
+    : set_ptr_(iter.set_ptr_),
+      bucket_iter_(iter.bucket_iter_),
       entry_iter_(iter.entry_iter_) {}
 
 template <HashSetValType T>
 typename HashSet<T>::ConstIterator::iterator_type&
 HashSet<T>::ConstIterator::operator=(std::nullptr_t) {
+  set_ptr_ = nullptr;
   bucket_iter_ = nullptr;
-  bucket_end_ = nullptr;
   entry_iter_ = nullptr;
   return *this;
 }
@@ -375,7 +375,10 @@ HashSet<T>::ConstIterator::operator->() const {
 template <HashSetValType T>
 typename HashSet<T>::ConstIterator::iterator_type&
 HashSet<T>::ConstIterator::operator++() {
-  if (bucket_iter_ == bucket_end_) return *this;
+  MIRAGE_DCHECK(set_ptr_ != nullptr);
+  auto bucket_end = set_ptr_->buckets_.end();
+
+  if (bucket_iter_ == bucket_end) return *this;
 
   if (entry_iter_ != nullptr) {
     ++entry_iter_;
@@ -383,7 +386,7 @@ HashSet<T>::ConstIterator::operator++() {
   }
   while (true) {
     ++bucket_iter_;
-    if (bucket_iter_ == bucket_end_) break;
+    if (bucket_iter_ == bucket_end) break;
     if (bucket_iter_->IsEmpty()) continue;
     entry_iter_ = bucket_iter_->begin();
     return *this;
@@ -402,8 +405,8 @@ HashSet<T>::ConstIterator::operator++(int) {
 
 template <HashSetValType T>
 bool HashSet<T>::ConstIterator::operator==(const iterator_type& other) const {
-  return bucket_iter_ == other.bucket_iter_ &&
-         bucket_end_ == other.bucket_end_ && entry_iter_ == other.entry_iter_;
+  return set_ptr_ == other.set_ptr_ && bucket_iter_ == other.bucket_iter_ &&
+         entry_iter_ == other.entry_iter_;
 }
 
 template <HashSetValType T>
@@ -417,22 +420,20 @@ HashSet<T>::ConstIterator::operator bool() const {
 }
 
 template <HashSetValType T>
-HashSet<T>::ConstIterator::ConstIterator(BucketIter bucket_iter,
-                                         BucketIter bucket_end,
+HashSet<T>::ConstIterator::ConstIterator(const HashSet* set_ptr,
+                                         BucketIter bucket_iter,
                                          EntryIter entry_iter)
-    : bucket_iter_(bucket_iter),
-      bucket_end_(bucket_end),
-      entry_iter_(entry_iter) {}
+    : set_ptr_(set_ptr), bucket_iter_(bucket_iter), entry_iter_(entry_iter) {}
 
 template <HashSetValType T>
 HashSet<T>::Iterator::Iterator(std::nullptr_t)
-    : bucket_iter_(nullptr), bucket_end_(nullptr), entry_iter_(nullptr) {}
+    : set_ptr_(nullptr), bucket_iter_(nullptr), entry_iter_(nullptr) {}
 
 template <HashSetValType T>
 typename HashSet<T>::Iterator::iterator_type& HashSet<T>::Iterator::operator=(
     std::nullptr_t) {
+  set_ptr_ = nullptr;
   bucket_iter_ = nullptr;
-  bucket_end_ = nullptr;
   entry_iter_ = nullptr;
   return *this;
 }
@@ -452,7 +453,10 @@ typename HashSet<T>::Iterator::pointer HashSet<T>::Iterator::operator->()
 template <HashSetValType T>
 typename HashSet<T>::Iterator::iterator_type&
 HashSet<T>::Iterator::operator++() {
-  if (bucket_iter_ == bucket_end_) return *this;
+  MIRAGE_DCHECK(set_ptr_ != nullptr);
+  auto bucket_end = set_ptr_->buckets_.end();
+
+  if (bucket_iter_ == bucket_end) return *this;
 
   if (entry_iter_ != nullptr) {
     ++entry_iter_;
@@ -460,7 +464,7 @@ HashSet<T>::Iterator::operator++() {
   }
   while (true) {
     ++bucket_iter_;
-    if (bucket_iter_ == bucket_end_) break;
+    if (bucket_iter_ == bucket_end) break;
     if (bucket_iter_->IsEmpty()) continue;
     entry_iter_ = bucket_iter_->begin();
     return *this;
@@ -479,13 +483,13 @@ typename HashSet<T>::Iterator::iterator_type HashSet<T>::Iterator::operator++(
 
 template <HashSetValType T>
 bool HashSet<T>::Iterator::operator==(const iterator_type& other) const {
-  return bucket_iter_ == other.bucket_iter_ &&
-         bucket_end_ == other.bucket_end_ && entry_iter_ == other.entry_iter_;
+  return set_ptr_ == other.set_ptr_ && bucket_iter_ == other.bucket_iter_ &&
+         entry_iter_ == other.entry_iter_;
 }
 
 template <HashSetValType T>
 bool HashSet<T>::Iterator::operator==(std::nullptr_t) const {
-  return !bucket_iter_ || !entry_iter_;
+  return !set_ptr_ || !bucket_iter_ || !entry_iter_;
 }
 
 template <HashSetValType T>
@@ -495,23 +499,33 @@ HashSet<T>::Iterator::operator bool() const {
 
 template <HashSetValType T>
 T HashSet<T>::Iterator::Remove() {
-  // TODO
   MIRAGE_DCHECK(this->operator bool());
+  --(set_ptr_->size_);
+  auto entry_finder = bucket_iter_->begin();
+  if (entry_finder == entry_iter_) {
+    return bucket_iter_->RemoveHead();
+  }
+
+  EntryIter entry_prev_record;
+  while (entry_finder != bucket_iter_->end() && entry_finder != entry_iter_) {
+    entry_prev_record = entry_finder;
+    ++entry_finder;
+  }
+  MIRAGE_DCHECK(entry_finder != bucket_iter_->end());
+  return entry_prev_record.RemoveAfter();
 }
 
 template <HashSetValType T>
 T HashSet<T>::Iterator::RemoveAfter() {
   MIRAGE_DCHECK(this->operator bool());
-  // TODO
+  --(set_ptr_->size_);
   return entry_iter_.RemoveAfter();
 }
 
 template <HashSetValType T>
-HashSet<T>::Iterator::Iterator(BucketIter bucket_iter, BucketIter bucket_end,
+HashSet<T>::Iterator::Iterator(HashSet* set_ptr, BucketIter bucket_iter,
                                EntryIter entry_iter)
-    : bucket_iter_(bucket_iter),
-      bucket_end_(bucket_end),
-      entry_iter_(entry_iter) {}
+    : set_ptr_(set_ptr), bucket_iter_(bucket_iter), entry_iter_(entry_iter) {}
 
 }  // namespace mirage::base
 
