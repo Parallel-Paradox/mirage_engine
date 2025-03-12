@@ -25,6 +25,7 @@ target_link_libraries(test.mirage_base mirage_base)
 
 message(STATUS "Building test.mirage_ecs...")
 add_executable(test.mirage_ecs
-    mirage_ecs/archetype/meta_type_tests.cpp)
+    mirage_ecs/archetype/archetype_tests.cpp
+    mirage_ecs/archetype/type_meta_tests.cpp)
 gtest_discover_tests(test.mirage_ecs)
 target_link_libraries(test.mirage_ecs mirage_ecs)

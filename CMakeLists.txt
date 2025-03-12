@@ -23,14 +23,33 @@ endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
+# --- Options ---
+
+option(MIRAGE_BUILD_SHARED "Build shared mirage engine" ON)
+option(MIRAGE_BUILD_TESTS "Build mirage engine tests" ON)
+
+# --- Dependencies ---
+
+include(FetchContent)
+
+message(STATUS "Introducing spdlog...")
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.15.1)
+if (MIRAGE_BUILD_SHARED)
+  set(SPDLOG_BUILD_SHARED ON)
+endif ()
+FetchContent_MakeAvailable(spdlog)
+
 # --- Build mirage engine ---
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
   add_compile_definitions(MIRAGE_BUILD_DEBUG)
 endif ()
 
-option(MIRAGE_BUILD_SHARED "Build shared mirage engine" ON)
 if (MIRAGE_BUILD_SHARED)
+  message(STATUS "Build shared mirage engine...")
   add_compile_definitions(MIRAGE_BUILD_SHARED)
 endif ()
 
@@ -39,9 +58,8 @@ include_directories(libs)
 add_subdirectory(libs/mirage_base)
 add_subdirectory(libs/mirage_ecs)
 
-# Build examples and tests if library standalone
-string(COMPARE EQUAL
-    "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" MIRAGE_STANDALONE)
-if (MIRAGE_STANDALONE)
+# Build tests
+if (MIRAGE_BUILD_TESTS)
+  message(STATUS "Build mirage engine tests...")
   add_subdirectory(tests)
 endif ()

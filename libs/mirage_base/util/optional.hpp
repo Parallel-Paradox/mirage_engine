@@ -13,11 +13,11 @@ class Optional {
 
   Optional(Optional&& other) noexcept : is_valid_(other.is_valid_) {
     if (other.is_valid_) {
-      new (obj.GetPtr()) T(std::move(other.Unwrap()));
+      new (obj_.GetPtr()) T(std::move(other.Unwrap()));
     }
   }
 
-  explicit Optional(T&& val) : is_valid_(true), obj(std::move(val)) {}
+  explicit Optional(T&& val) : is_valid_(true), obj_(std::move(val)) {}
 
   Optional& operator=(Optional&& other) noexcept {
     if (this != &other) {
@@ -29,7 +29,7 @@ class Optional {
 
   ~Optional() {
     if (is_valid_) {
-      obj.GetPtr()->~T();
+      obj_.GetPtr()->~T();
     }
     is_valid_ = false;
   }
@@ -38,7 +38,7 @@ class Optional {
   static Optional New(Args&&... args) {
     Optional result;
     result.is_valid_ = true;
-    new (result.obj.GetPtr()) T(std::forward<Args>(args)...);
+    new (result.obj_.GetPtr()) T(std::forward<Args>(args)...);
     return result;
   }
 
@@ -49,19 +49,19 @@ class Optional {
   T Unwrap() {
     MIRAGE_DCHECK(is_valid_);
     is_valid_ = false;
-    return std::move(obj.GetRef());
+    return std::move(obj_.GetRef());
   }
 
   T& GetRef() {
     MIRAGE_DCHECK(is_valid_);
-    return obj.GetRef();
+    return obj_.GetRef();
   }
 
  private:
   Optional() = default;
 
   bool is_valid_{false};
-  AlignedMemory<T> obj;
+  AlignedMemory<T> obj_;
 };
 
 }  // namespace mirage::base
