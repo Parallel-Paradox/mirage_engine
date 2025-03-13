@@ -7,7 +7,7 @@ using namespace mirage::base;
 TEST(HashSetTests, ListConstruct) {
   const HashSet<size_t> set = {1, 2, 3};
   EXPECT_EQ(set.GetSize(), 3);
-  EXPECT_EQ(set.GetMaxLoadFactor(), 1.0);
+  EXPECT_LT(abs(set.GetMaxLoadFactor() - 1.0f), 1e-5);
   EXPECT_FALSE(set.IsEmpty());
   for (size_t i = 1; i <= 3; ++i) {
     EXPECT_NE(set.TryFind(i), set.end());
@@ -25,7 +25,7 @@ TEST(HashSetTests, ExtendAndRehash) {
   set.Insert(16);
   EXPECT_EQ(set.GetBucketSize(), 16);
 
-  set.SetMaxLoadFactor(0.1);
+  set.SetMaxLoadFactor(0.1f);
   EXPECT_EQ(set.GetBucketSize(), 32);
 
   set.Insert(1);
