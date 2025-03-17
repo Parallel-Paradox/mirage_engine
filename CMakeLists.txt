@@ -26,11 +26,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 # --- Options ---
 
 option(MIRAGE_BUILD_SHARED "Build shared mirage engine" ON)
-option(MIRAGE_BUILD_SPLIT "Build split mirage engine, depend on MIRAGE_BUILD_SHARED" ON)
+option(MIRAGE_BUILD_SPLIT
+    "Build split mirage engine, depend on MIRAGE_BUILD_SHARED" ON)
 option(MIRAGE_BUILD_TESTS "Build mirage engine tests" ON)
 
 if (MIRAGE_BUILD_SPLIT AND NOT MIRAGE_BUILD_SHARED)
-  message(FATAL_ERROR "MIRAGE_BUILD_SPLIT must be OFF when MIRAGE_BUILD_SHARED is OFF")
+  message(FATAL_ERROR
+      "MIRAGE_BUILD_SPLIT must be OFF when MIRAGE_BUILD_SHARED is OFF")
 endif ()
 
 # --- Dependencies ---

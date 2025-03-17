@@ -2,6 +2,7 @@
 #define MIRAGE_ECS_META_TYPE
 
 #include <cstddef>
+#include <typeinfo>
 
 #include "mirage_ecs/define.hpp"
 
@@ -17,16 +18,19 @@ class MIRAGE_ECS TypeMeta {
 
   template <typename T>
   static const TypeMeta *Of() {
-    static TypeMeta meta_type(reinterpret_cast<size_t>(&meta_type), sizeof(T));
+    static TypeMeta meta_type(typeid(T).name(),
+                              reinterpret_cast<size_t>(&meta_type), sizeof(T));
     return &meta_type;
   }
 
+  [[nodiscard]] const char *GetTypeName() const;
   [[nodiscard]] size_t GetTypeId() const;
   [[nodiscard]] size_t GetTypeSize() const;
 
  private:
-  explicit TypeMeta(size_t type_id, size_t type_size);
+  explicit TypeMeta(const char *type_name, size_t type_id, size_t type_size);
 
+  const char *type_name_{nullptr};
   size_t type_id_{0};
   size_t type_size_{0};
 };
