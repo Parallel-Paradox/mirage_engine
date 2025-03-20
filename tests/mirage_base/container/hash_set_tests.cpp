@@ -79,3 +79,20 @@ TEST(HashSetTests, Iterate) {
     EXPECT_NE(set.TryFind(num), set.end());
   }
 }
+
+TEST(HashSetTests, RemoveByIter) {
+  HashSet<size_t> set = {1, 2, 3, 18};
+  auto iter = set.begin();
+  EXPECT_EQ(iter.Remove(), 1);
+  EXPECT_EQ(set.GetSize(), 3);
+  EXPECT_EQ(*iter, 18);
+
+  ++iter;
+  EXPECT_EQ(iter.Remove(), 2);
+  EXPECT_EQ(set.GetSize(), 2);
+  EXPECT_EQ(*iter, 3);
+
+  EXPECT_EQ(iter.Remove(), 3);
+  EXPECT_EQ(set.GetSize(), 1);
+  EXPECT_EQ(iter, set.end());
+}
