@@ -17,6 +17,11 @@ concept HashType =
     };
 
 template <>
+struct Hash<int32_t> {
+  size_t operator()(const int32_t val) const { return val; }
+};
+
+template <>
 struct Hash<size_t> {
   size_t operator()(const size_t val) const { return val; }
 };

@@ -5,18 +5,18 @@
 using namespace mirage::base;
 
 TEST(HashSetTests, ListConstruct) {
-  const HashSet<size_t> set = {1, 2, 3};
+  const HashSet<int32_t> set = {1, 2, 3};
   EXPECT_EQ(set.GetSize(), 3);
   EXPECT_LT(abs(set.GetMaxLoadFactor() - 1.0f), 1e-5);
   EXPECT_FALSE(set.IsEmpty());
-  for (size_t i = 1; i <= 3; ++i) {
+  for (int32_t i = 1; i <= 3; ++i) {
     EXPECT_NE(set.TryFind(i), set.end());
   }
   EXPECT_EQ(set.TryFind(4), set.end());
 }
 
 TEST(HashSetTests, ExtendAndRehash) {
-  HashSet<size_t> set;
+  HashSet<int32_t> set;
 
   EXPECT_EQ(set.GetBucketSize(), 0);
   set.Insert(0);
@@ -34,10 +34,10 @@ TEST(HashSetTests, ExtendAndRehash) {
 }
 
 struct Mark {
-  size_t val;
-  size_t mark;
+  int32_t val;
+  int32_t mark;
   Mark(Mark&&) = default;
-  Mark(const size_t v, const size_t m) : val(v), mark(m) {}
+  Mark(const int32_t v, const int32_t m) : val(v), mark(m) {}
   bool operator==(const Mark& other) const { return val == other.val; }
 };
 
@@ -72,10 +72,10 @@ TEST(HashSetTests, Remove) {
 }
 
 TEST(HashSetTests, Iterate) {
-  EXPECT_TRUE(std::forward_iterator<HashSet<size_t>::Iterator>);
-  EXPECT_TRUE(std::forward_iterator<HashSet<size_t>::ConstIterator>);
+  EXPECT_TRUE(std::forward_iterator<HashSet<int32_t>::Iterator>);
+  EXPECT_TRUE(std::forward_iterator<HashSet<int32_t>::ConstIterator>);
 
-  for (const HashSet<size_t> set = {1, 2, 3}; auto num : set) {
+  for (const HashSet<int32_t> set = {1, 2, 3}; auto num : set) {
     EXPECT_NE(set.TryFind(num), set.end());
   }
 }
@@ -95,4 +95,6 @@ TEST(HashSetTests, RemoveByIter) {
   EXPECT_EQ(iter.Remove(), 3);
   EXPECT_EQ(set.GetSize(), 1);
   EXPECT_EQ(iter, set.end());
+
+  EXPECT_NE(set.TryFind(18uz), set.end());
 }

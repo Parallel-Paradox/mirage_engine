@@ -30,7 +30,20 @@ class HashSet {
   Optional<T> Insert(T val);
   Optional<T> Remove(const T& val);
 
-  ConstIterator TryFind(const T& val) const;
+  template <typename T1>
+  ConstIterator TryFind(const T1& val) const
+    requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
+      { val == val1 } -> std::convertible_to<bool>;
+      { hasher(val1) } -> std::same_as<size_t>;
+      { hasher(val) } -> std::same_as<size_t>;
+    };
+
+  template <typename T1>
+  Iterator TryFind(const T1& val)
+    requires requires(const T1& val1, const T& val, Hash<T>& hasher) {
+      { val == val1 } -> std::convertible_to<bool>;
+      { hasher(val1) } -> std::same_as<size_t>;
+    };
 
   void Clear();
   [[nodiscard]] bool IsEmpty() const;
@@ -216,7 +229,14 @@ Optional<T> HashSet<T>::Remove(const T& val) {
 }
 
 template <HashSetValType T>
-typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T& val) const {
+template <typename T1>
+typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T1& val) const
+  requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
+    { val == val1 } -> std::convertible_to<bool>;
+    { hasher(val1) } -> std::same_as<size_t>;
+    { hasher(val) } -> std::same_as<size_t>;
+  }
+{
   if (size_ == 0) {
     return end();
   }
@@ -227,6 +247,29 @@ typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T& val) const {
   for (auto iter = bucket_iter->begin(); iter != bucket_iter->end(); ++iter) {
     if (iter->hash == hash && iter->val == val) {
       return ConstIterator(bucket_iter, buckets_.end(), iter);
+    }
+  }
+  return end();
+}
+
+template <HashSetValType T>
+template <typename T1>
+typename HashSet<T>::Iterator HashSet<T>::TryFind(const T1& val)
+  requires requires(const T1& val1, const T& val, Hash<T>& hasher) {
+    { val == val1 } -> std::convertible_to<bool>;
+    { hasher(val1) } -> std::same_as<size_t>;
+  }
+{
+  if (size_ == 0) {
+    return end();
+  }
+  const size_t hash = hasher_(val);
+  const size_t mask = buckets_.GetSize() - 1;
+  const size_t bucket_index = hash & mask;
+  auto bucket_iter = buckets_.begin() + bucket_index;
+  for (auto iter = bucket_iter->begin(); iter != bucket_iter->end(); ++iter) {
+    if (iter->hash == hash && iter->val == val) {
+      return Iterator(this, bucket_iter, iter);
     }
   }
   return end();
