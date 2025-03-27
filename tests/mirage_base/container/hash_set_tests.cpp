@@ -42,7 +42,7 @@ struct Mark {
 };
 
 template <>
-struct mirage::base::Hash<Mark> {
+struct mirage::base::Hash<const Mark> {
   size_t operator()(const Mark& mark) const { return mark.val; }
 };
 

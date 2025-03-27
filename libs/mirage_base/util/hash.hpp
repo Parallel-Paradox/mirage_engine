@@ -10,19 +10,20 @@ struct Hash {};
 
 template <typename T>
 concept HashType =
-    std::equality_comparable<T> && std::move_constructible<Hash<T>> &&
-    std::copy_constructible<Hash<T>> && std::default_initializable<Hash<T>> &&
-    requires(const Hash<T> hasher, const T val) {
+    std::equality_comparable<T> && std::move_constructible<Hash<const T>> &&
+    std::copy_constructible<Hash<const T>> &&
+    std::default_initializable<Hash<const T>> &&
+    requires(const Hash<const T> hasher, const T val) {
       { hasher(val) } -> std::same_as<size_t>;
     };
 
 template <>
-struct Hash<int32_t> {
+struct Hash<const int32_t> {
   size_t operator()(const int32_t val) const { return val; }
 };
 
 template <>
-struct Hash<size_t> {
+struct Hash<const size_t> {
   size_t operator()(const size_t val) const { return val; }
 };
 

@@ -22,10 +22,10 @@ struct HashKeyVal : KeyVal<Key, Val> {
 };
 
 template <HashMapKeyType Key, std::move_constructible Val>
-struct Hash<HashKeyVal<Key, Val>> {
+struct Hash<const HashKeyVal<Key, Val>> {
   using HashKeyVal = HashKeyVal<Key, Val>;
 
-  Hash<Key> hasher_;
+  Hash<const Key> hasher_;
 
   Hash() = default;
   ~Hash() = default;
@@ -42,7 +42,7 @@ struct Hash<HashKeyVal<Key, Val>> {
 template <HashMapKeyType Key, std::move_constructible Val>
 class HashMap {
  public:
-  using KeyValSet = HashSet<HashKeyVal<Key, Val>>;
+  using KeyValSet = HashSet<HashKeyVal<const Key, Val>>;
 
   class ConstIterator;
   class Iterator;
@@ -56,7 +56,7 @@ class HashMap {
   HashMap(const HashMap&) = delete;
   HashMap& operator=(const HashMap&) = delete;
 
-  HashMap(std::initializer_list<HashKeyVal<Key, Val>> list)
+  HashMap(std::initializer_list<HashKeyVal<const Key, Val>> list)
     requires std::copy_constructible<Key> && std::copy_constructible<Val>;
 
   ConstIterator TryFind(const Key& key) const;
@@ -76,7 +76,7 @@ class HashMap<Key, Val>::ConstIterator {
   using iterator_category = std::forward_iterator_tag;
   using iterator_type = ConstIterator;
   using difference_type = int64_t;
-  using value_type = const HashKeyVal<Key, Val>;
+  using value_type = const HashKeyVal<const Key, Val>;
   using pointer = value_type*;
   using reference = value_type&;
 
@@ -116,7 +116,7 @@ class HashMap<Key, Val>::Iterator {
   using iterator_category = std::forward_iterator_tag;
   using iterator_type = Iterator;
   using difference_type = int64_t;
-  using value_type = HashKeyVal<Key, Val>;
+  using value_type = HashKeyVal<const Key, Val>;
   using pointer = value_type*;
   using reference = value_type&;
 
@@ -148,7 +148,8 @@ class HashMap<Key, Val>::Iterator {
 };
 
 template <HashMapKeyType Key, std::move_constructible Val>
-HashMap<Key, Val>::HashMap(std::initializer_list<HashKeyVal<Key, Val>> list)
+HashMap<Key, Val>::HashMap(
+    std::initializer_list<HashKeyVal<const Key, Val>> list)
   requires std::copy_constructible<Key> && std::copy_constructible<Val>
 {
   for (const auto& kv : list) {
