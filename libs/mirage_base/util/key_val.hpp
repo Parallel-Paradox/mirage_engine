@@ -5,8 +5,8 @@
 
 template <std::move_constructible Key, std::move_constructible Val>
 struct KeyVal {
-  Key key{};
-  Val val{};
+  Key key;
+  Val val;
 
   KeyVal() = delete;
   ~KeyVal() = default;

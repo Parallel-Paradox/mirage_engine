@@ -22,7 +22,15 @@ class HashSet {
   class Iterator;
 
   HashSet() = default;
-  ~HashSet() = default;
+  ~HashSet();
+
+  HashSet(HashSet&& other) noexcept;
+  HashSet& operator=(HashSet&& other) noexcept;
+
+  HashSet(const HashSet&) = delete;
+  HashSet& operator=(const HashSet&) = delete;
+
+  explicit HashSet(Hash<T> hasher) : hasher_(std::move(hasher)) {}
 
   HashSet(std::initializer_list<T> list)
     requires std::copy_constructible<T>;
@@ -40,7 +48,7 @@ class HashSet {
 
   template <typename T1>
   Iterator TryFind(const T1& val)
-    requires requires(const T1& val1, const T& val, Hash<T>& hasher) {
+    requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
       { val == val1 } -> std::convertible_to<bool>;
       { hasher(val1) } -> std::same_as<size_t>;
     };
@@ -166,6 +174,29 @@ class HashSet<T>::Iterator {
 };
 
 template <HashSetValType T>
+HashSet<T>::~HashSet() {
+  Clear();
+}
+
+template <HashSetValType T>
+HashSet<T>::HashSet(HashSet&& other) noexcept
+    : hasher_(std::move(other.hasher_)),
+      buckets_(std::move(other.buckets_)),
+      size_(other.size_),
+      max_load_factor_(other.max_load_factor_) {
+  other.Clear();
+}
+
+template <HashSetValType T>
+HashSet<T>& HashSet<T>::operator=(HashSet&& other) noexcept {
+  if (this != &other) {
+    Clear();
+    new (this) HashSet(std::move(other));
+  }
+  return *this;
+}
+
+template <HashSetValType T>
 HashSet<T>::HashSet(std::initializer_list<T> list)
   requires std::copy_constructible<T>
 {
@@ -176,7 +207,7 @@ HashSet<T>::HashSet(std::initializer_list<T> list)
 
 template <HashSetValType T>
 Optional<T> HashSet<T>::Insert(T val) {
-  ConstIterator iter = TryFind(val);
+  Iterator iter = TryFind(val);
   if (iter != end()) {
     auto rv = Optional<T>::New(std::move(const_cast<T&>(*iter)));
     new (const_cast<T*>(iter.operator->())) T(std::move(val));
@@ -255,7 +286,7 @@ typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T1& val) const
 template <HashSetValType T>
 template <typename T1>
 typename HashSet<T>::Iterator HashSet<T>::TryFind(const T1& val)
-  requires requires(const T1& val1, const T& val, Hash<T>& hasher) {
+  requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
     { val == val1 } -> std::convertible_to<bool>;
     { hasher(val1) } -> std::same_as<size_t>;
   }

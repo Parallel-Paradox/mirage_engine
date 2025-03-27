@@ -12,7 +12,7 @@ template <typename T>
 concept HashType =
     std::equality_comparable<T> && std::move_constructible<Hash<T>> &&
     std::copy_constructible<Hash<T>> && std::default_initializable<Hash<T>> &&
-    requires(Hash<T> hasher, T val) {
+    requires(const Hash<T> hasher, const T val) {
       { hasher(val) } -> std::same_as<size_t>;
     };
 
