@@ -76,7 +76,7 @@ class HashMap<Key, Val>::ConstIterator {
   using iterator_category = std::forward_iterator_tag;
   using iterator_type = ConstIterator;
   using difference_type = int64_t;
-  using value_type = const Val;
+  using value_type = const HashKeyVal<Key, Val>;
   using pointer = value_type*;
   using reference = value_type&;
 
@@ -116,7 +116,7 @@ class HashMap<Key, Val>::Iterator {
   using iterator_category = std::forward_iterator_tag;
   using iterator_type = Iterator;
   using difference_type = int64_t;
-  using value_type = Val;
+  using value_type = HashKeyVal<Key, Val>;
   using pointer = value_type*;
   using reference = value_type&;
 
@@ -196,19 +196,96 @@ HashMap<Key, Val>::ConstIterator::operator=(std::nullptr_t) {
 template <HashMapKeyType Key, std::move_constructible Val>
 typename HashMap<Key, Val>::ConstIterator::reference
 HashMap<Key, Val>::ConstIterator::operator*() const {
-  return kv_iter_->val;
+  return *kv_iter_;
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
 typename HashMap<Key, Val>::ConstIterator::pointer
 HashMap<Key, Val>::ConstIterator::operator->() const {
-  return &kv_iter_->val;
+  return kv_iter_.operator->();
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+typename HashMap<Key, Val>::ConstIterator::iterator_type&
+HashMap<Key, Val>::ConstIterator::operator++() {
+  ++kv_iter_;
+  return *this;
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+typename HashMap<Key, Val>::ConstIterator::iterator_type
+HashMap<Key, Val>::ConstIterator::operator++(int) {
+  iterator_type rv = *this;
+  ++(*this);
+  return rv;
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+bool HashMap<Key, Val>::ConstIterator::operator==(
+    const iterator_type& other) const {
+  return kv_iter_ == other.kv_iter_;
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+bool HashMap<Key, Val>::ConstIterator::operator==(std::nullptr_t) const {
+  return kv_iter_ == nullptr;
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+HashMap<Key, Val>::ConstIterator::operator bool() const {
+  return kv_iter_ != nullptr;
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+HashMap<Key, Val>::Iterator::Iterator(std::nullptr_t) : kv_iter_(nullptr) {}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+typename HashMap<Key, Val>::Iterator::iterator_type&
+HashMap<Key, Val>::Iterator::operator=(std::nullptr_t) {
+  kv_iter_ = nullptr;
+  return *this;
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
 typename HashMap<Key, Val>::Iterator::reference
 HashMap<Key, Val>::Iterator::operator*() const {
-  return const_cast<reference>(kv_iter_->val);
+  return const_cast<reference>(*kv_iter_);
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+typename HashMap<Key, Val>::Iterator::pointer
+HashMap<Key, Val>::Iterator::operator->() const {
+  return const_cast<pointer>(kv_iter_.operator->());
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+typename HashMap<Key, Val>::Iterator::iterator_type&
+HashMap<Key, Val>::Iterator::operator++() {
+  ++kv_iter_;
+  return *this;
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+typename HashMap<Key, Val>::Iterator::iterator_type
+HashMap<Key, Val>::Iterator::operator++(int) {
+  iterator_type rv = *this;
+  ++(*this);
+  return rv;
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+bool HashMap<Key, Val>::Iterator::operator==(const iterator_type& other) const {
+  return kv_iter_ == other.kv_iter_;
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+bool HashMap<Key, Val>::Iterator::operator==(std::nullptr_t) const {
+  return kv_iter_ == nullptr;
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+HashMap<Key, Val>::Iterator::operator bool() const {
+  return kv_iter_ != nullptr;
 }
 
 }  // namespace mirage::base
