@@ -7,10 +7,13 @@ FetchContent_Declare(
     GIT_TAG v1.14.x)
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-# Set as shared library since there are multiple test suites.
-set(BUILD_SHARED_LIBS on)
-add_definitions("-DGTEST_CREATE_SHARED_LIBRARY=1")
-add_definitions("-DGTEST_LINKED_AS_SHARED_LIBRARY=1")
+if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # Set as shared library since there are multiple test suites.
+  # MSVC can't export main.
+  set(BUILD_SHARED_LIBS on)
+  add_definitions("-DGTEST_CREATE_SHARED_LIBRARY=1")
+  add_definitions("-DGTEST_LINKED_AS_SHARED_LIBRARY=1")
+endif ()
 FetchContent_MakeAvailable(googletest)
 
 link_libraries(GTest::gtest_main)

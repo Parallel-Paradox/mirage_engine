@@ -5,7 +5,7 @@ message(STATUS "CMake Version: ${CMAKE_VERSION}")
 
 project(mirage_engine)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 
 message(STATUS "Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "Compiler Version: ${CMAKE_CXX_COMPILER_VERSION}")

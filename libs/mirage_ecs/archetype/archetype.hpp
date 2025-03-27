@@ -14,8 +14,8 @@ class MIRAGE_ECS Archetype {
 
 class Archetype::Descriptor {
  public:
-  Descriptor() = default;
-  ~Descriptor() = default;
+  MIRAGE_ECS Descriptor() = default;
+  MIRAGE_ECS ~Descriptor() = default;
 
   template <typename... Ts>
   static Descriptor Build();
@@ -26,10 +26,11 @@ class Archetype::Descriptor {
   template <typename T>
   void AddType();
 
-  [[nodiscard]] const base::Array<const TypeMeta *> &GetTypeArray() const;
-  [[nodiscard]] size_t GetHash() const;
+  [[nodiscard]] MIRAGE_ECS const base::Array<const TypeMeta *> &GetTypeArray()
+      const;
+  [[nodiscard]] MIRAGE_ECS size_t GetHash() const;
 
-  bool operator==(const Descriptor &other) const;
+  MIRAGE_ECS bool operator==(const Descriptor &other) const;
 
  private:
   base::Array<const TypeMeta *> type_array_;

@@ -96,5 +96,5 @@ TEST(HashSetTests, RemoveByIter) {
   EXPECT_EQ(set.GetSize(), 1);
   EXPECT_EQ(iter, set.end());
 
-  EXPECT_NE(set.TryFind(18uz), set.end());
+  EXPECT_NE(set.TryFind(static_cast<size_t>(18)), set.end());
 }
