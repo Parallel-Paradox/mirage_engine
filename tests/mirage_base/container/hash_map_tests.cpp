@@ -4,12 +4,64 @@
 
 using namespace mirage::base;
 
-TEST(HashMapTests, Construct) {
-  const HashMap<int32_t, int32_t> map{{1, 1}, {2, 2}};
+TEST(HashMapTests, ListConstruct) {
+  const HashMap<int32_t, int32_t> map{{1, 1}, {2, 2}, {3, 3}};
   EXPECT_FALSE(map.IsEmpty());
-  EXPECT_EQ(map.GetSize(), 2);
+  EXPECT_EQ(map.GetSize(), 3);
+  for (int32_t i = 1; i <= 3; ++i) {
+    EXPECT_NE(map.TryFind(i), map.end());
+    EXPECT_EQ(map.TryFind(i)->key, i);
+    EXPECT_EQ(map.TryFind(i)->val, i);
+  }
+  EXPECT_EQ(map.TryFind(4), map.end());
+}
+
+TEST(HashMapTests, Insert) {
+  HashMap<int32_t, int32_t> map;
+  EXPECT_TRUE(map.IsEmpty());
+  EXPECT_EQ(map.GetSize(), 0);
+
+  auto rv = map.Insert(1, 1);
+  EXPECT_EQ(map.GetSize(), 1);
+  EXPECT_FALSE(rv.IsValid());
+  EXPECT_EQ(map.TryFind(1)->key, 1);
   EXPECT_EQ(map.TryFind(1)->val, 1);
-  EXPECT_EQ(map.TryFind(2)->val, 2);
+
+  rv = map.Insert(1, 2);
+  EXPECT_EQ(map.GetSize(), 1);
+  EXPECT_TRUE(rv.IsValid());
+  EXPECT_EQ(rv.GetRef().key, 1);
+  EXPECT_EQ(rv.GetRef().val, 1);
+  EXPECT_EQ(map.TryFind(1)->key, 1);
+  EXPECT_EQ(map.TryFind(1)->val, 2);
+}
+
+TEST(HashMapTests, Remove) {
+  HashMap<int32_t, int32_t> map;
+  auto rv = map.Remove(1);
+  EXPECT_FALSE(rv.IsValid());
+  EXPECT_EQ(map.GetSize(), 0);
+
+  map.Insert(1, 1);
+  rv = map.Remove(1);
+  EXPECT_TRUE(rv.IsValid());
+  EXPECT_EQ(rv.GetRef().key, 1);
+  EXPECT_EQ(rv.GetRef().val, 1);
+  EXPECT_EQ(map.GetSize(), 0);
+  EXPECT_EQ(map.TryFind(1), map.end());
+}
+
+TEST(HashMapTests, Iterate) {
+  using Iterator = HashMap<int32_t, int32_t>::Iterator;
+  using ConstIterator = HashMap<int32_t, int32_t>::ConstIterator;
+  EXPECT_TRUE(std::forward_iterator<Iterator>);
+  EXPECT_TRUE(std::forward_iterator<ConstIterator>);
+
+  for (const HashMap<int32_t, int32_t> map{{1, 1}, {2, 2}, {3, 3}};
+       auto& kv : map) {
+    EXPECT_EQ(kv.key, kv.val);
+    EXPECT_NE(map.TryFind(kv.key), map.end());
+  }
 }
 
 TEST(HashMapTests, ConstIteratorOperator) {

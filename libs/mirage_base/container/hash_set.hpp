@@ -36,7 +36,14 @@ class HashSet {
     requires std::copy_constructible<T>;
 
   Optional<T> Insert(T val);
-  Optional<T> Remove(const T& val);
+
+  template <typename T1>
+  Optional<T> Remove(const T1& val)
+    requires requires(const T1& val1, const T& val,
+                      const Hash<const T>& hasher) {
+      { val == val1 } -> std::convertible_to<bool>;
+      { hasher(val1) } -> std::same_as<size_t>;
+    };
 
   template <typename T1>
   ConstIterator TryFind(const T1& val) const
@@ -44,7 +51,6 @@ class HashSet {
                       const Hash<const T>& hasher) {
       { val == val1 } -> std::convertible_to<bool>;
       { hasher(val1) } -> std::same_as<size_t>;
-      { hasher(val) } -> std::same_as<size_t>;
     };
 
   template <typename T1>
@@ -233,7 +239,13 @@ Optional<T> HashSet<T>::Insert(T val) {
 }
 
 template <HashSetValType T>
-Optional<T> HashSet<T>::Remove(const T& val) {
+template <typename T1>
+Optional<T> HashSet<T>::Remove(const T1& val)
+  requires requires(const T1& val1, const T& val, const Hash<const T>& hasher) {
+    { val == val1 } -> std::convertible_to<bool>;
+    { hasher(val1) } -> std::same_as<size_t>;
+  }
+{
   if (size_ == 0) {
     return Optional<T>::None();
   }
@@ -267,7 +279,6 @@ typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T1& val) const
   requires requires(const T1& val1, const T& val, const Hash<const T>& hasher) {
     { val == val1 } -> std::convertible_to<bool>;
     { hasher(val1) } -> std::same_as<size_t>;
-    { hasher(val) } -> std::same_as<size_t>;
   }
 {
   if (size_ == 0) {

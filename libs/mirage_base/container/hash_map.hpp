@@ -59,11 +59,20 @@ class HashMap {
   HashMap(std::initializer_list<HashKeyVal<const Key, Val>> list)
     requires std::copy_constructible<Key> && std::copy_constructible<Val>;
 
+  Optional<HashKeyVal<const Key, Val>> Insert(Key&& key, Val&& val);
+  Optional<HashKeyVal<const Key, Val>> Remove(const Key& key);
+
   ConstIterator TryFind(const Key& key) const;
   Iterator TryFind(const Key& key);
 
   [[nodiscard]] bool IsEmpty() const;
   [[nodiscard]] size_t GetSize() const;
+
+  ConstIterator begin() const;
+  ConstIterator end() const;
+
+  Iterator begin();
+  Iterator end();
 
  private:
   KeyValSet kv_set_;
@@ -158,6 +167,25 @@ HashMap<Key, Val>::HashMap(
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
+Optional<HashKeyVal<const Key, Val>> HashMap<Key, Val>::Insert(Key&& key,
+                                                               Val&& val) {
+  Iterator iter = TryFind(key);
+  if (iter == end()) {
+    return kv_set_.Insert({std::move(key), std::move(val)});
+  }
+  auto rv = Optional<HashKeyVal<const Key, Val>>::New(
+      std::move(const_cast<Key&>(iter->key)), std::move(iter->val));
+  new (const_cast<Key*>(&(iter->key))) Key(std::move(key));
+  new (&(iter->val)) Val(std::move(val));
+  return rv;
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+Optional<HashKeyVal<const Key, Val>> HashMap<Key, Val>::Remove(const Key& key) {
+  return kv_set_.Remove(key);
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
 typename HashMap<Key, Val>::ConstIterator HashMap<Key, Val>::TryFind(
     const Key& key) const {
   return ConstIterator(kv_set_.TryFind(key));
@@ -177,6 +205,26 @@ bool HashMap<Key, Val>::IsEmpty() const {
 template <HashMapKeyType Key, std::move_constructible Val>
 size_t HashMap<Key, Val>::GetSize() const {
   return kv_set_.GetSize();
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+typename HashMap<Key, Val>::ConstIterator HashMap<Key, Val>::begin() const {
+  return ConstIterator(kv_set_.begin());
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+typename HashMap<Key, Val>::ConstIterator HashMap<Key, Val>::end() const {
+  return ConstIterator(kv_set_.end());
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+typename HashMap<Key, Val>::Iterator HashMap<Key, Val>::begin() {
+  return Iterator(kv_set_.begin());
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+typename HashMap<Key, Val>::Iterator HashMap<Key, Val>::end() {
+  return Iterator(kv_set_.end());
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
