@@ -2,10 +2,12 @@
 #define MIRAGE_ECS_ARCHETYPE
 
 #include "mirage_base/container/array.hpp"
+#include "mirage_base/util/hash.hpp"
 #include "mirage_ecs/archetype/type_meta.hpp"
 #include "mirage_ecs/define.hpp"
 
-namespace mirage::ecs {
+namespace mirage {
+namespace ecs {
 
 class MIRAGE_ECS Archetype {
  public:
@@ -40,26 +42,46 @@ class Archetype::Descriptor {
 template <typename... Ts>
 Archetype::Descriptor Archetype::Descriptor::Build() {
   Descriptor descriptor;
-  AddTypeTo<Ts...>(descriptor);
+  if constexpr (sizeof...(Ts) > 0) AddTypeTo<Ts...>(descriptor);
   return descriptor;
 }
 
 template <typename T, typename... Ts>
 void Archetype::Descriptor::AddTypeTo(Descriptor &descriptor) {
   descriptor.AddType<T>();
-  AddTypeTo<Ts...>(descriptor);
+  if constexpr (sizeof...(Ts) > 0) AddTypeTo<Ts...>(descriptor);
 }
 
 template <typename T>
 void Archetype::Descriptor::AddType() {
-  const auto iter = type_array_.begin();
+  const TypeMeta *type_meta = TypeMeta::Of<T>();
+
+  auto iter = type_array_.begin();
   while (iter != type_array_.end()) {
-    if ((*iter)->GetTypeId() == TypeMeta::Of<T>()->GetTypeId()) {
+    const TypeMeta *iter_type_meta = *iter;
+    if (iter_type_meta->GetTypeId() == type_meta->GetTypeId()) {
       return;
     }
+    if (iter_type_meta->GetTypeId() > type_meta->GetTypeId()) break;
+    ++iter;
+  }
+  hash_ |= static_cast<size_t>(1) << (type_meta->GetTypeId() % 64);
+  if (iter != type_array_.end()) {
+    type_array_.Insert(iter, type_meta);
+  } else {
+    type_array_.Emplace(type_meta);
   }
 }
 
-}  // namespace mirage::ecs
+}  // namespace ecs
+
+template <>
+struct base::Hash<const ecs::Archetype::Descriptor> {
+  size_t operator()(const ecs::Archetype::Descriptor &descriptor) const {
+    return descriptor.GetHash();
+  }
+};
+
+}  // namespace mirage
 
 #endif  // MIRAGE_ECS_ARCHETYPE

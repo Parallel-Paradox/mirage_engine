@@ -67,7 +67,8 @@ if (NOT MIRAGE_BUILD_SPLIT)
     add_library(mirage_engine STATIC)
   endif ()
   target_compile_definitions(mirage_engine PRIVATE MIRAGE_BUILD_ENGINE)
-  target_link_libraries(mirage_engine PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+  target_link_libraries(mirage_engine
+      PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 endif ()
 
 include_directories(libs)
