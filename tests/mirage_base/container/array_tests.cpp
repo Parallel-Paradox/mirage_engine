@@ -92,3 +92,14 @@ TEST(ArrayTests, IterateArray) {
     EXPECT_EQ(arr_iter[i], cmp_iter[i]);
   }
 }
+
+TEST(ArrayTests, Insert) {
+  Array<int32_t> array = {0, 1, 2};
+  array.Insert(1, 3);
+  Array<int32_t> result = {0, 3, 1, 2};
+  EXPECT_EQ(array, result);
+
+  array.Insert(array.begin(), 4);
+  result = {4, 0, 3, 1, 2};
+  EXPECT_EQ(array, result);
+}

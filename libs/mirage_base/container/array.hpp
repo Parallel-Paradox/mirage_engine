@@ -10,6 +10,8 @@
 
 namespace mirage::base {
 
+// TODO: fmt Array
+
 template <std::move_constructible T>
 class Array {
  public:
@@ -37,6 +39,12 @@ class Array {
 
   template <typename... Args>
   void Emplace(Args&&... args);
+
+  template <typename... Args>
+  void Insert(size_t index, Args&&... args);
+
+  template <typename... Args>
+  void Insert(ConstIterator iter, Args&&... args);
 
   T Pop();
 
@@ -239,6 +247,32 @@ void Array<T>::Emplace(Args&&... args) {
   EnsureNotFull();
   new (data_[size_].GetPtr()) T(std::forward<Args>(args)...);
   ++size_;
+}
+
+template <std::move_constructible T>
+template <typename... Args>
+void Array<T>::Insert(const size_t index, Args&&... args) {
+  MIRAGE_DCHECK(!IsEmpty());
+  MIRAGE_DCHECK(index < size_);
+
+  EnsureNotFull();
+  new (data_[size_].GetPtr()) T(std::move(data_[size_ - 1].GetRef()));
+  for (size_t i = size_ - 1; i > index; --i) {
+    data_[i].GetPtr()->~T();
+    new (data_[i].GetPtr()) T(std::move(data_[i - 1].GetRef()));
+  }
+
+  new (data_[index].GetPtr()) T(std::forward<Args>(args)...);
+  ++size_;
+}
+
+template <std::move_constructible T>
+template <typename... Args>
+void Array<T>::Insert(ConstIterator iter, Args&&... args) {
+  MIRAGE_DCHECK(!IsEmpty());
+  MIRAGE_DCHECK(iter);
+  MIRAGE_DCHECK(iter >= begin());
+  Insert(iter - begin(), std::forward<Args>(args)...);
 }
 
 template <std::move_constructible T>

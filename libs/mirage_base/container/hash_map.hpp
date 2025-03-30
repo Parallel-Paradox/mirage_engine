@@ -39,6 +39,8 @@ struct Hash<const HashKeyVal<Key, Val>> {
   size_t operator()(const Key& key) const { return hasher_(key); }
 };
 
+// TODO: fmt HashMap
+
 template <HashMapKeyType Key, std::move_constructible Val>
 class HashMap {
  public:

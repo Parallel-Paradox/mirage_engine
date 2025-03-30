@@ -15,6 +15,8 @@ namespace mirage::base {
 template <typename T>
 concept HashSetValType = std::move_constructible<T> && HashType<T>;
 
+// TODO: fmt HashSet
+
 template <HashSetValType T>
 class HashSet {
  public:

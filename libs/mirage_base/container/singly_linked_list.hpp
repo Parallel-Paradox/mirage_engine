@@ -9,6 +9,8 @@
 
 namespace mirage::base {
 
+// TODO: fmt SinglyLinkedList
+
 template <std::move_constructible T>
 class SinglyLinkedList {
  public:
