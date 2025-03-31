@@ -13,52 +13,52 @@ struct QueryParamsTag {};
 template <typename T>
 concept IsQueryParams = std::derived_from<T, QueryParamsTag>;
 
-template <typename... Args>
-concept IsQueryParamsList = ((IsQueryParams<Args>) && ...);
+template <typename... Ts>
+concept IsQueryParamsList = ((IsQueryParams<Ts>) && ...);
 
 // --- Ref ---
 
 struct QueryParamsTag_Ref : QueryParamsTag {};
 
-template <typename... Args>
-  requires IsComponentRefList<Args...>
+template <typename... Ts>
+  requires IsComponentRefList<Ts...>
 struct Ref : QueryParamsTag_Ref {
-  using TypeList = std::tuple<Args...>;
+  using TypeList = std::tuple<Ts...>;
 };
 
 // --- With ---
 
 struct QueryParamsTag_With : QueryParamsTag {};
 
-template <typename... Args>
-  requires IsComponentList<Args...>
+template <typename... Ts>
+  requires IsComponentList<Ts...>
 struct With : QueryParamsTag_With {
-  using TypeList = std::tuple<Args...>;
+  using TypeList = std::tuple<Ts...>;
 };
 
 // --- Without ---
 
 struct QueryParamsTag_Without : QueryParamsTag {};
 
-template <typename... Args>
-  requires IsComponentList<Args...>
+template <typename... Ts>
+  requires IsComponentList<Ts...>
 struct Without : QueryParamsTag_Without {
-  using TypeList = std::tuple<Args...>;
+  using TypeList = std::tuple<Ts...>;
 };
 
 // ----------
 
-template <typename... Arg>
-  requires IsQueryParamsList<Arg...>
+template <typename... Ts>
+  requires IsQueryParamsList<Ts...>
 class Query {
  public:
  private:
 };
 
-template <typename... Args>
-struct Extract<Query<Args...>> {
-  static Query<Args...> From([[maybe_unused]] Context& context) {
-    return Query<Args...>();
+template <typename... Ts>
+struct Extract<Query<Ts...>> {
+  static Query<Ts...> From([[maybe_unused]] Context& context) {
+    return Query<Ts...>();
   }
 };
 
