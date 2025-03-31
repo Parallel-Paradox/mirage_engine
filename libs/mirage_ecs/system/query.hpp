@@ -48,10 +48,24 @@ struct Without : QueryParamsTag_Without {
 
 // ----------
 
+template <typename ParamsTag, typename T, typename... Ts>
+  requires IsQueryParams<ParamsTag> && IsQueryParams<T> &&
+           IsQueryParamsList<Ts...>
+struct QueryParamsTypeList {
+  using TypeList = std::conditional_t<
+      std::derived_from<T, ParamsTag>, typename T::TypeList,
+      std::conditional_t<sizeof...(Ts) != 0,
+                         QueryParamsTypeList<ParamsTag, Ts...>, std::tuple<>>>;
+};
+
 template <typename... Ts>
   requires IsQueryParamsList<Ts...>
 class Query {
  public:
+  using RefTypeList = QueryParamsTypeList<QueryParamsTag_Ref, Ts...>;
+  using WithTypeList = QueryParamsTypeList<QueryParamsTag_With, Ts...>;
+  using WithoutTypeList = QueryParamsTypeList<QueryParamsTag_Without, Ts...>;
+
  private:
 };
 

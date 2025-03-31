@@ -43,4 +43,17 @@ TEST(QueryTests, ExtractQuery) {
   using ValidQuery = Query<Ref<Position&, const Velocity&>, With<WithTag>,
                            Without<WithoutTag>>;
   EXPECT_TRUE(ExtractType<ValidQuery>);
+
+  constexpr bool ref_checker =
+      std::same_as<ValidQuery::RefTypeList,
+                   std::tuple<Position&, const Velocity&>>;
+  EXPECT_TRUE(ref_checker);
+
+  constexpr bool with_checker =
+      std::same_as<ValidQuery::WithTypeList, std::tuple<WithTag>>;
+  EXPECT_TRUE(with_checker);
+
+  constexpr bool without_checker =
+      std::same_as<ValidQuery::WithoutTypeList, std::tuple<WithoutTag>>;
+  EXPECT_TRUE(without_checker);
 }
