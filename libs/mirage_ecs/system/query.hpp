@@ -49,29 +49,45 @@ struct Without : QueryParamsTag_Without {
 // ----------
 
 template <typename ParamsTag, typename T, typename... Ts>
-  requires IsQueryParams<ParamsTag> && IsQueryParams<T> &&
-           IsQueryParamsList<Ts...>
+  requires IsQueryParams<ParamsTag> && IsQueryParams<T>
 struct QueryParamsTypeList {
-  using TypeList = std::conditional_t<
-      std::derived_from<T, ParamsTag>, typename T::TypeList,
-      std::conditional_t<sizeof...(Ts) != 0,
-                         QueryParamsTypeList<ParamsTag, Ts...>, std::tuple<>>>;
+  // clang-format off
+  using TypeList = std::conditional_t<std::derived_from<T, ParamsTag>,
+    typename T::TypeList,
+    typename QueryParamsTypeList<ParamsTag, Ts...>::TypeList
+  >;
+  // clang-format on
+};
+
+template <typename ParamsTag, typename T>
+  requires IsQueryParams<ParamsTag> && IsQueryParams<T>
+struct QueryParamsTypeList<ParamsTag, T> {
+  // clang-format off
+  using TypeList = std::conditional_t<std::derived_from<T, ParamsTag>,
+    typename T::TypeList,
+    std::tuple<>
+  >;
+  // clang-format on
 };
 
 template <typename... Ts>
   requires IsQueryParamsList<Ts...>
 class Query {
  public:
-  using RefTypeList = QueryParamsTypeList<QueryParamsTag_Ref, Ts...>;
-  using WithTypeList = QueryParamsTypeList<QueryParamsTag_With, Ts...>;
-  using WithoutTypeList = QueryParamsTypeList<QueryParamsTag_Without, Ts...>;
+  using RefTypeList =
+      typename QueryParamsTypeList<QueryParamsTag_Ref, Ts...>::TypeList;
+  using WithTypeList =
+      typename QueryParamsTypeList<QueryParamsTag_With, Ts...>::TypeList;
+  using WithoutTypeList =
+      typename QueryParamsTypeList<QueryParamsTag_Without, Ts...>::TypeList;
 
- private:
+ private:  // TODO
 };
 
 template <typename... Ts>
 struct Extract<Query<Ts...>> {
   static Query<Ts...> From([[maybe_unused]] Context& context) {
+    // TODO
     return Query<Ts...>();
   }
 };
