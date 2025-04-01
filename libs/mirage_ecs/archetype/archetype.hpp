@@ -9,7 +9,7 @@
 namespace mirage {
 namespace ecs {
 
-class MIRAGE_ECS Archetype {
+class Archetype {
  public:
   class Descriptor {
    public:
@@ -24,10 +24,10 @@ class MIRAGE_ECS Archetype {
 
     template <typename T>
     void AddType();
-    void AddTypeMeta(const TypeMeta *type_meta);
+    MIRAGE_ECS void AddTypeMeta(const TypeMeta *type_meta);
 
-    [[nodiscard]] bool With(const Descriptor &desc) const;
-    [[nodiscard]] bool Without(const Descriptor &desc) const;
+    [[nodiscard]] MIRAGE_ECS bool With(const Descriptor &desc) const;
+    [[nodiscard]] MIRAGE_ECS bool Without(const Descriptor &desc) const;
 
     [[nodiscard]] MIRAGE_ECS const base::Array<const TypeMeta *> &GetTypeArray()
         const;
@@ -40,19 +40,19 @@ class MIRAGE_ECS Archetype {
     size_t mask_{0};
   };
 
-  Archetype() = default;
-  ~Archetype() = default;
+  MIRAGE_ECS Archetype() = default;
+  MIRAGE_ECS ~Archetype() = default;
 
-  Archetype(const Archetype &) = delete;
-  Archetype &operator=(const Archetype &) = delete;
+  MIRAGE_ECS Archetype(const Archetype &) = delete;
+  MIRAGE_ECS Archetype &operator=(const Archetype &) = delete;
 
-  Archetype(Archetype &&other) noexcept;
-  Archetype &operator=(Archetype &&other) = default;
+  MIRAGE_ECS Archetype(Archetype &&other) noexcept;
+  MIRAGE_ECS Archetype &operator=(Archetype &&other) = default;
 
   template <typename... Ts>
   static Archetype New();
 
-  [[nodiscard]] const Descriptor &GetDescriptor() const;
+  [[nodiscard]] MIRAGE_ECS const Descriptor &GetDescriptor() const;
 
  private:
   Descriptor descriptor_;

@@ -60,10 +60,7 @@ bool Archetype::Descriptor::With(const Descriptor& desc) const {
 
 bool Archetype::Descriptor::Without(const Descriptor& desc) const {
   const auto& desc_type_array = desc.GetTypeArray();
-  if (desc_type_array.GetSize() == 0 ||
-      desc_type_array.GetSize() > type_array_.GetSize())
-    return true;
-  if ((desc.GetMask() | GetMask()) != GetMask()) return false;
+  if (desc_type_array.GetSize() == 0) return true;
 
   auto desc_type_iter = desc_type_array.begin();
   for (const auto& type_meta : type_array_) {

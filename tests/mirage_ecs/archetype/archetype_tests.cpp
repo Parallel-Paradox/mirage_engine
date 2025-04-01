@@ -41,6 +41,6 @@ TEST(ArchetypeTests, QueryMatch) {
   const auto with_desc_fail_1 = Archetype::Descriptor::New<int32_t, bool>();
   EXPECT_FALSE(desc.With(with_desc_fail_0));
   EXPECT_FALSE(desc.With(with_desc_fail_1));
-  EXPECT_TRUE(desc.Without(with_desc_fail_0));
-  EXPECT_TRUE(desc.Without(with_desc_fail_1));
+  EXPECT_FALSE(desc.Without(with_desc_fail_0));
+  EXPECT_FALSE(desc.Without(with_desc_fail_1));
 }
