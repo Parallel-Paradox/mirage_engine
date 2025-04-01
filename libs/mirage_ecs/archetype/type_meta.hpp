@@ -26,6 +26,7 @@ class MIRAGE_ECS TypeMeta {
   [[nodiscard]] const char *GetTypeName() const;
   [[nodiscard]] size_t GetTypeId() const;
   [[nodiscard]] size_t GetTypeSize() const;
+  [[nodiscard]] size_t GetBitFlag() const;
 
  private:
   explicit TypeMeta(const char *type_name, size_t type_id, size_t type_size);

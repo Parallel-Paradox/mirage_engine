@@ -11,3 +11,7 @@ const char* TypeMeta::GetTypeName() const { return type_name_; }
 size_t TypeMeta::GetTypeId() const { return type_id_; }
 
 size_t TypeMeta::GetTypeSize() const { return type_size_; }
+
+size_t TypeMeta::GetBitFlag() const {
+  return static_cast<size_t>(1) << (GetTypeId() % 64);
+}
