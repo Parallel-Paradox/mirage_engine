@@ -1,6 +1,8 @@
 message(STATUS "Building mirage_base...")
 
-set(SRC sync/lock.cpp)
+set(SRC
+    auto_ptr/ref_count.cpp
+    sync/lock.cpp)
 if (MSVC)
   set(SRC ${SRC} sync/lock_impl_msvc.cpp)
 else ()
