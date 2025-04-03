@@ -68,7 +68,7 @@ TEST(AutoPtrTests, OwnedConvertDeriveToBase) {
 
   // Convert from derive to base is always successful.
   auto derive = Owned<Derive>::New(&base_destructed, &derive_destructed);
-  Owned<Base> base = derive.Convert<Base>();
+  Owned<Base> base = std::move(derive).Convert<Base>();
   EXPECT_TRUE(derive.IsNull());
   EXPECT_FALSE(base.IsNull());
   base.Reset();
@@ -82,7 +82,7 @@ TEST(AutoPtrTests, OwnedConvertBaseToDerive) {
   // Can't convert from base to derive when base is the origin type.
   int32_t base_destructed = 0;
   auto base = Owned<Base>::New(&base_destructed);
-  const Owned<Derive> derive_from_base = base.TryConvert<Derive>();
+  const Owned<Derive> derive_from_base = std::move(base).TryConvert<Derive>();
   EXPECT_TRUE(derive_from_base.IsNull());
   EXPECT_FALSE(base.IsNull());
   EXPECT_EQ(base_destructed, 0);
@@ -90,8 +90,8 @@ TEST(AutoPtrTests, OwnedConvertBaseToDerive) {
   // Convert from base to derive when derive is the origin type.
   int32_t derive_destructed = 0;
   auto derive = Owned<Derive>::New(&base_destructed, &derive_destructed);
-  Owned<Base> base_from_derive = derive.TryConvert<Base>();
-  derive = base_from_derive.TryConvert<Derive>();
+  Owned<Base> base_from_derive = std::move(derive).TryConvert<Base>();
+  derive = std::move(base_from_derive).TryConvert<Derive>();
   EXPECT_FALSE(derive.IsNull());
   EXPECT_TRUE(base_from_derive.IsNull());
   EXPECT_EQ(base_destructed, 0);

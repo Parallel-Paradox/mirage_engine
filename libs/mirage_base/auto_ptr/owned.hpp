@@ -28,13 +28,10 @@ class Owned {
   static Owned New(Args&&... args);
 
   template <typename T1>
-  friend class Owned;
+  Owned<T1> TryConvert() &&;
 
   template <typename T1>
-  Owned<T1> TryConvert();
-
-  template <typename T1>
-  Owned<T1> Convert();
+  Owned<T1> Convert() &&;
 
   T* operator->() const;
   T& operator*() const;
@@ -90,19 +87,17 @@ Owned<T> Owned<T>::New(Args&&... args) {
 
 template <typename T>
 template <typename T1>
-Owned<T1> Owned<T>::TryConvert() {
+Owned<T1> Owned<T>::TryConvert() && {
   T1* raw_ptr = dynamic_cast<T1*>(raw_ptr_);
   if (raw_ptr == nullptr) {
     return nullptr;
   }
-  Owned<T1> new_owned = Owned<T1>(raw_ptr);
-  raw_ptr_ = nullptr;
-  return new_owned;
+  return std::move(*this).template Convert<T1>();
 }
 
 template <typename T>
 template <typename T1>
-Owned<T1> Owned<T>::Convert() {
+Owned<T1> Owned<T>::Convert() && {
   Owned<T1> new_owned = Owned<T1>(static_cast<T1*>(raw_ptr_));
   raw_ptr_ = nullptr;
   return new_owned;

@@ -1,6 +1,5 @@
 ﻿#include <gtest/gtest.h>
 
-#include <atomic>
 #include <thread>
 
 #include "mirage_base/auto_ptr/ref_count.hpp"
