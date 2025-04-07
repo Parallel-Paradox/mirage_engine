@@ -37,7 +37,7 @@ TEST(AutoPtrTests, OwnedConstruct) {
   auto raw_owned = Owned(base);
   owned = std::move(raw_owned);
   EXPECT_EQ(owned.Get(), base);
-  EXPECT_TRUE(raw_owned.IsNull());
+  EXPECT_TRUE(raw_owned.IsNull());  // NOLINT: Use after move.
 
   EXPECT_EQ(is_destructed, 1);
   raw_owned = nullptr;  // NOLINT: Test nullptr setter
@@ -46,7 +46,7 @@ TEST(AutoPtrTests, OwnedConstruct) {
   // Move Construct
   auto move_owned = Owned(std::move(owned));
   EXPECT_EQ(move_owned->base_destructed, &is_destructed);
-  EXPECT_TRUE(owned.IsNull());
+  EXPECT_TRUE(owned.IsNull());  // NOLINT: Use after move.
 
   EXPECT_EQ(is_destructed, 1);
   move_owned = nullptr;  // NOLINT: Test nullptr setter
@@ -69,7 +69,7 @@ TEST(AutoPtrTests, OwnedConvertDeriveToBase) {
   // Convert from derive to base is always successful.
   auto derive = Owned<Derive>::New(&base_destructed, &derive_destructed);
   Owned<Base> base = std::move(derive).Convert<Base>();
-  EXPECT_TRUE(derive.IsNull());
+  EXPECT_TRUE(derive.IsNull());  // NOLINT(*-use-after-move): Allow for test.
   EXPECT_FALSE(base.IsNull());
   base.Reset();
 
@@ -93,7 +93,7 @@ TEST(AutoPtrTests, OwnedConvertBaseToDerive) {
   Owned<Base> base_from_derive = std::move(derive).TryConvert<Base>();
   derive = std::move(base_from_derive).TryConvert<Derive>();
   EXPECT_FALSE(derive.IsNull());
-  EXPECT_TRUE(base_from_derive.IsNull());
+  EXPECT_TRUE(base_from_derive.IsNull());  // NOLINT: Use after move.
   EXPECT_EQ(base_destructed, 0);
   EXPECT_EQ(derive_destructed, 0);
 }

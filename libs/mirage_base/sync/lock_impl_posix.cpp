@@ -1,8 +1,8 @@
 #ifndef MIRAGE_BUILD_MSVC
 
-#include "mirage_base/sync/lock_impl.hpp"
-
 #include <pthread.h>
+
+#include "mirage_base/sync/lock_impl.hpp"
 
 using namespace mirage::base;
 
@@ -30,8 +30,7 @@ LockImpl::~LockImpl() {
 
 bool LockImpl::TryAcquire() const {
   auto* handle = static_cast<pthread_mutex_t*>(native_handle_);
-  int rv = pthread_mutex_trylock(handle);
-  return rv == 0;
+  return pthread_mutex_trylock(handle) == 0;
 }
 
 void LockImpl::AcquireInternal() const {

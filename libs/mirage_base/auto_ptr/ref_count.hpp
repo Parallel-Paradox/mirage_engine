@@ -12,27 +12,30 @@ class MIRAGE_BASE RefCount {
  public:
   virtual ~RefCount() = default;
   virtual size_t GetCnt() = 0;
+  virtual void SetCnt(size_t cnt) = 0;
   virtual bool TryIncrease() = 0;
   virtual bool TryRelease() = 0;
 };
 
 class MIRAGE_BASE RefCountLocal : public RefCount {
  public:
-  RefCountLocal() = default;
+  explicit RefCountLocal(size_t cnt);
   ~RefCountLocal() override = default;
   size_t GetCnt() override;
+  void SetCnt(size_t cnt) override;
   bool TryIncrease() override;
   bool TryRelease() override;
 
  private:
-  size_t cnt_{1};
+  size_t cnt_{0};
 };
 
 class MIRAGE_BASE RefCountAsync final : public RefCountLocal {
  public:
-  RefCountAsync() = default;
+  explicit RefCountAsync(size_t cnt);
   ~RefCountAsync() override = default;
   size_t GetCnt() override;
+  void SetCnt(size_t cnt) override;
   bool TryIncrease() override;
   bool TryRelease() override;
 
@@ -41,8 +44,9 @@ class MIRAGE_BASE RefCountAsync final : public RefCountLocal {
 };
 
 template <typename R>
-concept IsRefCount =
-    std::default_initializable<R> && std::derived_from<R, RefCount>;
+concept IsRefCount = std::derived_from<R, RefCount> && requires(R r) {
+  { new R(0) } -> std::same_as<R*>;
+};
 
 }  // namespace mirage::base
 

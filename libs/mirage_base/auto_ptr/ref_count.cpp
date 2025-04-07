@@ -2,7 +2,11 @@
 
 using namespace mirage::base;
 
+RefCountLocal::RefCountLocal(const size_t cnt) : cnt_(cnt) {}
+
 size_t RefCountLocal::GetCnt() { return cnt_; }
+
+void RefCountLocal::SetCnt(const size_t cnt) { cnt_ = cnt; }
 
 bool RefCountLocal::TryIncrease() {
   if (cnt_ == 0) {
@@ -20,9 +24,16 @@ bool RefCountLocal::TryRelease() {
   return cnt_ == 0;
 }
 
+RefCountAsync::RefCountAsync(const size_t cnt) : RefCountLocal(cnt) {}
+
 size_t RefCountAsync::GetCnt() {
   LockGuard lock(lock_);
   return RefCountLocal::GetCnt();
+}
+
+void RefCountAsync::SetCnt(const size_t cnt) {
+  LockGuard lock(lock_);
+  RefCountLocal::SetCnt(cnt);
 }
 
 bool RefCountAsync::TryIncrease() {

@@ -69,7 +69,10 @@ Shared<T, R>::~Shared() {
 }
 
 template <typename T, IsRefCount R>
-Shared<T, R>::Shared(Shared&& other) noexcept {
+Shared<T, R>::Shared(Shared&& other) noexcept
+    : raw_ptr_(other.raw_ptr_),
+      ref_cnt_ptr_(other.ref_cnt_ptr_),
+      weak_ref_cnt_ptr_(other.weak_ref_cnt_ptr_) {
   other.ResetPtr();
 }
 
@@ -78,16 +81,13 @@ Shared<T, R>& Shared<T, R>::operator=(Shared&& other) noexcept {
   if (this == &other) {
     return *this;
   }
-  Reset();
-  raw_ptr_ = other.raw_ptr_;
-  ref_cnt_ptr_ = other.ref_cnt_ptr_;
-  weak_ref_cnt_ptr_ = other.weak_ref_cnt_ptr_;
-  other.ResetPtr();
+  this->~Shared();
+  new (this) Shared(std::move(other));
   return *this;
 }
 
 template <typename T, IsRefCount R>
-Shared<T, R>::Shared(T* raw_ptr) : Shared(raw_ptr, new R(), new R()) {
+Shared<T, R>::Shared(T* raw_ptr) : Shared(raw_ptr, new R(1), new R(0)) {
   MIRAGE_DCHECK(raw_ptr != nullptr);
 }
 

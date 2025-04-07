@@ -6,11 +6,11 @@
 
 using namespace mirage::base;
 
-TEST(RefCountTests, DefaultCounstruct) {
+TEST(RefCountTests, Counstruct) {
   EXPECT_TRUE(IsRefCount<RefCountLocal>);
   EXPECT_TRUE(IsRefCount<RefCountAsync>);
-  EXPECT_EQ(RefCountLocal().GetCnt(), 1);
-  EXPECT_EQ(RefCountAsync().GetCnt(), 1);
+  EXPECT_EQ(RefCountLocal(1).GetCnt(), 1);
+  EXPECT_EQ(RefCountAsync(1).GetCnt(), 1);
 }
 
 TEST(RefCountTests, ZeroCountBehaviour) {
@@ -26,10 +26,10 @@ TEST(RefCountTests, ZeroCountBehaviour) {
     EXPECT_EQ(count->GetCnt(), 0);
   };
 
-  RefCountLocal count_local;
+  RefCountLocal count_local(1);
   checker(&count_local);
 
-  RefCountAsync count_async;
+  RefCountAsync count_async(1);
   checker(&count_async);
 }
 
@@ -48,15 +48,15 @@ TEST(RefCountTests, ResetBehaviour) {
     EXPECT_EQ(count->GetCnt(), 0);
   };
 
-  RefCountLocal count_local;
+  RefCountLocal count_local(1);
   checker(&count_local);
 
-  RefCountAsync count_async;
+  RefCountAsync count_async(1);
   checker(&count_async);
 }
 
 TEST(RefCountTests, Async) {
-  RefCountAsync count;
+  RefCountAsync count(1);
   auto async_operation = [&count] {
     for (int32_t i = 0; i < 1e5; ++i) {
       count.TryIncrease();
