@@ -1,5 +1,5 @@
-#ifndef MIRAGE_ECS_ARCHETYPE
-#define MIRAGE_ECS_ARCHETYPE
+#ifndef MIRAGE_ECS_ARCHETYPE_ARCHETYPE
+#define MIRAGE_ECS_ARCHETYPE_ARCHETYPE
 
 #include "mirage_base/container/array.hpp"
 #include "mirage_base/util/hash.hpp"
@@ -86,7 +86,7 @@ Archetype Archetype::New() {
 }  // namespace ecs
 
 template <>
-struct base::Hash<const ecs::Archetype::Descriptor> {
+struct base::Hash<ecs::Archetype::Descriptor> {
   size_t operator()(const ecs::Archetype::Descriptor &descriptor) const {
     return descriptor.GetMask();
   }
@@ -94,4 +94,4 @@ struct base::Hash<const ecs::Archetype::Descriptor> {
 
 }  // namespace mirage
 
-#endif  // MIRAGE_ECS_ARCHETYPE
+#endif  // MIRAGE_ECS_ARCHETYPE_ARCHETYPE

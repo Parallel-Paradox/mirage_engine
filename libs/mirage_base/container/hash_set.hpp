@@ -32,7 +32,7 @@ class HashSet {
   HashSet(const HashSet&) = delete;
   HashSet& operator=(const HashSet&) = delete;
 
-  explicit HashSet(Hash<const T> hasher) : hasher_(std::move(hasher)) {}
+  explicit HashSet(Hash<T> hasher) : hasher_(std::move(hasher)) {}
 
   HashSet(std::initializer_list<T> list)
     requires std::copy_constructible<T>;
@@ -42,7 +42,7 @@ class HashSet {
   template <typename T1>
   Optional<T> Remove(const T1& val)
     requires requires(const T1& val1, const T& val,
-                      const Hash<const T>& hasher) {
+                      const Hash<T>& hasher) {
       { val == val1 } -> std::convertible_to<bool>;
       { hasher(val1) } -> std::same_as<size_t>;
     };
@@ -50,15 +50,14 @@ class HashSet {
   template <typename T1>
   ConstIterator TryFind(const T1& val) const
     requires requires(const T1& val1, const T& val,
-                      const Hash<const T>& hasher) {
+                      const Hash<T>& hasher) {
       { val == val1 } -> std::convertible_to<bool>;
       { hasher(val1) } -> std::same_as<size_t>;
     };
 
   template <typename T1>
   Iterator TryFind(const T1& val)
-    requires requires(const T1& val1, const T& val,
-                      const Hash<const T>& hasher) {
+    requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
       { val == val1 } -> std::convertible_to<bool>;
       { hasher(val1) } -> std::same_as<size_t>;
     };
@@ -86,7 +85,7 @@ class HashSet {
 
   void ExtendAndRehash();
 
-  Hash<const T> hasher_;
+  Hash<T> hasher_;
   Array<SinglyLinkedList<Entry>> buckets_;
   size_t size_ = 0;
   float max_load_factor_ = 1.0;
@@ -243,7 +242,7 @@ Optional<T> HashSet<T>::Insert(T val) {
 template <HashSetValType T>
 template <typename T1>
 Optional<T> HashSet<T>::Remove(const T1& val)
-  requires requires(const T1& val1, const T& val, const Hash<const T>& hasher) {
+  requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
     { val == val1 } -> std::convertible_to<bool>;
     { hasher(val1) } -> std::same_as<size_t>;
   }
@@ -278,7 +277,7 @@ Optional<T> HashSet<T>::Remove(const T1& val)
 template <HashSetValType T>
 template <typename T1>
 typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T1& val) const
-  requires requires(const T1& val1, const T& val, const Hash<const T>& hasher) {
+  requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
     { val == val1 } -> std::convertible_to<bool>;
     { hasher(val1) } -> std::same_as<size_t>;
   }
@@ -301,7 +300,7 @@ typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T1& val) const
 template <HashSetValType T>
 template <typename T1>
 typename HashSet<T>::Iterator HashSet<T>::TryFind(const T1& val)
-  requires requires(const T1& val1, const T& val, const Hash<const T>& hasher) {
+  requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
     { val == val1 } -> std::convertible_to<bool>;
     { hasher(val1) } -> std::same_as<size_t>;
   }

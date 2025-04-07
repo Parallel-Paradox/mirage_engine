@@ -22,10 +22,10 @@ struct HashKeyVal : KeyVal<Key, Val> {
 };
 
 template <HashMapKeyType Key, std::move_constructible Val>
-struct Hash<const HashKeyVal<Key, Val>> {
+struct Hash<HashKeyVal<Key, Val>> {
   using HashKeyVal = HashKeyVal<Key, Val>;
 
-  Hash<const Key> hasher_;
+  Hash<std::remove_const_t<Key>> hasher_;
 
   Hash() = default;
   ~Hash() = default;
