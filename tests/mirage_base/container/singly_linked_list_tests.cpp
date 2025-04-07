@@ -94,7 +94,7 @@ TEST(SinglyLinkedListTests, MoveAndCopy) {
   SinglyLinkedList<int32_t> move_list(std::move(list));
   SinglyLinkedList<int32_t> copy_list(move_list);
 
-  EXPECT_EQ(list.begin(), list.end());
+  EXPECT_EQ(list.begin(), list.end());  // NOLINT: Use after move.
 
   int cnt = 0;
   for (int32_t num : move_list) {

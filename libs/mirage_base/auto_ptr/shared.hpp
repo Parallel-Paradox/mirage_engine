@@ -33,6 +33,9 @@ class Shared {
 
   Shared Clone() const;
 
+  template <typename T1, IsRefCount R1>
+  friend class Shared;
+
   template <typename T1>
   Shared<T1, R> TryConvert() &&;
 
@@ -129,7 +132,7 @@ Shared<T, R> Shared<T, R>::Clone() const {
 template <typename T, IsRefCount R>
 template <typename T1>
 Shared<T1, R> Shared<T, R>::TryConvert() && {
-  T* raw_ptr = static_cast<T1*>(raw_ptr_);
+  T1* raw_ptr = dynamic_cast<T1*>(raw_ptr_);
   if (raw_ptr == nullptr) {
     return nullptr;
   }

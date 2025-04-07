@@ -21,7 +21,7 @@ struct Derive final : Base {
   ~Derive() override { *derive_destructed += 1; }
 };
 
-TEST(AutoPtrTests, OwnedConstruct) {
+TEST(OwnedPtrTests, Construct) {
   int32_t is_destructed = 0;
 
   // Default Construct
@@ -53,16 +53,16 @@ TEST(AutoPtrTests, OwnedConstruct) {
   EXPECT_EQ(is_destructed, 2);
 }
 
-TEST(AutoPtrTests, OwnedPtrOps) {
+TEST(OwnedPtrTests, PtrOps) {
   int32_t cnt = 0;
-  const auto owned_flag = Owned<Base>::New(&cnt);
-  EXPECT_EQ(*owned_flag->base_destructed, 0);
+  const auto ptr = Owned<Base>::New(&cnt);
+  EXPECT_EQ(*ptr->base_destructed, 0);
 
-  *owned_flag->base_destructed = true;
-  EXPECT_EQ(*owned_flag->base_destructed, 1);
+  *ptr->base_destructed = true;
+  EXPECT_EQ(*ptr->base_destructed, 1);
 }
 
-TEST(AutoPtrTests, OwnedConvertDeriveToBase) {
+TEST(OwnedPtrTests, ConvertDeriveToBase) {
   int32_t base_destructed = 0;
   int32_t derive_destructed = 0;
 
@@ -78,13 +78,13 @@ TEST(AutoPtrTests, OwnedConvertDeriveToBase) {
   EXPECT_EQ(derive_destructed, 1);
 }
 
-TEST(AutoPtrTests, OwnedConvertBaseToDerive) {
+TEST(OwnedPtrTests, ConvertBaseToDerive) {
   // Can't convert from base to derive when base is the origin type.
   int32_t base_destructed = 0;
   auto base = Owned<Base>::New(&base_destructed);
   const Owned<Derive> derive_from_base = std::move(base).TryConvert<Derive>();
   EXPECT_TRUE(derive_from_base.IsNull());
-  EXPECT_FALSE(base.IsNull());
+  EXPECT_FALSE(base.IsNull());  // NOLINT: Use after move.
   EXPECT_EQ(base_destructed, 0);
 
   // Convert from base to derive when derive is the origin type.
