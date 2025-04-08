@@ -1,29 +1,28 @@
 #include "mirage_ecs/archetype/archetype.hpp"
 
+#include <spdlog/spdlog.h>
+
 using namespace mirage;
 using namespace mirage::ecs;
 
-void Archetype::Descriptor::AddTypeMeta(const TypeMeta* type_meta) {
-  MIRAGE_DCHECK(type_meta != nullptr);
+void Archetype::Descriptor::AddTypeId(const TypeId type_id) {
   auto iter = type_array_.begin();
   while (iter != type_array_.end()) {
-    const TypeMeta* iter_type_meta = *iter;
-    if (iter_type_meta->GetTypeId() == type_meta->GetTypeId()) {
+    if (*iter == type_id) {
       return;
     }
-    if (iter_type_meta->GetTypeId() > type_meta->GetTypeId()) break;
+    if (*iter > type_id) break;
     ++iter;
   }
-  mask_ |= type_meta->GetBitFlag();
+  mask_ |= type_id.GetBitFlag();
   if (iter != type_array_.end()) {
-    type_array_.Insert(iter, type_meta);
+    type_array_.Insert(iter, type_id);
   } else {
-    type_array_.Emplace(type_meta);
+    type_array_.Emplace(type_id);
   }
 }
 
-const base::Array<const TypeMeta*>& Archetype::Descriptor::GetTypeArray()
-    const {
+const base::Array<TypeId>& Archetype::Descriptor::GetTypeArray() const {
   return type_array_;
 }
 
@@ -50,10 +49,10 @@ bool Archetype::Descriptor::With(const Descriptor& desc) const {
     return false;
 
   auto desc_type_iter = desc_type_array.begin();
-  for (const auto& type_meta : type_array_) {
-    const auto& desc_type = *desc_type_iter;
-    if (type_meta->GetTypeId() == desc_type->GetTypeId()) ++desc_type_iter;
-    if (type_meta->GetTypeId() > desc_type->GetTypeId()) return false;
+  for (const auto& type_id : type_array_) {
+    const auto& desc_type_id = *desc_type_iter;
+    if (type_id == desc_type_id) ++desc_type_iter;
+    if (type_id > desc_type_id) return false;
   }
   return desc_type_iter == desc_type_array.end();
 }
@@ -63,11 +62,12 @@ bool Archetype::Descriptor::Without(const Descriptor& desc) const {
   if (desc_type_array.GetSize() == 0) return true;
 
   auto desc_type_iter = desc_type_array.begin();
-  for (const auto& type_meta : type_array_) {
-    const auto& desc_type = *desc_type_iter;
-    if (type_meta->GetTypeId() == desc_type->GetTypeId()) return false;
-    if (type_meta->GetTypeId() > desc_type->GetTypeId()) ++desc_type_iter;
-    if (desc_type_iter == desc_type_array.end()) return true;
+  for (const auto& type_id : type_array_) {
+    while (type_id > *desc_type_iter) {
+      ++desc_type_iter;
+      if (desc_type_iter == desc_type_array.end()) return true;
+    }
+    if (type_id == *desc_type_iter) return false;
   }
   return true;
 }

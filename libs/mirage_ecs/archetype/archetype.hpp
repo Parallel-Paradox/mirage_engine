@@ -3,7 +3,7 @@
 
 #include "mirage_base/container/array.hpp"
 #include "mirage_base/util/hash.hpp"
-#include "mirage_ecs/archetype/type_meta.hpp"
+#include "mirage_ecs/archetype/type_id.hpp"
 #include "mirage_ecs/define.hpp"
 
 namespace mirage {
@@ -24,19 +24,18 @@ class Archetype {
 
     template <typename T>
     void AddType();
-    MIRAGE_ECS void AddTypeMeta(const TypeMeta *type_meta);
+    MIRAGE_ECS void AddTypeId(TypeId type_id);
 
     [[nodiscard]] MIRAGE_ECS bool With(const Descriptor &desc) const;
     [[nodiscard]] MIRAGE_ECS bool Without(const Descriptor &desc) const;
 
-    [[nodiscard]] MIRAGE_ECS const base::Array<const TypeMeta *> &GetTypeArray()
-        const;
+    [[nodiscard]] MIRAGE_ECS const base::Array<TypeId> &GetTypeArray() const;
     [[nodiscard]] MIRAGE_ECS size_t GetMask() const;
 
     MIRAGE_ECS bool operator==(const Descriptor &other) const;
 
    private:
-    base::Array<const TypeMeta *> type_array_{};
+    base::Array<TypeId> type_array_{};
     size_t mask_{0};
   };
 
@@ -55,6 +54,7 @@ class Archetype {
   [[nodiscard]] MIRAGE_ECS const Descriptor &GetDescriptor() const;
 
  private:
+  // TODO
   Descriptor descriptor_;
 };
 
@@ -73,7 +73,7 @@ void Archetype::Descriptor::AddTypeTo(Descriptor &descriptor) {
 
 template <typename T>
 void Archetype::Descriptor::AddType() {
-  AddTypeMeta(TypeMeta::Of<T>());
+  AddTypeId(TypeId::Of<T>());
 }
 
 template <typename... Ts>

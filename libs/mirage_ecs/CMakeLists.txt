@@ -1,8 +1,7 @@
 message(STATUS "Building mirage_ecs...")
 
 set(SRC
-    archetype/type_registry.cpp
-    archetype/type_meta.cpp
+    archetype/type_id.cpp
     archetype/archetype.cpp
     system/context.cpp)
 
