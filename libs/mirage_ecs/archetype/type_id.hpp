@@ -32,7 +32,7 @@ class TypeMeta {
   [[nodiscard]] MIRAGE_ECS size_t GetBitFlag() const;
 
  private:
-  TypeMeta(std::type_index type_index, size_t type_size);
+  MIRAGE_ECS TypeMeta(std::type_index type_index, size_t type_size);
 
   std::type_index type_index_;
   size_t type_size_{0};
