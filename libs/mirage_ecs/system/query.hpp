@@ -3,25 +3,22 @@
 
 #include <tuple>
 
-#include "mirage_ecs/marker.hpp"
 #include "mirage_ecs/system/extract.hpp"
+#include "mirage_ecs/util/marker.hpp"
 
 namespace mirage::ecs {
 
 struct QueryParamsTag {};
 
-template <typename T>
-concept IsQueryParams = std::derived_from<T, QueryParamsTag>;
-
 template <typename... Ts>
-concept IsQueryParamsList = ((IsQueryParams<Ts>) && ...);
+concept IsQueryParam = ((std::derived_from<Ts, QueryParamsTag>) && ...);
 
 // --- Ref ---
 
 struct QueryParamsTag_Ref : QueryParamsTag {};
 
 template <typename... Ts>
-  requires IsComponentRefList<Ts...>
+  requires IsComponentRef<Ts...>
 struct Ref : QueryParamsTag_Ref {
   using TypeList = std::tuple<Ts...>;
 };
@@ -31,7 +28,7 @@ struct Ref : QueryParamsTag_Ref {
 struct QueryParamsTag_With : QueryParamsTag {};
 
 template <typename... Ts>
-  requires IsComponentList<Ts...>
+  requires IsComponent<Ts...>
 struct With : QueryParamsTag_With {
   using TypeList = std::tuple<Ts...>;
 };
@@ -41,7 +38,7 @@ struct With : QueryParamsTag_With {
 struct QueryParamsTag_Without : QueryParamsTag {};
 
 template <typename... Ts>
-  requires IsComponentList<Ts...>
+  requires IsComponent<Ts...>
 struct Without : QueryParamsTag_Without {
   using TypeList = std::tuple<Ts...>;
 };
@@ -53,7 +50,7 @@ struct Without : QueryParamsTag_Without {
 // ----------
 
 template <typename ParamsTag, typename T, typename... Ts>
-  requires IsQueryParams<ParamsTag> && IsQueryParams<T>
+  requires IsQueryParam<ParamsTag> && IsQueryParam<T>
 struct QueryParamsTypeList {
   // clang-format off
   using TypeList = std::conditional_t<std::derived_from<T, ParamsTag>,
@@ -64,7 +61,7 @@ struct QueryParamsTypeList {
 };
 
 template <typename ParamsTag, typename T>
-  requires IsQueryParams<ParamsTag> && IsQueryParams<T>
+  requires IsQueryParam<ParamsTag> && IsQueryParam<T>
 struct QueryParamsTypeList<ParamsTag, T> {
   // clang-format off
   using TypeList = std::conditional_t<std::derived_from<T, ParamsTag>,
@@ -75,7 +72,7 @@ struct QueryParamsTypeList<ParamsTag, T> {
 };
 
 template <typename... Ts>
-  requires IsQueryParamsList<Ts...>
+  requires IsQueryParam<Ts...>
 class Query {
  public:
   using RefTypeList =
@@ -84,6 +81,7 @@ class Query {
       typename QueryParamsTypeList<QueryParamsTag_With, Ts...>::TypeList;
   using WithoutTypeList =
       typename QueryParamsTypeList<QueryParamsTag_Without, Ts...>::TypeList;
+  // TODO: Use ComponentList
 
  private:  // TODO
 };
