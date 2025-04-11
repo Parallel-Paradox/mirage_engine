@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "mirage_ecs/archetype/type_id.hpp"
+#include "mirage_ecs/util/type_id.hpp"
 
 using namespace mirage::ecs;
 

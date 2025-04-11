@@ -5,6 +5,27 @@
 using namespace mirage;
 using namespace mirage::ecs;
 
+Archetype::Descriptor::Descriptor(Descriptor&& other) noexcept
+    : type_array_(std::move(other.type_array_)), mask_(other.mask_) {
+  other.type_array_.Clear();
+  other.mask_ = 0;
+}
+
+Archetype::Descriptor& Archetype::Descriptor::operator=(
+    Descriptor&& other) noexcept {
+  if (this == &other) return *this;
+  this->~Descriptor();
+  new (this) Descriptor(std::move(other));
+  return *this;
+}
+
+Archetype::Descriptor Archetype::Descriptor::Clone() const {
+  Descriptor descriptor;
+  descriptor.type_array_ = type_array_;
+  descriptor.mask_ = mask_;
+  return descriptor;
+}
+
 void Archetype::Descriptor::AddTypeId(const TypeId type_id) {
   auto iter = type_array_.begin();
   while (iter != type_array_.end()) {
@@ -32,9 +53,13 @@ bool Archetype::Descriptor::operator==(const Descriptor& other) const {
   return mask_ == other.mask_ && type_array_ == other.type_array_;
 }
 
-Archetype::Archetype(Archetype&& other) noexcept
-    : descriptor_(other.descriptor_) {
-  other.descriptor_ = Descriptor();
+Archetype::Archetype(Descriptor&& descriptor)
+    : descriptor_(std::move(descriptor)) {
+  // TODO: Initialize offset map
+  // Sort type array by alignment then size from big to small
+  // Save the padding of each type, if a padding is big enough for the smallest
+  // type, find the most fit type to fill the padding. Change the sequence.
+  // The alignment of the first type should be considered when calculate size.
 }
 
 const Archetype::Descriptor& Archetype::GetDescriptor() const {
@@ -43,7 +68,7 @@ const Archetype::Descriptor& Archetype::GetDescriptor() const {
 
 bool Archetype::Descriptor::With(const Descriptor& desc) const {
   const auto& desc_type_array = desc.GetTypeArray();
-  if (desc_type_array.GetSize() == 0) return true;
+  if (desc_type_array.IsEmpty()) return true;
   if ((desc.GetMask() | GetMask()) != GetMask() ||
       desc_type_array.GetSize() > type_array_.GetSize())
     return false;
@@ -59,7 +84,7 @@ bool Archetype::Descriptor::With(const Descriptor& desc) const {
 
 bool Archetype::Descriptor::Without(const Descriptor& desc) const {
   const auto& desc_type_array = desc.GetTypeArray();
-  if (desc_type_array.GetSize() == 0) return true;
+  if (type_array_.IsEmpty() || desc_type_array.IsEmpty()) return true;
 
   auto desc_type_iter = desc_type_array.begin();
   for (const auto& type_id : type_array_) {

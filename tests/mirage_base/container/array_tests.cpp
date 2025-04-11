@@ -66,6 +66,10 @@ TEST(ArrayTests, ChangeSizeAndCapacity) {
   array.SetSize(3);
   EXPECT_EQ(array.GetSize(), 3);
   EXPECT_EQ(array.GetCapacity(), 5);
+
+  array.ShrinkToFit();
+  EXPECT_EQ(array.GetSize(), 3);
+  EXPECT_EQ(array.GetCapacity(), 3);
 }
 
 TEST(ArrayTests, CompareEquality) {

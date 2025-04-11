@@ -2,9 +2,10 @@
 #define MIRAGE_ECS_ARCHETYPE_ARCHETYPE
 
 #include "mirage_base/container/array.hpp"
+#include "mirage_base/container/hash_map.hpp"
 #include "mirage_base/util/hash.hpp"
-#include "mirage_ecs/archetype/type_id.hpp"
 #include "mirage_ecs/define.hpp"
+#include "mirage_ecs/util/type_id.hpp"
 
 namespace mirage {
 namespace ecs {
@@ -15,6 +16,11 @@ class Archetype {
    public:
     MIRAGE_ECS Descriptor() = default;
     MIRAGE_ECS ~Descriptor() = default;
+
+    MIRAGE_ECS Descriptor(Descriptor &&other) noexcept;
+    MIRAGE_ECS Descriptor &operator=(Descriptor &&other) noexcept;
+
+    MIRAGE_ECS [[nodiscard]] Descriptor Clone() const;
 
     template <typename... Ts>
     static Descriptor New();
@@ -45,22 +51,25 @@ class Archetype {
   MIRAGE_ECS Archetype(const Archetype &) = delete;
   MIRAGE_ECS Archetype &operator=(const Archetype &) = delete;
 
-  MIRAGE_ECS Archetype(Archetype &&other) noexcept;
-  MIRAGE_ECS Archetype &operator=(Archetype &&other) = default;
+  MIRAGE_ECS Archetype(Archetype &&other) noexcept = default;
+  MIRAGE_ECS Archetype &operator=(Archetype &&other) noexcept = default;
 
   template <typename... Ts>
   static Archetype New();
+  explicit MIRAGE_ECS Archetype(Descriptor &&descriptor);
 
   [[nodiscard]] MIRAGE_ECS const Descriptor &GetDescriptor() const;
 
  private:
   // TODO
+  base::HashMap<TypeId, size_t> offset_map_{};
   Descriptor descriptor_;
 };
 
 template <typename... Ts>
 Archetype::Descriptor Archetype::Descriptor::New() {
   Descriptor descriptor;
+  descriptor.type_array_.Reserve(sizeof...(Ts));
   if constexpr (sizeof...(Ts) > 0) AddTypeTo<Ts...>(descriptor);
   return descriptor;
 }

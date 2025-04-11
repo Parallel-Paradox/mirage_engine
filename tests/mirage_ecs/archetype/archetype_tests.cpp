@@ -24,10 +24,11 @@ TEST(ArchetypeTests, QueryMatch) {
   EXPECT_TRUE(desc.With(desc));
   EXPECT_FALSE(desc.Without(desc));
 
-  const auto with_desc_empty = Archetype::Descriptor();
-  const auto without_desc_empty = Archetype::Descriptor();
-  EXPECT_TRUE(desc.With(with_desc_empty));
-  EXPECT_TRUE(desc.Without(without_desc_empty));
+  const auto empty_desc = Archetype::Descriptor();
+  EXPECT_TRUE(desc.With(empty_desc));
+  EXPECT_FALSE(empty_desc.With(desc));
+  EXPECT_TRUE(desc.Without(empty_desc));
+  EXPECT_TRUE(empty_desc.Without(desc));
 
   const auto with_desc_success = Archetype::Descriptor::New<size_t>();
   const auto without_desc_success = Archetype::Descriptor::New<bool>();

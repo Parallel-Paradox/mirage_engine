@@ -19,7 +19,7 @@ class TypeMeta {
 
   template <typename T>
   static const TypeMeta &Of() {
-    static TypeMeta meta_type(typeid(T), sizeof(T));
+    static TypeMeta meta_type(typeid(T), sizeof(T), alignof(T));
     return meta_type;
   }
 
@@ -28,14 +28,16 @@ class TypeMeta {
 
   [[nodiscard]] MIRAGE_ECS const char *GetTypeName() const;
   [[nodiscard]] MIRAGE_ECS size_t GetTypeSize() const;
+  [[nodiscard]] MIRAGE_ECS size_t GetTypeAlign() const;
   [[nodiscard]] MIRAGE_ECS size_t GetHashCode() const;
   [[nodiscard]] MIRAGE_ECS size_t GetBitFlag() const;
 
  private:
-  MIRAGE_ECS TypeMeta(std::type_index type_index, size_t type_size);
+  TypeMeta(std::type_index type_index, size_t type_size, size_t type_align);
 
   std::type_index type_index_;
   size_t type_size_{0};
+  size_t type_align_{0};
   size_t hash_code_{0};
   size_t bit_flag_{0};
 };
@@ -60,6 +62,7 @@ class MIRAGE_ECS TypeId {
 
   [[nodiscard]] const char *GetTypeName() const;
   [[nodiscard]] size_t GetTypeSize() const;
+  [[nodiscard]] size_t GetTypeAlign() const;
   [[nodiscard]] size_t GetHashCode() const;
   [[nodiscard]] size_t GetBitFlag() const;
 

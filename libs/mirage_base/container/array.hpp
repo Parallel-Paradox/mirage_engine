@@ -63,6 +63,7 @@ class Array {
 
   [[nodiscard]] size_t GetCapacity() const;
   void SetCapacity(size_t capacity);
+  void ShrinkToFit();
 
   Iterator begin();
   Iterator end();
@@ -385,6 +386,11 @@ void Array<T>::SetCapacity(const size_t capacity) {
   data_ = data;
   size_ = size;
   capacity_ = capacity;
+}
+
+template <std::move_constructible T>
+void Array<T>::ShrinkToFit() {
+  SetCapacity(size_);
 }
 
 template <std::move_constructible T>
