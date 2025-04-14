@@ -9,6 +9,7 @@
 
 namespace mirage {
 namespace ecs {
+
 class TypeMeta {
  public:
   MIRAGE_ECS TypeMeta() = delete;
@@ -24,6 +25,7 @@ class TypeMeta {
   }
 
   MIRAGE_ECS bool operator==(const TypeMeta &other) const;
+  MIRAGE_ECS bool operator!=(const TypeMeta &other) const;
   MIRAGE_ECS std::strong_ordering operator<=>(const TypeMeta &other) const;
 
   [[nodiscard]] MIRAGE_ECS const char *GetTypeName() const;
@@ -58,6 +60,7 @@ class MIRAGE_ECS TypeId {
   }
 
   bool operator==(const TypeId &other) const;
+  bool operator!=(const TypeId &other) const;
   std::strong_ordering operator<=>(const TypeId &other) const;
 
   [[nodiscard]] const char *GetTypeName() const;

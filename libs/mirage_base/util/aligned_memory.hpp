@@ -1,8 +1,8 @@
 #ifndef MIRAGE_BASE_UTIL_ALIGNED_MEMORY
 #define MIRAGE_BASE_UTIL_ALIGNED_MEMORY
 
-#include <cstddef>
 #include <concepts>
+#include <cstddef>
 
 namespace mirage::base {
 
@@ -17,9 +17,9 @@ class AlignedMemory {
 
   explicit AlignedMemory(T&& val) { new (GetPtr()) T(std::move(val)); }
 
-  T* GetPtr() { return (T*)mem_; }  // NOLINT
+  T* GetPtr() { return (T*)mem_; }  // NOLINT: std::byte* to T*
 
-  const T* GetConstPtr() const { return (T*)mem_; }  // NOLINT
+  const T* GetConstPtr() const { return (T*)mem_; }  // NOLINT: std::byte* to T*
 
   T& GetRef() { return *GetPtr(); }
 

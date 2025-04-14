@@ -6,8 +6,18 @@ bool TypeMeta::operator==(const TypeMeta& other) const {
   return hash_code_ == other.hash_code_ && type_index_ == other.type_index_;
 }
 
+bool TypeMeta::operator!=(const TypeMeta& other) const {
+  return !this->operator==(other);
+}
+
 std::strong_ordering TypeMeta::operator<=>(const TypeMeta& other) const {
-  return type_index_ <=> other.type_index_;
+  if (this->operator==(other)) {
+    return std::strong_ordering::equal;
+  }
+  if (type_index_ < other.type_index_) {
+    return std::strong_ordering::less;
+  }
+  return std::strong_ordering::greater;
 }
 
 const char* TypeMeta::GetTypeName() const { return type_index_.name(); }
@@ -26,12 +36,16 @@ TypeMeta::TypeMeta(const std::type_index type_index, const size_t type_size,
       type_size_(type_size),
       type_align_(type_align),
       hash_code_(type_index.hash_code()),
-      bit_flag_(static_cast<size_t>(1) << hash_code_ % 64) {}
+      bit_flag_(static_cast<size_t>(1) << hash_code_ % (sizeof(size_t) * 8)) {}
 
 TypeId::TypeId(const TypeMeta& type_meta) : type_meta_(&type_meta) {}
 
 bool TypeId::operator==(const TypeId& other) const {
   return *type_meta_ == *other.type_meta_;
+}
+
+bool TypeId::operator!=(const TypeId& other) const {
+  return !this->operator==(other);
 }
 
 std::strong_ordering TypeId::operator<=>(const TypeId& other) const {

@@ -61,7 +61,7 @@ class HashMap {
   HashMap(std::initializer_list<HashKeyVal<const Key, Val>> list)
     requires std::copy_constructible<Key> && std::copy_constructible<Val>;
 
-  Optional<HashKeyVal<const Key, Val>> Insert(Key&& key, Val&& val);
+  Optional<HashKeyVal<const Key, Val>> Insert(Key key, Val val);
   Optional<HashKeyVal<const Key, Val>> Remove(const Key& key);
 
   ConstIterator TryFind(const Key& key) const;
@@ -169,8 +169,8 @@ HashMap<Key, Val>::HashMap(
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
-Optional<HashKeyVal<const Key, Val>> HashMap<Key, Val>::Insert(Key&& key,
-                                                               Val&& val) {
+Optional<HashKeyVal<const Key, Val>> HashMap<Key, Val>::Insert(Key key,
+                                                               Val val) {
   Iterator iter = TryFind(key);
   if (iter == end()) {
     return kv_set_.Insert({std::move(key), std::move(val)});

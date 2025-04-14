@@ -3,6 +3,7 @@
 #include <thread>
 
 #include "mirage_base/auto_ptr/shared.hpp"
+#include "mirage_base/container/array.hpp"
 
 using namespace mirage::base;
 
@@ -73,11 +74,12 @@ TEST(SharedPtrTests, PtrOps) {
 
 TEST(SharedPtrTests, CloneAsync) {
   int32_t cnt = 0;
-  const auto ptr = SharedLocal<Base>::New(&cnt);
+  const auto ptr = SharedAsync<Base>::New(&cnt);
 
   auto async_operation = [&ptr] {
+    Array<SharedAsync<Base>> array;
     for (int32_t i = 0; i < 1e5; ++i) {
-      [[maybe_unused]] auto clone_ptr = ptr.Clone();
+      array.Emplace(ptr.Clone());
     }
   };
   std::thread async_thread(async_operation);
