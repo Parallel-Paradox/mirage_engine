@@ -3,21 +3,22 @@
 #include <algorithm>
 #include <numeric>
 
+#include "mirage_ecs/util/type_set.hpp"
+
 using namespace mirage;
 using namespace mirage::ecs;
 
-Archetype::Archetype(Descriptor&& descriptor)
-    : descriptor_(std::move(descriptor)) {
-  if (descriptor_.GetTypeArray().IsEmpty()) {
+Archetype::Archetype(TypeSet&& type_set) : type_set_(std::move(type_set)) {
+  if (type_set_.GetTypeArray().IsEmpty()) {
     return;
   }
 
-  entity_align_ = descriptor_.GetTypeArray()[0].GetTypeAlign();
-  for (const TypeId& type_id : descriptor_.GetTypeArray()) {
+  entity_align_ = type_set_.GetTypeArray()[0].GetTypeAlign();
+  for (const TypeId& type_id : type_set_.GetTypeArray()) {
     entity_align_ = std::lcm(entity_align_, type_id.GetTypeAlign());
   }
 
-  base::Array<TypeId> type_array = descriptor_.GetTypeArray();
+  base::Array<TypeId> type_array = type_set_.GetTypeArray();
   auto cmp = [](const TypeId& lhs, const TypeId& rhs) {
     if (lhs.GetTypeAlign() == rhs.GetTypeAlign()) {
       return lhs.GetTypeSize() > rhs.GetTypeSize();
@@ -42,9 +43,7 @@ Archetype::Archetype(Descriptor&& descriptor)
   entity_size_ = offset;
 }
 
-const Archetype::Descriptor& Archetype::GetDescriptor() const {
-  return descriptor_;
-}
+const TypeSet& Archetype::GetTypeSet() const { return type_set_; }
 
 size_t Archetype::GetEntityAlign() const { return entity_align_; }
 

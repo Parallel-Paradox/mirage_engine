@@ -2,9 +2,9 @@ message(STATUS "Building mirage_ecs...")
 
 set(SRC
     archetype/archetype.cpp
-    archetype/archetype_descriptor.cpp
     system/context.cpp
-    util/type_id.cpp)
+    util/type_id.cpp
+    util/type_set.cpp)
 
 if (MIRAGE_BUILD_SPLIT)
   add_library(mirage_ecs SHARED ${SRC})
