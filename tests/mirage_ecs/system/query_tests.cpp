@@ -2,6 +2,7 @@
 
 #include "mirage_ecs/system/query.hpp"
 
+using namespace mirage;
 using namespace mirage::ecs;
 
 struct Position : Component {
@@ -45,24 +46,23 @@ TEST(QueryTests, ExtractQuery) {
 
   constexpr bool ref_checker =
       std::same_as<ValidQuery::RefTypeList,
-                   std::tuple<Position&, const Velocity&>>;
+                   base::TypeList<Position&, const Velocity&>>;
   EXPECT_TRUE(ref_checker);
 
   constexpr bool with_checker =
-      std::same_as<ValidQuery::WithTypeList, std::tuple<WithTag>>;
+      std::same_as<ValidQuery::WithTypeList, base::TypeList<WithTag>>;
   EXPECT_TRUE(with_checker);
 
   constexpr bool without_checker =
-      std::same_as<ValidQuery::WithoutTypeList, std::tuple<WithoutTag>>;
+      std::same_as<ValidQuery::WithoutTypeList, base::TypeList<WithoutTag>>;
   EXPECT_TRUE(without_checker);
 }
 
 TEST(QueryTests, ComponentList) {
-  bool same_type =
-      std::same_as<Position, ComponentList<Position, Velocity>::Get<0>::Type>;
+  using TypeList = base::TypeList<Position, Velocity>;
+  bool same_type = std::same_as<Position, TypeList::Get<0>::Type>;
   EXPECT_TRUE(same_type);
 
-  same_type =
-      std::same_as<Velocity, ComponentList<Position, Velocity>::Get<1>::Type>;
+  same_type = std::same_as<Velocity, TypeList::Get<1>::Type>;
   EXPECT_TRUE(same_type);
 }

@@ -1,8 +1,7 @@
 #ifndef MIRAGE_ECS_SYSTEM_QUERY
 #define MIRAGE_ECS_SYSTEM_QUERY
 
-#include <tuple>
-
+#include "mirage_base/util/type_list.hpp"
 #include "mirage_ecs/system/extract.hpp"
 #include "mirage_ecs/util/marker.hpp"
 
@@ -20,7 +19,7 @@ struct QueryParamsTag_Ref : QueryParamsTag {};
 template <typename... Ts>
   requires IsComponentRef<Ts...>
 struct Ref : QueryParamsTag_Ref {
-  using TypeList = std::tuple<Ts...>;
+  using TypeList = base::TypeList<Ts...>;
 };
 
 // --- With ---
@@ -30,7 +29,7 @@ struct QueryParamsTag_With : QueryParamsTag {};
 template <typename... Ts>
   requires IsComponent<Ts...>
 struct With : QueryParamsTag_With {
-  using TypeList = std::tuple<Ts...>;
+  using TypeList = base::TypeList<Ts...>;
 };
 
 // --- Without ---
@@ -40,7 +39,7 @@ struct QueryParamsTag_Without : QueryParamsTag {};
 template <typename... Ts>
   requires IsComponent<Ts...>
 struct Without : QueryParamsTag_Without {
-  using TypeList = std::tuple<Ts...>;
+  using TypeList = base::TypeList<Ts...>;
 };
 
 // TODO: --- Or ---
@@ -66,7 +65,7 @@ struct QueryParamsTypeList<ParamsTag, T> {
   // clang-format off
   using TypeList = std::conditional_t<std::derived_from<T, ParamsTag>,
     typename T::TypeList,
-    std::tuple<>
+    base::TypeList<>
   >;
   // clang-format on
 };
@@ -81,7 +80,6 @@ class Query {
       typename QueryParamsTypeList<QueryParamsTag_With, Ts...>::TypeList;
   using WithoutTypeList =
       typename QueryParamsTypeList<QueryParamsTag_Without, Ts...>::TypeList;
-  // TODO: Use ComponentList
 
  private:  // TODO
 };

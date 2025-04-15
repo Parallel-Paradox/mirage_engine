@@ -18,10 +18,6 @@ concept IsComponentRef =
     ((std::is_reference_v<Ts> && IsComponent<std::remove_reference_t<Ts>>) &&
      ...);
 
-template <typename... Ts>
-  requires IsComponent<Ts...>
-struct ComponentList : base::TypeList<Ts...> {};
-
 }  // namespace mirage::ecs
 
 #endif  // MIRAGE_ECS_UTIL_MARKER

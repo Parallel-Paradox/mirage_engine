@@ -40,8 +40,8 @@ endif ()
 message(STATUS "Building test.mirage_ecs...")
 add_executable(test.mirage_ecs
     mirage_ecs/archetype/archetype_tests.cpp
-    mirage_ecs/archetype/type_id_tests.cpp
-    mirage_ecs/system/query_tests.cpp)
+    mirage_ecs/system/query_tests.cpp
+    mirage_ecs/util/type_id_tests.cpp)
 gtest_discover_tests(test.mirage_ecs)
 if (MIRAGE_BUILD_SPLIT)
   target_link_libraries(test.mirage_ecs mirage_ecs)
