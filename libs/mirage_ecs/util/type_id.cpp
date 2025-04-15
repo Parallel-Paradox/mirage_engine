@@ -3,7 +3,8 @@
 using namespace mirage::ecs;
 
 bool TypeMeta::operator==(const TypeMeta& other) const {
-  return hash_code_ == other.hash_code_ && type_index_ == other.type_index_;
+  return (this == &other) ||
+         (hash_code_ == other.hash_code_ && type_index_ == other.type_index_);
 }
 
 bool TypeMeta::operator!=(const TypeMeta& other) const {

@@ -26,7 +26,8 @@ class Archetype {
   explicit MIRAGE_ECS Archetype(Descriptor &&descriptor);
 
   [[nodiscard]] MIRAGE_ECS const Descriptor &GetDescriptor() const;
-  [[nodiscard]] MIRAGE_ECS size_t GetChunkAlign() const;
+  [[nodiscard]] MIRAGE_ECS size_t GetEntityAlign() const;
+  [[nodiscard]] MIRAGE_ECS size_t GetEntitySize() const;
   [[nodiscard]] MIRAGE_ECS const base::HashMap<TypeId, size_t>
       &GetTypeAddrOffsetMap() const;
 
@@ -34,6 +35,7 @@ class Archetype {
   // TODO
   Descriptor descriptor_;
   size_t entity_align_{0};
+  size_t entity_size_{0};
   base::HashMap<TypeId, size_t> type_addr_offset_map_;
 };
 

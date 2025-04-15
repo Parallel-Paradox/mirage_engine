@@ -28,20 +28,27 @@ Archetype::Archetype(Descriptor&& descriptor)
 
   size_t offset = 0;
   for (const TypeId& type_id : type_array) {
-    const size_t type_align = type_id.GetTypeAlign();
-    if (offset % type_align != 0) {
+    if (const size_t type_align = type_id.GetTypeAlign();
+        offset % type_align != 0) {
       offset += type_align - (offset % type_align);
     }
     type_addr_offset_map_.Insert(type_id, offset);
     offset += type_id.GetTypeSize();
   }
+
+  if (offset % entity_align_ != 0) {
+    offset += entity_align_ - (offset % entity_align_);
+  }
+  entity_size_ = offset;
 }
 
 const Archetype::Descriptor& Archetype::GetDescriptor() const {
   return descriptor_;
 }
 
-size_t Archetype::GetChunkAlign() const { return entity_align_; }
+size_t Archetype::GetEntityAlign() const { return entity_align_; }
+
+size_t Archetype::GetEntitySize() const { return entity_size_; }
 
 const base::HashMap<TypeId, size_t>& Archetype::GetTypeAddrOffsetMap() const {
   return type_addr_offset_map_;
