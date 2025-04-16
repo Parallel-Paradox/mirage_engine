@@ -1,0 +1,1 @@
+#include "mirage_ecs/framework/plugin.hpp"

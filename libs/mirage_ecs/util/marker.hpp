@@ -18,6 +18,8 @@ concept IsComponentRef =
     ((std::is_reference_v<Ts> && IsComponent<std::remove_reference_t<Ts>>) &&
      ...);
 
+struct Resource {};
+
 }  // namespace mirage::ecs
 
 #endif  // MIRAGE_ECS_UTIL_MARKER

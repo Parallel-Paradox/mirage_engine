@@ -81,6 +81,15 @@ class Query {
   using WithoutTypeList =
       typename QueryParamsTypeList<QueryParamsTag_Without, Ts...>::TypeList;
 
+  class Iterator;
+  class ConstIterator;
+
+  Iterator begin();
+  Iterator end();
+
+  ConstIterator begin() const;
+  ConstIterator end() const;
+
  private:  // TODO
 };
 

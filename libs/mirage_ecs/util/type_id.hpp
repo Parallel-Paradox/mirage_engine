@@ -1,5 +1,5 @@
-#ifndef MIRAGE_ECS_ARCHETYPE_TYPE_META
-#define MIRAGE_ECS_ARCHETYPE_TYPE_META
+#ifndef MIRAGE_ECS_ARCHETYPE_TYPE_ID
+#define MIRAGE_ECS_ARCHETYPE_TYPE_ID
 
 #include <cstddef>
 #include <typeindex>
@@ -35,7 +35,8 @@ class TypeMeta {
   [[nodiscard]] MIRAGE_ECS size_t GetBitFlag() const;
 
  private:
-  TypeMeta(std::type_index type_index, size_t type_size, size_t type_align);
+  MIRAGE_ECS TypeMeta(std::type_index type_index, size_t type_size,
+                      size_t type_align);
 
   std::type_index type_index_;
   size_t type_size_{0};
@@ -84,4 +85,4 @@ struct base::Hash<ecs::TypeId> {
 
 }  // namespace mirage
 
-#endif  // MIRAGE_ECS_ARCHETYPE_TYPE_META
+#endif  // MIRAGE_ECS_ARCHETYPE_TYPE_ID
