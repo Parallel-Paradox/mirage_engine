@@ -257,7 +257,7 @@ void Array<T>::Insert(const size_t index, Args&&... args) {
   MIRAGE_DCHECK(index < size_);
 
   EnsureNotFull();
-  new (data_[size_].ptr()) T(std::move(data_[size_ - 1].GetRef()));
+  new (data_[size_].ptr()) T(std::move(data_[size_ - 1].ref()));
   for (size_t i = size_ - 1; i > index; --i) {
     data_[i].ptr()->~T();
     new (data_[i].ptr()) T(std::move(data_[i - 1].ref()));
@@ -308,7 +308,7 @@ bool Array<T>::operator==(const Array& other) const {
     return false;  // Can't be compared.
   } else {
     for (size_t i = 0; i < size_; ++i) {
-      if (data_[i].ref_const() != other.data_[i].GetConstRef()) {
+      if (data_[i].ref_const() != other.data_[i].ref_const()) {
         return false;
       }
     }
@@ -378,7 +378,7 @@ void Array<T>::set_capacity(const size_t capacity) {
   const size_t size = capacity < size_ ? capacity : size_;
   for (size_t i = 0; i < size; ++i) {
     T* ptr = data_[i].ptr();
-    new (data[i].GetPtr()) T(std::move(*ptr));
+    new (data[i].ptr()) T(std::move(*ptr));
     ptr->~T();
   }
   delete[] data_;

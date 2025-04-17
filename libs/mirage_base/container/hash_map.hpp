@@ -1,24 +1,33 @@
 #ifndef MIRAGE_BASE_CONTAINER_HASH_MAP
 #define MIRAGE_BASE_CONTAINER_HASH_MAP
 
+#include <concepts>
+#include <type_traits>
+
 #include "mirage_base/container/hash_set.hpp"
 #include "mirage_base/util/key_val.hpp"
 
 namespace mirage::base {
 
 template <typename T>
-concept HashMapKeyType = std::move_constructible<T> && HashType<T>;
+concept HashMapKeyType =
+    std::move_constructible<std::remove_const_t<T>> && HashType<T>;
 
 template <HashMapKeyType Key, std::move_constructible Val>
-struct HashKeyVal : KeyVal<Key, Val> {
-  HashKeyVal(Key&& key, Val&& val)
+class HashKeyVal : public KeyVal<Key, Val> {
+ public:
+  using KeyType = typename KeyVal<Key, Val>::KeyType;
+
+  HashKeyVal(KeyType&& key, Val&& val)
       : KeyVal<Key, Val>(std::move(key), std::move(val)) {}
 
   bool operator==(const HashKeyVal& other) const {
-    return this->key == other.key;
+    return this->key() == other.key();
   }
 
-  bool operator==(const Key& other_key) const { return this->key == other_key; }
+  bool operator==(const KeyType& other_key) const {
+    return this->key() == other_key;
+  }
 };
 
 template <HashMapKeyType Key, std::move_constructible Val>
@@ -35,7 +44,7 @@ struct Hash<HashKeyVal<Key, Val>> {
   Hash& operator=(const Hash&) = default;
   Hash& operator=(Hash&&) = default;
 
-  size_t operator()(const HashKeyVal& kv) const { return hasher_(kv.key); }
+  size_t operator()(const HashKeyVal& kv) const { return hasher_(kv.key()); }
   size_t operator()(const Key& key) const { return hasher_(key); }
 };
 
@@ -164,7 +173,7 @@ HashMap<Key, Val>::HashMap(
   requires std::copy_constructible<Key> && std::copy_constructible<Val>
 {
   for (const auto& kv : list) {
-    kv_set_.Insert({Key(kv.key), Val(kv.val)});
+    kv_set_.Insert({Key(kv.key()), Val(kv.val())});
   }
 }
 
@@ -176,9 +185,9 @@ Optional<HashKeyVal<const Key, Val>> HashMap<Key, Val>::Insert(Key key,
     return kv_set_.Insert({std::move(key), std::move(val)});
   }
   auto rv = Optional<HashKeyVal<const Key, Val>>::New(
-      std::move(const_cast<Key&>(iter->key)), std::move(iter->val));
-  new (const_cast<Key*>(&(iter->key))) Key(std::move(key));
-  new (&(iter->val)) Val(std::move(val));
+      std::move(const_cast<Key&>(iter->key())), std::move(iter->val()));
+  new (const_cast<Key*>(&(iter->key()))) Key(std::move(key));
+  new (&(iter->val())) Val(std::move(val));
   return rv;
 }
 

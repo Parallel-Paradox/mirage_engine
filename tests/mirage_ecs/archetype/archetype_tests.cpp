@@ -12,7 +12,7 @@ TEST(ArchetypeTests, OffsetAndAlignment) {
   EXPECT_EQ(archetype.entity_size(), 16);
 
   const auto& offset_map = archetype.type_addr_offset_map();
-  EXPECT_EQ(offset_map.TryFind(TypeId::Of<int64_t>())->val, 0);
-  EXPECT_EQ(offset_map.TryFind(TypeId::Of<int32_t>())->val, 8);
-  EXPECT_EQ(offset_map.TryFind(TypeId::Of<bool>())->val, 12);
+  EXPECT_EQ(offset_map.TryFind(TypeId::Of<int64_t>())->val(), 0);
+  EXPECT_EQ(offset_map.TryFind(TypeId::Of<int32_t>())->val(), 8);
+  EXPECT_EQ(offset_map.TryFind(TypeId::Of<bool>())->val(), 12);
 }

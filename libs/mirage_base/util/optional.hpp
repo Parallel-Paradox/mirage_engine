@@ -38,7 +38,7 @@ class Optional {
   static Optional New(Args&&... args) {
     Optional result;
     result.is_valid_ = true;
-    new (result.obj_.GetPtr()) T(std::forward<Args>(args)...);
+    new (result.obj_.ptr()) T(std::forward<Args>(args)...);
     return result;
   }
 

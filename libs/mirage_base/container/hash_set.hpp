@@ -402,7 +402,7 @@ void HashSet<T>::ExtendAndRehash() {
 
   for (size_t i = 0; i < old_size; ++i) {
     auto& bucket = buckets_[i];
-    if (bucket.IsEmpty()) continue;
+    if (bucket.empty()) continue;
 
     auto iter = bucket.begin();
     auto iter_prev = iter;
@@ -471,7 +471,7 @@ HashSet<T>::ConstIterator::operator++() {
   while (true) {
     ++bucket_iter_;
     if (bucket_iter_ == bucket_end_) break;
-    if (bucket_iter_->IsEmpty()) continue;
+    if (bucket_iter_->empty()) continue;
     entry_iter_ = bucket_iter_->begin();
     return *this;
   }
@@ -550,7 +550,7 @@ HashSet<T>::Iterator::operator++() {
   while (true) {
     ++bucket_iter_;
     if (bucket_iter_ == bucket_end) break;
-    if (bucket_iter_->IsEmpty()) continue;
+    if (bucket_iter_->empty()) continue;
     entry_iter_ = bucket_iter_->begin();
     return *this;
   }

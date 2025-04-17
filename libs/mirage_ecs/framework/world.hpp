@@ -18,7 +18,7 @@ class World {
 
  private:
   base::HashMap<TypeId, base::Owned<Resource>> resource_map_;
-  // base::HashMap<TypeSet, Archetype> archetype_map_;
+  base::HashMap<TypeSet, Archetype> archetype_map_;
 };
 
 }  // namespace mirage::ecs
