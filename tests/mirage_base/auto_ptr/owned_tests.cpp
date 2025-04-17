@@ -36,7 +36,7 @@ TEST(OwnedPtrTests, Construct) {
   const auto base = new Base(&is_destructed);
   auto raw_owned = Owned(base);
   owned = std::move(raw_owned);
-  EXPECT_EQ(owned.Get(), base);
+  EXPECT_EQ(owned.raw_ptr(), base);
   EXPECT_TRUE(raw_owned.IsNull());  // NOLINT: Use after move.
 
   EXPECT_EQ(is_destructed, 1);

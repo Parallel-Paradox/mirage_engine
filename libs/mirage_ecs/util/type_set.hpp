@@ -13,9 +13,11 @@ class TypeSet {
   MIRAGE_ECS TypeSet() = default;
   MIRAGE_ECS ~TypeSet() = default;
 
+  MIRAGE_ECS TypeSet(const TypeSet &) = delete;
+  MIRAGE_ECS TypeSet &operator=(const TypeSet &) = delete;
+
   MIRAGE_ECS TypeSet(TypeSet &&other) noexcept;
-  MIRAGE_ECS TypeSet &operator=(
-      TypeSet &&other) noexcept;
+  MIRAGE_ECS TypeSet &operator=(TypeSet &&other) noexcept;
 
   MIRAGE_ECS [[nodiscard]] TypeSet Clone() const;
 
@@ -65,9 +67,7 @@ void TypeSet::AddType() {
 
 template <>
 struct base::Hash<ecs::TypeSet> {
-  size_t operator()(const ecs::TypeSet &set) const {
-    return set.GetMask();
-  }
+  size_t operator()(const ecs::TypeSet &set) const { return set.GetMask(); }
 };
 
 }  // namespace mirage

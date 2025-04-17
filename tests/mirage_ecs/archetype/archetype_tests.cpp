@@ -8,10 +8,10 @@ using namespace mirage::ecs;
 
 TEST(ArchetypeTests, OffsetAndAlignment) {
   const auto archetype = Archetype::New<int64_t, int32_t, bool>();
-  EXPECT_EQ(archetype.GetEntityAlign(), 8);
-  EXPECT_EQ(archetype.GetEntitySize(), 16);
+  EXPECT_EQ(archetype.entity_align(), 8);
+  EXPECT_EQ(archetype.entity_size(), 16);
 
-  const auto& offset_map = archetype.GetTypeAddrOffsetMap();
+  const auto& offset_map = archetype.type_addr_offset_map();
   EXPECT_EQ(offset_map.TryFind(TypeId::Of<int64_t>())->val, 0);
   EXPECT_EQ(offset_map.TryFind(TypeId::Of<int32_t>())->val, 8);
   EXPECT_EQ(offset_map.TryFind(TypeId::Of<bool>())->val, 12);

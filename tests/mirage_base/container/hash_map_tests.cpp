@@ -6,8 +6,8 @@ using namespace mirage::base;
 
 TEST(HashMapTests, ListConstruct) {
   const HashMap<int32_t, int32_t> map{{1, 1}, {2, 2}, {3, 3}};
-  EXPECT_FALSE(map.IsEmpty());
-  EXPECT_EQ(map.GetSize(), 3);
+  EXPECT_FALSE(map.empty());
+  EXPECT_EQ(map.size(), 3);
   for (int32_t i = 1; i <= 3; ++i) {
     EXPECT_NE(map.TryFind(i), map.end());
     EXPECT_EQ(map.TryFind(i)->key, i);
@@ -18,20 +18,20 @@ TEST(HashMapTests, ListConstruct) {
 
 TEST(HashMapTests, Insert) {
   HashMap<int32_t, int32_t> map;
-  EXPECT_TRUE(map.IsEmpty());
-  EXPECT_EQ(map.GetSize(), 0);
+  EXPECT_TRUE(map.empty());
+  EXPECT_EQ(map.size(), 0);
 
   auto rv = map.Insert(1, 1);
-  EXPECT_EQ(map.GetSize(), 1);
-  EXPECT_FALSE(rv.IsValid());
+  EXPECT_EQ(map.size(), 1);
+  EXPECT_FALSE(rv.is_valid());
   EXPECT_EQ(map.TryFind(1)->key, 1);
   EXPECT_EQ(map.TryFind(1)->val, 1);
 
   rv = map.Insert(1, 2);
-  EXPECT_EQ(map.GetSize(), 1);
-  EXPECT_TRUE(rv.IsValid());
-  EXPECT_EQ(rv.GetRef().key, 1);
-  EXPECT_EQ(rv.GetRef().val, 1);
+  EXPECT_EQ(map.size(), 1);
+  EXPECT_TRUE(rv.is_valid());
+  EXPECT_EQ(rv.ref().key, 1);
+  EXPECT_EQ(rv.ref().val, 1);
   EXPECT_EQ(map.TryFind(1)->key, 1);
   EXPECT_EQ(map.TryFind(1)->val, 2);
 }
@@ -39,15 +39,15 @@ TEST(HashMapTests, Insert) {
 TEST(HashMapTests, Remove) {
   HashMap<int32_t, int32_t> map;
   auto rv = map.Remove(1);
-  EXPECT_FALSE(rv.IsValid());
-  EXPECT_EQ(map.GetSize(), 0);
+  EXPECT_FALSE(rv.is_valid());
+  EXPECT_EQ(map.size(), 0);
 
   map.Insert(1, 1);
   rv = map.Remove(1);
-  EXPECT_TRUE(rv.IsValid());
-  EXPECT_EQ(rv.GetRef().key, 1);
-  EXPECT_EQ(rv.GetRef().val, 1);
-  EXPECT_EQ(map.GetSize(), 0);
+  EXPECT_TRUE(rv.is_valid());
+  EXPECT_EQ(rv.ref().key, 1);
+  EXPECT_EQ(rv.ref().val, 1);
+  EXPECT_EQ(map.size(), 0);
   EXPECT_EQ(map.TryFind(1), map.end());
 }
 

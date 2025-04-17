@@ -67,8 +67,8 @@ class HashMap {
   ConstIterator TryFind(const Key& key) const;
   Iterator TryFind(const Key& key);
 
-  [[nodiscard]] bool IsEmpty() const;
-  [[nodiscard]] size_t GetSize() const;
+  [[nodiscard]] bool empty() const;
+  [[nodiscard]] size_t size() const;
 
   ConstIterator begin() const;
   ConstIterator end() const;
@@ -200,12 +200,12 @@ typename HashMap<Key, Val>::Iterator HashMap<Key, Val>::TryFind(
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
-bool HashMap<Key, Val>::IsEmpty() const {
+bool HashMap<Key, Val>::empty() const {
   return kv_set_.IsEmpty();
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
-size_t HashMap<Key, Val>::GetSize() const {
+size_t HashMap<Key, Val>::size() const {
   return kv_set_.GetSize();
 }
 

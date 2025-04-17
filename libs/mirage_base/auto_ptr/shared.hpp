@@ -44,10 +44,10 @@ class Shared {
 
   T* operator->() const;
   T& operator*() const;
-  T* Get() const;
+  T* raw_ptr() const;
   [[nodiscard]] bool IsNull() const;
-  [[nodiscard]] size_t GetRefCnt() const;
-  [[nodiscard]] size_t GetWeakRefCnt() const;
+  [[nodiscard]] size_t ref_cnt() const;
+  [[nodiscard]] size_t weak_ref_cnt() const;
 
  private:
   friend class Weak<T, R>;
@@ -101,7 +101,7 @@ template <typename T, IsRefCount R>
 void Shared<T, R>::Reset() {
   if (ref_cnt_ptr_ && ref_cnt_ptr_->TryRelease()) {
     delete raw_ptr_;
-    if (weak_ref_cnt_ptr_->GetCnt() == 0) {
+    if (weak_ref_cnt_ptr_->cnt() == 0) {
       delete ref_cnt_ptr_;
       delete weak_ref_cnt_ptr_;
     }
@@ -159,7 +159,7 @@ T& Shared<T, R>::operator*() const {
 }
 
 template <typename T, IsRefCount R>
-T* Shared<T, R>::Get() const {
+T* Shared<T, R>::raw_ptr() const {
   return raw_ptr_;
 }
 
@@ -169,13 +169,13 @@ bool Shared<T, R>::IsNull() const {
 }
 
 template <typename T, IsRefCount R>
-size_t Shared<T, R>::GetRefCnt() const {
-  return ref_cnt_ptr_->GetCnt();
+size_t Shared<T, R>::ref_cnt() const {
+  return ref_cnt_ptr_->cnt();
 }
 
 template <typename T, IsRefCount R>
-size_t Shared<T, R>::GetWeakRefCnt() const {
-  return weak_ref_cnt_ptr_->GetCnt();
+size_t Shared<T, R>::weak_ref_cnt() const {
+  return weak_ref_cnt_ptr_->cnt();
 }
 
 template <typename T, IsRefCount R>

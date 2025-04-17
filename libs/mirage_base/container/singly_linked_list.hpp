@@ -41,7 +41,7 @@ class SinglyLinkedList {
 
   T RemoveHead();
   void Clear();
-  [[nodiscard]] bool IsEmpty() const;
+  [[nodiscard]] bool empty() const;
 
   Iterator begin();
   Iterator end();
@@ -254,7 +254,7 @@ void SinglyLinkedList<T>::Clear() {
 }
 
 template <std::move_constructible T>
-bool SinglyLinkedList<T>::IsEmpty() const {
+bool SinglyLinkedList<T>::empty() const {
   return begin() == end();
 }
 

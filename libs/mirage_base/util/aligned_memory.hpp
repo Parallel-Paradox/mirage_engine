@@ -15,15 +15,15 @@ class AlignedMemory {
   AlignedMemory(const AlignedMemory&) = delete;
   AlignedMemory(AlignedMemory&&) = delete;
 
-  explicit AlignedMemory(T&& val) { new (GetPtr()) T(std::move(val)); }
+  explicit AlignedMemory(T&& val) { new (ptr()) T(std::move(val)); }
 
-  T* GetPtr() { return (T*)mem_; }  // NOLINT: std::byte* to T*
+  T* ptr() { return (T*)mem_; }  // NOLINT: std::byte* to T*
 
-  const T* GetConstPtr() const { return (T*)mem_; }  // NOLINT: std::byte* to T*
+  const T* ptr_const() const { return (T*)mem_; }  // NOLINT: std::byte* to T*
 
-  T& GetRef() { return *GetPtr(); }
+  T& ref() { return *ptr(); }
 
-  const T& GetConstRef() const { return *GetConstPtr(); }
+  const T& ref_const() const { return *ptr_const(); }
 
  private:
   alignas(T) std::byte mem_[sizeof(T)]{};

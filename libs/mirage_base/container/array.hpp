@@ -55,14 +55,14 @@ class Array {
 
   void Reserve(size_t capacity);
 
-  T* GetRawPtr() const;
+  T* data() const;
 
-  [[nodiscard]] size_t GetSize() const;
-  void SetSize(size_t size);
-  [[nodiscard]] bool IsEmpty() const;
+  [[nodiscard]] size_t size() const;
+  void set_size(size_t size);
+  [[nodiscard]] bool empty() const;
 
-  [[nodiscard]] size_t GetCapacity() const;
-  void SetCapacity(size_t capacity);
+  [[nodiscard]] size_t capacity() const;
+  void set_capacity(size_t capacity);
   void ShrinkToFit();
 
   Iterator begin();
@@ -227,7 +227,7 @@ Array<T>::~Array() noexcept {
 template <std::move_constructible T>
 void Array<T>::Clear() {
   for (size_t i = 0; i < size_; ++i) {
-    data_[i].GetPtr()->~T();
+    data_[i].ptr()->~T();
   }
   delete[] data_;
   data_ = nullptr;
@@ -246,31 +246,31 @@ template <std::move_constructible T>
 template <typename... Args>
 void Array<T>::Emplace(Args&&... args) {
   EnsureNotFull();
-  new (data_[size_].GetPtr()) T(std::forward<Args>(args)...);
+  new (data_[size_].ptr()) T(std::forward<Args>(args)...);
   ++size_;
 }
 
 template <std::move_constructible T>
 template <typename... Args>
 void Array<T>::Insert(const size_t index, Args&&... args) {
-  MIRAGE_DCHECK(!IsEmpty());
+  MIRAGE_DCHECK(!empty());
   MIRAGE_DCHECK(index < size_);
 
   EnsureNotFull();
-  new (data_[size_].GetPtr()) T(std::move(data_[size_ - 1].GetRef()));
+  new (data_[size_].ptr()) T(std::move(data_[size_ - 1].GetRef()));
   for (size_t i = size_ - 1; i > index; --i) {
-    data_[i].GetPtr()->~T();
-    new (data_[i].GetPtr()) T(std::move(data_[i - 1].GetRef()));
+    data_[i].ptr()->~T();
+    new (data_[i].ptr()) T(std::move(data_[i - 1].ref()));
   }
 
-  new (data_[index].GetPtr()) T(std::forward<Args>(args)...);
+  new (data_[index].ptr()) T(std::forward<Args>(args)...);
   ++size_;
 }
 
 template <std::move_constructible T>
 template <typename... Args>
 void Array<T>::Insert(ConstIterator iter, Args&&... args) {
-  MIRAGE_DCHECK(!IsEmpty());
+  MIRAGE_DCHECK(!empty());
   MIRAGE_DCHECK(iter);
   MIRAGE_DCHECK(iter >= begin());
   Insert(iter - begin(), std::forward<Args>(args)...);
@@ -280,12 +280,12 @@ template <std::move_constructible T>
 T Array<T>::Pop() {
   MIRAGE_DCHECK(size_ != 0);
   --size_;
-  return std::move(data_[size_].GetRef());
+  return std::move(data_[size_].ref());
 }
 
 template <std::move_constructible T>
 T& Array<T>::operator[](size_t index) const {
-  return data_[index].GetRef();
+  return data_[index].ref();
 }
 
 template <std::move_constructible T>
@@ -293,7 +293,7 @@ T* Array<T>::TryGet(size_t index) const {
   if (index >= size_) {
     return nullptr;
   }
-  return data_[index].GetPtr();
+  return data_[index].ptr();
 }
 
 template <std::move_constructible T>
@@ -308,7 +308,7 @@ bool Array<T>::operator==(const Array& other) const {
     return false;  // Can't be compared.
   } else {
     for (size_t i = 0; i < size_; ++i) {
-      if (data_[i].GetConstRef() != other.data_[i].GetConstRef()) {
+      if (data_[i].ref_const() != other.data_[i].GetConstRef()) {
         return false;
       }
     }
@@ -321,28 +321,28 @@ void Array<T>::Reserve(const size_t capacity) {
   if (capacity <= capacity_) {
     return;
   }
-  SetCapacity(capacity);
+  set_capacity(capacity);
 }
 
 template <std::move_constructible T>
-T* Array<T>::GetRawPtr() const {
+T* Array<T>::data() const {
   return reinterpret_cast<T*>(data_);
 }
 
 template <std::move_constructible T>
-size_t Array<T>::GetSize() const {
+size_t Array<T>::size() const {
   return size_;
 }
 
 template <std::move_constructible T>
-void Array<T>::SetSize(const size_t size) {
+void Array<T>::set_size(const size_t size) {
   if (size == size_) {
     return;
   }
   if (size < size_) {
     while (size < size_) {
       --size_;
-      data_[size_].GetPtr()->~T();
+      data_[size_].ptr()->~T();
     }
     return;
   }
@@ -352,24 +352,24 @@ void Array<T>::SetSize(const size_t size) {
   } else {
     Reserve(size);
     while (size > size_) {
-      new (data_[size_].GetPtr()) T();
+      new (data_[size_].ptr()) T();
       ++size_;
     }
   }
 }
 
 template <std::move_constructible T>
-bool Array<T>::IsEmpty() const {
+bool Array<T>::empty() const {
   return size_ == 0;
 }
 
 template <std::move_constructible T>
-size_t Array<T>::GetCapacity() const {
+size_t Array<T>::capacity() const {
   return capacity_;
 }
 
 template <std::move_constructible T>
-void Array<T>::SetCapacity(const size_t capacity) {
+void Array<T>::set_capacity(const size_t capacity) {
   if (capacity == capacity_) {
     return;
   }
@@ -377,7 +377,7 @@ void Array<T>::SetCapacity(const size_t capacity) {
   auto* data = new AlignedMemory<T>[capacity]();
   const size_t size = capacity < size_ ? capacity : size_;
   for (size_t i = 0; i < size; ++i) {
-    T* ptr = data_[i].GetPtr();
+    T* ptr = data_[i].ptr();
     new (data[i].GetPtr()) T(std::move(*ptr));
     ptr->~T();
   }
@@ -390,27 +390,27 @@ void Array<T>::SetCapacity(const size_t capacity) {
 
 template <std::move_constructible T>
 void Array<T>::ShrinkToFit() {
-  SetCapacity(size_);
+  set_capacity(size_);
 }
 
 template <std::move_constructible T>
 typename Array<T>::Iterator Array<T>::begin() {
-  return Iterator(GetRawPtr());
+  return Iterator(data());
 }
 
 template <std::move_constructible T>
 typename Array<T>::Iterator Array<T>::end() {
-  return Iterator(GetRawPtr() + size_);
+  return Iterator(data() + size_);
 }
 
 template <std::move_constructible T>
 typename Array<T>::ConstIterator Array<T>::begin() const {
-  return ConstIterator(GetRawPtr());
+  return ConstIterator(data());
 }
 
 template <std::move_constructible T>
 typename Array<T>::ConstIterator Array<T>::end() const {
-  return ConstIterator(GetRawPtr() + size_);
+  return ConstIterator(data() + size_);
 }
 
 template <std::move_constructible T>
@@ -419,7 +419,7 @@ void Array<T>::EnsureNotFull() {
     capacity_ = 1;
     data_ = new AlignedMemory<T>[1]();
   } else if (size_ == capacity_) {
-    SetCapacity(2 * capacity_);
+    set_capacity(2 * capacity_);
   }
 }
 

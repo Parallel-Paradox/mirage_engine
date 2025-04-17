@@ -9,8 +9,8 @@ using namespace mirage::base;
 TEST(RefCountTests, Counstruct) {
   EXPECT_TRUE(IsRefCount<RefCountLocal>);
   EXPECT_TRUE(IsRefCount<RefCountAsync>);
-  EXPECT_EQ(RefCountLocal(1).GetCnt(), 1);
-  EXPECT_EQ(RefCountAsync(1).GetCnt(), 1);
+  EXPECT_EQ(RefCountLocal(1).cnt(), 1);
+  EXPECT_EQ(RefCountAsync(1).cnt(), 1);
 }
 
 TEST(RefCountTests, ZeroCountBehaviour) {
@@ -19,11 +19,11 @@ TEST(RefCountTests, ZeroCountBehaviour) {
 
     const bool increase = count->TryIncrease();
     EXPECT_FALSE(increase);
-    EXPECT_EQ(count->GetCnt(), 0);
+    EXPECT_EQ(count->cnt(), 0);
 
     const bool release = count->TryRelease();
     EXPECT_TRUE(release);
-    EXPECT_EQ(count->GetCnt(), 0);
+    EXPECT_EQ(count->cnt(), 0);
   };
 
   RefCountLocal count_local(1);
@@ -37,15 +37,15 @@ TEST(RefCountTests, ResetBehaviour) {
   auto checker = [](RefCount* count) {
     const bool increase = count->TryIncrease();
     EXPECT_TRUE(increase);
-    EXPECT_EQ(count->GetCnt(), 2);
+    EXPECT_EQ(count->cnt(), 2);
 
     bool release = count->TryRelease();
     EXPECT_FALSE(release);
-    EXPECT_EQ(count->GetCnt(), 1);
+    EXPECT_EQ(count->cnt(), 1);
 
     release = count->TryRelease();
     EXPECT_TRUE(release);
-    EXPECT_EQ(count->GetCnt(), 0);
+    EXPECT_EQ(count->cnt(), 0);
   };
 
   RefCountLocal count_local(1);
@@ -68,5 +68,5 @@ TEST(RefCountTests, Async) {
   std::thread async_thread(async_operation);
   async_operation();
   async_thread.join();
-  EXPECT_EQ(count.GetCnt(), 1);
+  EXPECT_EQ(count.cnt(), 1);
 }

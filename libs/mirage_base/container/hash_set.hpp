@@ -224,16 +224,16 @@ Optional<T> HashSet<T>::Insert(T val) {
   }
 
   ++size_;
-  if (buckets_.IsEmpty()) {
-    buckets_.SetSize(16);
+  if (buckets_.empty()) {
+    buckets_.set_size(16);
   }
-  if (const float load_factor = static_cast<float>(size_) / buckets_.GetSize();
+  if (const float load_factor = static_cast<float>(size_) / buckets_.size();
       load_factor > max_load_factor_) {
     ExtendAndRehash();
   }
 
   const size_t hash = hasher_(val);
-  const size_t mask = buckets_.GetSize() - 1;
+  const size_t mask = buckets_.size() - 1;
   auto& bucket = buckets_[hash & mask];
   bucket.EmplaceHead(Entry{std::move(val), hash});
   return Optional<T>::None();
@@ -251,7 +251,7 @@ Optional<T> HashSet<T>::Remove(const T1& val)
     return Optional<T>::None();
   }
   const size_t hash = hasher_(val);
-  const size_t mask = buckets_.GetSize() - 1;
+  const size_t mask = buckets_.size() - 1;
   auto& bucket = buckets_[hash & mask];
 
   auto iter = bucket.begin();
@@ -286,7 +286,7 @@ typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T1& val) const
     return end();
   }
   const size_t hash = hasher_(val);
-  const size_t mask = buckets_.GetSize() - 1;
+  const size_t mask = buckets_.size() - 1;
   const size_t bucket_index = hash & mask;
   auto bucket_iter = buckets_.begin() + bucket_index;
   for (auto iter = bucket_iter->begin(); iter != bucket_iter->end(); ++iter) {
@@ -309,7 +309,7 @@ typename HashSet<T>::Iterator HashSet<T>::TryFind(const T1& val)
     return end();
   }
   const size_t hash = hasher_(val);
-  const size_t mask = buckets_.GetSize() - 1;
+  const size_t mask = buckets_.size() - 1;
   const size_t bucket_index = hash & mask;
   auto bucket_iter = buckets_.begin() + bucket_index;
   for (auto iter = bucket_iter->begin(); iter != bucket_iter->end(); ++iter) {
@@ -344,7 +344,7 @@ float HashSet<T>::GetMaxLoadFactor() const {
 template <HashSetValType T>
 void HashSet<T>::SetMaxLoadFactor(const float max_load_factor) {
   max_load_factor_ = max_load_factor;
-  if (const float load_factor = static_cast<float>(size_) / buckets_.GetSize();
+  if (const float load_factor = static_cast<float>(size_) / buckets_.size();
       load_factor > max_load_factor_) {
     ExtendAndRehash();
   }
@@ -352,7 +352,7 @@ void HashSet<T>::SetMaxLoadFactor(const float max_load_factor) {
 
 template <HashSetValType T>
 size_t HashSet<T>::GetBucketSize() const {
-  return buckets_.GetSize();
+  return buckets_.size();
 }
 
 template <HashSetValType T>
@@ -387,7 +387,7 @@ typename HashSet<T>::Iterator HashSet<T>::end() {
 
 template <HashSetValType T>
 void HashSet<T>::ExtendAndRehash() {
-  const size_t old_size = buckets_.GetSize();
+  const size_t old_size = buckets_.size();
   MIRAGE_DCHECK(old_size != 0);
   MIRAGE_DCHECK((old_size & (old_size - 1)) == 0);  // size should be 2^n
 
@@ -398,7 +398,7 @@ void HashSet<T>::ExtendAndRehash() {
   }
 
   const size_t new_size = old_size * 2;
-  buckets_.SetSize(new_size);
+  buckets_.set_size(new_size);
 
   for (size_t i = 0; i < old_size; ++i) {
     auto& bucket = buckets_[i];

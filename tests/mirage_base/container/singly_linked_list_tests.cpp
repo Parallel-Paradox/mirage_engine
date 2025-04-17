@@ -22,6 +22,7 @@ TEST(SinglyLinkedListTests, Iterate) {
   EXPECT_TRUE(std::forward_iterator<SinglyLinkedList<int32_t>::ConstIterator>);
 
   SinglyLinkedList<int32_t> list = {0, 1, 2};
+  EXPECT_FALSE(list.empty());
 
   int cnt = 0;
   for (int32_t num : list) {
@@ -76,6 +77,7 @@ TEST(SinglyLinkedListTests, Destruct) {
   int32_t destruct_cnt = 0;
   {
     SinglyLinkedList<Owned<Counter>> list;
+    EXPECT_TRUE(list.empty());
     list.EmplaceHead(Owned<Counter>::New(&destruct_cnt));
     list.begin().EmplaceAfter(Owned<Counter>::New(&destruct_cnt));
   }

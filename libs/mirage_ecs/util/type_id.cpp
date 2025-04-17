@@ -21,15 +21,15 @@ std::strong_ordering TypeMeta::operator<=>(const TypeMeta& other) const {
   return std::strong_ordering::greater;
 }
 
-const char* TypeMeta::GetTypeName() const { return type_index_.name(); }
+const char* TypeMeta::type_name() const { return type_index_.name(); }
 
-size_t TypeMeta::GetTypeSize() const { return type_size_; }
+size_t TypeMeta::type_size() const { return type_size_; }
 
-size_t TypeMeta::GetTypeAlign() const { return type_align_; }
+size_t TypeMeta::type_align() const { return type_align_; }
 
-size_t TypeMeta::GetHashCode() const { return hash_code_; }
+size_t TypeMeta::hash_code() const { return hash_code_; }
 
-size_t TypeMeta::GetBitFlag() const { return bit_flag_; }
+size_t TypeMeta::bit_flag() const { return bit_flag_; }
 
 TypeMeta::TypeMeta(const std::type_index type_index, const size_t type_size,
                    const size_t type_align)
@@ -53,12 +53,12 @@ std::strong_ordering TypeId::operator<=>(const TypeId& other) const {
   return *type_meta_ <=> *other.type_meta_;
 }
 
-const char* TypeId::GetTypeName() const { return type_meta_->GetTypeName(); }
+const char* TypeId::type_name() const { return type_meta_->type_name(); }
 
-size_t TypeId::GetTypeSize() const { return type_meta_->GetTypeSize(); }
+size_t TypeId::type_size() const { return type_meta_->type_size(); }
 
-size_t TypeId::GetTypeAlign() const { return type_meta_->GetTypeAlign(); }
+size_t TypeId::type_align() const { return type_meta_->type_align(); }
 
-size_t TypeId::GetHashCode() const { return type_meta_->GetHashCode(); }
+size_t TypeId::hash_code() const { return type_meta_->hash_code(); }
 
-size_t TypeId::GetBitFlag() const { return type_meta_->GetBitFlag(); }
+size_t TypeId::bit_flag() const { return type_meta_->bit_flag(); }

@@ -23,11 +23,11 @@ class Archetype {
   static Archetype New();
   explicit MIRAGE_ECS Archetype(TypeSet &&type_set);
 
-  [[nodiscard]] MIRAGE_ECS const TypeSet &GetTypeSet() const;
-  [[nodiscard]] MIRAGE_ECS size_t GetEntityAlign() const;
-  [[nodiscard]] MIRAGE_ECS size_t GetEntitySize() const;
-  [[nodiscard]] MIRAGE_ECS const base::HashMap<TypeId, size_t>
-      &GetTypeAddrOffsetMap() const;
+  [[nodiscard]] MIRAGE_ECS const TypeSet &type_set() const;
+  [[nodiscard]] MIRAGE_ECS size_t entity_align() const;
+  [[nodiscard]] MIRAGE_ECS size_t entity_size() const;
+  [[nodiscard]] MIRAGE_ECS const base::HashMap<TypeId, size_t> &
+  type_addr_offset_map() const;
 
  private:
   // TODO

@@ -28,11 +28,11 @@ class TypeMeta {
   MIRAGE_ECS bool operator!=(const TypeMeta &other) const;
   MIRAGE_ECS std::strong_ordering operator<=>(const TypeMeta &other) const;
 
-  [[nodiscard]] MIRAGE_ECS const char *GetTypeName() const;
-  [[nodiscard]] MIRAGE_ECS size_t GetTypeSize() const;
-  [[nodiscard]] MIRAGE_ECS size_t GetTypeAlign() const;
-  [[nodiscard]] MIRAGE_ECS size_t GetHashCode() const;
-  [[nodiscard]] MIRAGE_ECS size_t GetBitFlag() const;
+  [[nodiscard]] MIRAGE_ECS const char *type_name() const;
+  [[nodiscard]] MIRAGE_ECS size_t type_size() const;
+  [[nodiscard]] MIRAGE_ECS size_t type_align() const;
+  [[nodiscard]] MIRAGE_ECS size_t hash_code() const;
+  [[nodiscard]] MIRAGE_ECS size_t bit_flag() const;
 
  private:
   MIRAGE_ECS TypeMeta(std::type_index type_index, size_t type_size,
@@ -64,11 +64,11 @@ class MIRAGE_ECS TypeId {
   bool operator!=(const TypeId &other) const;
   std::strong_ordering operator<=>(const TypeId &other) const;
 
-  [[nodiscard]] const char *GetTypeName() const;
-  [[nodiscard]] size_t GetTypeSize() const;
-  [[nodiscard]] size_t GetTypeAlign() const;
-  [[nodiscard]] size_t GetHashCode() const;
-  [[nodiscard]] size_t GetBitFlag() const;
+  [[nodiscard]] const char *type_name() const;
+  [[nodiscard]] size_t type_size() const;
+  [[nodiscard]] size_t type_align() const;
+  [[nodiscard]] size_t hash_code() const;
+  [[nodiscard]] size_t bit_flag() const;
 
  private:
   const TypeMeta *type_meta_{nullptr};
@@ -79,7 +79,7 @@ class MIRAGE_ECS TypeId {
 template <>
 struct base::Hash<ecs::TypeId> {
   size_t operator()(const ecs::TypeId &type_id) const {
-    return type_id.GetHashCode();
+    return type_id.hash_code();
   }
 };
 

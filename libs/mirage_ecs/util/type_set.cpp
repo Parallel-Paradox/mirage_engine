@@ -34,7 +34,7 @@ void TypeSet::AddTypeId(const TypeId type_id) {
     if (*iter > type_id) break;
     ++iter;
   }
-  mask_ |= type_id.GetBitFlag();
+  mask_ |= type_id.bit_flag();
   if (iter != type_array_.end()) {
     type_array_.Insert(iter, type_id);
   } else {
@@ -44,9 +44,9 @@ void TypeSet::AddTypeId(const TypeId type_id) {
 
 bool TypeSet::With(const TypeSet& set) const {
   const auto& set_type_array = set.GetTypeArray();
-  if (set_type_array.IsEmpty()) return true;
+  if (set_type_array.empty()) return true;
   if ((set.GetMask() | GetMask()) != GetMask() ||
-      set_type_array.GetSize() > type_array_.GetSize())
+      set_type_array.size() > type_array_.size())
     return false;
 
   auto set_type_iter = set_type_array.begin();
@@ -60,7 +60,7 @@ bool TypeSet::With(const TypeSet& set) const {
 
 bool TypeSet::Without(const TypeSet& set) const {
   const auto& set_type_array = set.GetTypeArray();
-  if (type_array_.IsEmpty() || set_type_array.IsEmpty()) return true;
+  if (type_array_.empty() || set_type_array.empty()) return true;
 
   auto set_type_iter = set_type_array.begin();
   for (const auto& type_id : type_array_) {

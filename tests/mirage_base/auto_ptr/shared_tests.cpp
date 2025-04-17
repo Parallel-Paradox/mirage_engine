@@ -34,29 +34,29 @@ TEST(SharedPtrTests, Construct) {
   // List construct
   shared = SharedAsync<Base>::New(&is_destructed);
   EXPECT_FALSE(shared.IsNull());
-  EXPECT_EQ(shared.GetRefCnt(), 1);
-  EXPECT_EQ(shared.GetWeakRefCnt(), 0);
+  EXPECT_EQ(shared.ref_cnt(), 1);
+  EXPECT_EQ(shared.weak_ref_cnt(), 0);
 
   // Raw construct
   const auto base = new Base(&is_destructed);
   SharedAsync<Base> raw_shared(base);
-  EXPECT_EQ(raw_shared.Get(), base);
-  EXPECT_EQ(raw_shared.GetRefCnt(), 1);
-  EXPECT_EQ(raw_shared.GetWeakRefCnt(), 0);
+  EXPECT_EQ(raw_shared.raw_ptr(), base);
+  EXPECT_EQ(raw_shared.ref_cnt(), 1);
+  EXPECT_EQ(raw_shared.weak_ref_cnt(), 0);
 
   shared = raw_shared.Clone();
-  EXPECT_EQ(shared.GetRefCnt(), 2);
+  EXPECT_EQ(shared.ref_cnt(), 2);
   EXPECT_EQ(is_destructed, 1);  // List constructed shared is freed.
 
   raw_shared.Reset();
   EXPECT_EQ(is_destructed, 1);
-  EXPECT_EQ(shared.Get(), base);
-  EXPECT_EQ(shared.GetRefCnt(), 1);
-  EXPECT_EQ(shared.GetWeakRefCnt(), 0);
+  EXPECT_EQ(shared.raw_ptr(), base);
+  EXPECT_EQ(shared.ref_cnt(), 1);
+  EXPECT_EQ(shared.weak_ref_cnt(), 0);
 
   // Move construct
   SharedAsync<Base> move_shared(std::move(shared));
-  EXPECT_EQ(move_shared.Get(), base);
+  EXPECT_EQ(move_shared.raw_ptr(), base);
   EXPECT_TRUE(shared.IsNull());  // NOLINT: Use after move.
 
   move_shared.Reset();
@@ -86,7 +86,7 @@ TEST(SharedPtrTests, CloneAsync) {
   async_operation();
   async_thread.join();
   EXPECT_EQ(cnt, 0);
-  EXPECT_EQ(ptr.GetRefCnt(), 1);
+  EXPECT_EQ(ptr.ref_cnt(), 1);
 }
 
 TEST(SharedPtrTests, ConvertBaseToDerive) {

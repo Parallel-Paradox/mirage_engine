@@ -13,7 +13,7 @@ class Optional {
 
   Optional(Optional&& other) noexcept : is_valid_(other.is_valid_) {
     if (other.is_valid_) {
-      new (obj_.GetPtr()) T(std::move(other.Unwrap()));
+      new (obj_.ptr()) T(std::move(other.Unwrap()));
     }
   }
 
@@ -29,7 +29,7 @@ class Optional {
 
   ~Optional() {
     if (is_valid_) {
-      obj_.GetPtr()->~T();
+      obj_.ptr()->~T();
     }
     is_valid_ = false;
   }
@@ -44,17 +44,17 @@ class Optional {
 
   static Optional None() { return Optional(); }
 
-  [[nodiscard]] bool IsValid() const { return is_valid_; }
+  [[nodiscard]] bool is_valid() const { return is_valid_; }
 
   T Unwrap() {
     MIRAGE_DCHECK(is_valid_);
     is_valid_ = false;
-    return std::move(obj_.GetRef());
+    return std::move(obj_.ref());
   }
 
-  T& GetRef() {
+  T& ref() {
     MIRAGE_DCHECK(is_valid_);
-    return obj_.GetRef();
+    return obj_.ref();
   }
 
  private:

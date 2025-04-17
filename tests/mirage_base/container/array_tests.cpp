@@ -20,11 +20,11 @@ TEST(ArrayTests, Construct) {
   const Array<int32_t> copy_array(array);
   EXPECT_EQ(array, copy_array);
 
-  int32_t* raw_ptr = array.GetRawPtr();
+  int32_t* raw_ptr = array.data();
   const Array<int32_t> move_array(std::move(array));
-  EXPECT_TRUE(array.IsEmpty());  // NOLINT(*-use-after-move): Allow for test.
-  EXPECT_EQ(array.GetRawPtr(), nullptr);
-  EXPECT_EQ(raw_ptr, move_array.GetRawPtr());
+  EXPECT_TRUE(array.empty());  // NOLINT(*-use-after-move): Allow for test.
+  EXPECT_EQ(array.data(), nullptr);
+  EXPECT_EQ(raw_ptr, move_array.data());
   EXPECT_EQ(move_array, copy_array);
 }
 
@@ -43,33 +43,33 @@ TEST(ArrayTests, DestructAfterMoved) {
 
 TEST(ArrayTests, ChangeSizeAndCapacity) {
   Array<int32_t> array = {0, 1, 2};
-  EXPECT_EQ(array.GetSize(), 3);
-  EXPECT_EQ(array.GetCapacity(), 3);
+  EXPECT_EQ(array.size(), 3);
+  EXPECT_EQ(array.capacity(), 3);
 
   array.Push(3);
-  EXPECT_EQ(array.GetSize(), 4);
-  EXPECT_EQ(array.GetCapacity(), 6);
+  EXPECT_EQ(array.size(), 4);
+  EXPECT_EQ(array.capacity(), 6);
 
   array.Reserve(5);
-  EXPECT_EQ(array.GetSize(), 4);
-  EXPECT_EQ(array.GetCapacity(), 6);
+  EXPECT_EQ(array.size(), 4);
+  EXPECT_EQ(array.capacity(), 6);
 
-  array.SetCapacity(5);
-  EXPECT_EQ(array.GetSize(), 4);
-  EXPECT_EQ(array.GetCapacity(), 5);
+  array.set_capacity(5);
+  EXPECT_EQ(array.size(), 4);
+  EXPECT_EQ(array.capacity(), 5);
 
-  array.SetSize(5);
-  EXPECT_EQ(array.GetSize(), 5);
+  array.set_size(5);
+  EXPECT_EQ(array.size(), 5);
   EXPECT_EQ(array[4], 0);
-  EXPECT_EQ(array.GetCapacity(), 5);
+  EXPECT_EQ(array.capacity(), 5);
 
-  array.SetSize(3);
-  EXPECT_EQ(array.GetSize(), 3);
-  EXPECT_EQ(array.GetCapacity(), 5);
+  array.set_size(3);
+  EXPECT_EQ(array.size(), 3);
+  EXPECT_EQ(array.capacity(), 5);
 
   array.ShrinkToFit();
-  EXPECT_EQ(array.GetSize(), 3);
-  EXPECT_EQ(array.GetCapacity(), 3);
+  EXPECT_EQ(array.size(), 3);
+  EXPECT_EQ(array.capacity(), 3);
 }
 
 TEST(ArrayTests, CompareEquality) {

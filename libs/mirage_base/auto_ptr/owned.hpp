@@ -35,7 +35,7 @@ class Owned {
 
   T* operator->() const;
   T& operator*() const;
-  T* Get() const;
+  T* raw_ptr() const;
   [[nodiscard]] bool IsNull() const;
 
  private:
@@ -114,7 +114,7 @@ T& Owned<T>::operator*() const {
 }
 
 template <typename T>
-T* Owned<T>::Get() const {
+T* Owned<T>::raw_ptr() const {
   return raw_ptr_;
 }
 
