@@ -18,12 +18,16 @@ class AlignedMemory {
   explicit AlignedMemory(T&& val) { new (ptr()) T(std::move(val)); }
 
   T* ptr() { return (T*)mem_; }  // NOLINT: std::byte* to T*
+  T* operator->() { return ptr(); }
 
-  const T* ptr_const() const { return (T*)mem_; }  // NOLINT: std::byte* to T*
+  const T* ptr() const { return (T*)mem_; }  // NOLINT: std::byte* to T*
+  const T* operator->() const { return ptr(); }
 
   T& ref() { return *ptr(); }
+  T& operator*() { return ref(); }
 
-  const T& ref_const() const { return *ptr_const(); }
+  const T& ref() const { return *ptr(); }
+  const T& operator*() const { return ref(); }
 
  private:
   alignas(T) std::byte mem_[sizeof(T)]{};

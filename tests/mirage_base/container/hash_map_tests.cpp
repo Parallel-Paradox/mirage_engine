@@ -30,8 +30,10 @@ TEST(HashMapTests, Insert) {
   rv = map.Insert(1, 2);
   EXPECT_EQ(map.size(), 1);
   EXPECT_TRUE(rv.is_valid());
-  EXPECT_EQ(rv.ref().key(), 1);
-  EXPECT_EQ(rv.ref().val(), 1);
+
+  auto kv = rv.Unwrap();
+  EXPECT_EQ(kv.key(), 1);
+  EXPECT_EQ(kv.val(), 1);
   EXPECT_EQ(map.TryFind(1)->key(), 1);
   EXPECT_EQ(map.TryFind(1)->val(), 2);
 }
@@ -45,8 +47,10 @@ TEST(HashMapTests, Remove) {
   map.Insert(1, 1);
   rv = map.Remove(1);
   EXPECT_TRUE(rv.is_valid());
-  EXPECT_EQ(rv.ref().key(), 1);
-  EXPECT_EQ(rv.ref().val(), 1);
+
+  auto kv = rv.Unwrap();
+  EXPECT_EQ(kv.key(), 1);
+  EXPECT_EQ(kv.val(), 1);
   EXPECT_EQ(map.size(), 0);
   EXPECT_EQ(map.TryFind(1), map.end());
 }

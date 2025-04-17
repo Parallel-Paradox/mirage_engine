@@ -17,7 +17,7 @@ class Optional {
     }
   }
 
-  explicit Optional(T&& val) : is_valid_(true), obj_(std::move(val)) {}
+  explicit Optional(T&& val) : obj_(std::move(val)), is_valid_(true) {}
 
   Optional& operator=(Optional&& other) noexcept {
     if (this != &other) {
@@ -52,16 +52,11 @@ class Optional {
     return std::move(obj_.ref());
   }
 
-  T& ref() {
-    MIRAGE_DCHECK(is_valid_);
-    return obj_.ref();
-  }
-
  private:
   Optional() = default;
 
-  bool is_valid_{false};
   AlignedMemory<T> obj_;
+  bool is_valid_{false};
 };
 
 }  // namespace mirage::base

@@ -54,7 +54,9 @@ TEST(HashSetTests, Insert) {
 
   rv = set.Insert(Mark(1, 2));
   EXPECT_TRUE(rv.is_valid());
-  EXPECT_EQ(rv.ref().mark, 1);
+
+  auto rv_val = rv.Unwrap();
+  EXPECT_EQ(rv_val.mark, 1);
   EXPECT_EQ(set.GetSize(), 1);
   EXPECT_EQ(set.TryFind(Mark(1, 1))->mark, 2);
 }
@@ -67,7 +69,9 @@ TEST(HashSetTests, Remove) {
   set.Insert(Mark(1, 2));
   rv = set.Remove(Mark(1, 1));
   EXPECT_TRUE(rv.is_valid());
-  EXPECT_EQ(rv.ref().mark, 2);
+
+  auto rv_val = rv.Unwrap();
+  EXPECT_EQ(rv_val.mark, 2);
   EXPECT_EQ(set.GetSize(), 0);
 }
 

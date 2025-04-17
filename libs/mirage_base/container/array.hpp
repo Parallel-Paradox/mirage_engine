@@ -308,7 +308,7 @@ bool Array<T>::operator==(const Array& other) const {
     return false;  // Can't be compared.
   } else {
     for (size_t i = 0; i < size_; ++i) {
-      if (data_[i].ref_const() != other.data_[i].ref_const()) {
+      if (data_[i].ref() != other.data_[i].ref()) {
         return false;
       }
     }
