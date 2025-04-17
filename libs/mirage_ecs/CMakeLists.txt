@@ -5,6 +5,7 @@ set(SRC
     framework/plugin.cpp
     framework/world.cpp
     system/context.cpp
+    system/system.cpp
     util/type_id.cpp
     util/type_set.cpp)
 
