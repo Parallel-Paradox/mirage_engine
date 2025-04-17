@@ -70,8 +70,8 @@ class HashMap {
   HashMap(std::initializer_list<HashKeyVal<const Key, Val>> list)
     requires std::copy_constructible<Key> && std::copy_constructible<Val>;
 
-  Optional<HashKeyVal<const Key, Val>> Insert(Key key, Val val);
-  Optional<HashKeyVal<const Key, Val>> Remove(const Key& key);
+  Optional<HashKeyVal<Key, Val>> Insert(Key key, Val val);
+  Optional<HashKeyVal<Key, Val>> Remove(const Key& key);
 
   ConstIterator TryFind(const Key& key) const;
   Iterator TryFind(const Key& key);
@@ -178,13 +178,13 @@ HashMap<Key, Val>::HashMap(
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
-Optional<HashKeyVal<const Key, Val>> HashMap<Key, Val>::Insert(Key key,
-                                                               Val val) {
+Optional<HashKeyVal<Key, Val>> HashMap<Key, Val>::Insert(Key key, Val val) {
   Iterator iter = TryFind(key);
   if (iter == end()) {
-    return kv_set_.Insert({std::move(key), std::move(val)});
+    kv_set_.Insert({std::move(key), std::move(val)});
+    return Optional<HashKeyVal<Key, Val>>::None();
   }
-  auto rv = Optional<HashKeyVal<const Key, Val>>::New(
+  auto rv = Optional<HashKeyVal<Key, Val>>::New(
       std::move(const_cast<Key&>(iter->key())), std::move(iter->val()));
   new (const_cast<Key*>(&(iter->key()))) Key(std::move(key));
   new (&(iter->val())) Val(std::move(val));
@@ -192,8 +192,15 @@ Optional<HashKeyVal<const Key, Val>> HashMap<Key, Val>::Insert(Key key,
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
-Optional<HashKeyVal<const Key, Val>> HashMap<Key, Val>::Remove(const Key& key) {
-  return kv_set_.Remove(key);
+Optional<HashKeyVal<Key, Val>> HashMap<Key, Val>::Remove(const Key& key) {
+  Optional<HashKeyVal<const Key, Val>> removed_kv = kv_set_.Remove(key);
+  if (!removed_kv.is_valid()) {
+    return Optional<HashKeyVal<Key, Val>>::None();
+  } else {
+    auto kv_inner = removed_kv.Unwrap();
+    return Optional<HashKeyVal<Key, Val>>::New(
+        std::move(const_cast<Key&>(kv_inner.key())), std::move(kv_inner.val()));
+  }
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
