@@ -217,12 +217,12 @@ typename HashMap<Key, Val>::Iterator HashMap<Key, Val>::TryFind(
 
 template <HashMapKeyType Key, std::move_constructible Val>
 bool HashMap<Key, Val>::empty() const {
-  return kv_set_.IsEmpty();
+  return kv_set_.empty();
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
 size_t HashMap<Key, Val>::size() const {
-  return kv_set_.GetSize();
+  return kv_set_.size();
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>

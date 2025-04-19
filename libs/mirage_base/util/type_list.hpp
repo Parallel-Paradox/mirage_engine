@@ -16,12 +16,12 @@ struct GetType<0, Head, Tail...> {
 
 template <typename... Ts>
 struct TypeList {
-  [[nodiscard]] constexpr static size_t GetSize() noexcept {
+  [[nodiscard]] constexpr static size_t size() noexcept {
     return sizeof...(Ts);
   }
 
   template <size_t I>
-    requires(I < GetSize())
+    requires(I < size())
   struct Get {
     using Type = typename GetType<I, Ts...>::Type;
   };

@@ -6,9 +6,9 @@ using namespace mirage::base;
 
 TEST(HashSetTests, ListConstruct) {
   const HashSet<int32_t> set = {1, 2, 3};
-  EXPECT_EQ(set.GetSize(), 3);
+  EXPECT_EQ(set.size(), 3);
   EXPECT_LT(abs(set.GetMaxLoadFactor() - 1.0f), 1e-5);
-  EXPECT_FALSE(set.IsEmpty());
+  EXPECT_FALSE(set.empty());
   for (int32_t i = 1; i <= 3; ++i) {
     EXPECT_NE(set.TryFind(i), set.end());
   }
@@ -57,7 +57,7 @@ TEST(HashSetTests, Insert) {
 
   auto rv_val = rv.Unwrap();
   EXPECT_EQ(rv_val.mark, 1);
-  EXPECT_EQ(set.GetSize(), 1);
+  EXPECT_EQ(set.size(), 1);
   EXPECT_EQ(set.TryFind(Mark(1, 1))->mark, 2);
 }
 
@@ -72,7 +72,7 @@ TEST(HashSetTests, Remove) {
 
   auto rv_val = rv.Unwrap();
   EXPECT_EQ(rv_val.mark, 2);
-  EXPECT_EQ(set.GetSize(), 0);
+  EXPECT_EQ(set.size(), 0);
 }
 
 TEST(HashSetTests, Iterate) {
@@ -88,16 +88,16 @@ TEST(HashSetTests, RemoveByIter) {
   HashSet<size_t> set = {1, 2, 3, 18};
   auto iter = set.begin();
   EXPECT_EQ(iter.Remove(), 1);
-  EXPECT_EQ(set.GetSize(), 3);
+  EXPECT_EQ(set.size(), 3);
   EXPECT_EQ(*iter, 18);
 
   ++iter;
   EXPECT_EQ(iter.Remove(), 2);
-  EXPECT_EQ(set.GetSize(), 2);
+  EXPECT_EQ(set.size(), 2);
   EXPECT_EQ(*iter, 3);
 
   EXPECT_EQ(iter.Remove(), 3);
-  EXPECT_EQ(set.GetSize(), 1);
+  EXPECT_EQ(set.size(), 1);
   EXPECT_EQ(iter, set.end());
 
   EXPECT_NE(set.TryFind(static_cast<size_t>(18)), set.end());

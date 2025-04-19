@@ -7,13 +7,16 @@
 
 namespace mirage::ecs {
 
-template <typename T>  // NOLINT: Unused empty type.
-struct Extract {};
+template <typename T>
+struct Extract;
 
 template <typename T>
-concept ExtractType = requires(Context& context) {
+concept IsExtractType = requires(Context& context) {
   { Extract<T>::From(context) } -> std::same_as<T>;
 };
+
+template <typename... Ts>
+concept ExtractTypeList = (IsExtractType<Ts> && ...);
 
 }  // namespace mirage::ecs
 

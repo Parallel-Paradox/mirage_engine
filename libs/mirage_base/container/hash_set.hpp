@@ -41,16 +41,14 @@ class HashSet {
 
   template <typename T1>
   Optional<T> Remove(const T1& val)
-    requires requires(const T1& val1, const T& val,
-                      const Hash<T>& hasher) {
+    requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
       { val == val1 } -> std::convertible_to<bool>;
       { hasher(val1) } -> std::same_as<size_t>;
     };
 
   template <typename T1>
   ConstIterator TryFind(const T1& val) const
-    requires requires(const T1& val1, const T& val,
-                      const Hash<T>& hasher) {
+    requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
       { val == val1 } -> std::convertible_to<bool>;
       { hasher(val1) } -> std::same_as<size_t>;
     };
@@ -63,8 +61,8 @@ class HashSet {
     };
 
   void Clear();
-  [[nodiscard]] bool IsEmpty() const;
-  [[nodiscard]] size_t GetSize() const;
+  [[nodiscard]] bool empty() const;
+  [[nodiscard]] size_t size() const;
 
   [[nodiscard]] float GetMaxLoadFactor() const;
   void SetMaxLoadFactor(float max_load_factor);
@@ -327,12 +325,12 @@ void HashSet<T>::Clear() {
 }
 
 template <HashSetValType T>
-bool HashSet<T>::IsEmpty() const {
+bool HashSet<T>::empty() const {
   return size_ == 0;
 }
 
 template <HashSetValType T>
-size_t HashSet<T>::GetSize() const {
+size_t HashSet<T>::size() const {
   return size_;
 }
 
@@ -357,7 +355,7 @@ size_t HashSet<T>::GetBucketSize() const {
 
 template <HashSetValType T>
 typename HashSet<T>::ConstIterator HashSet<T>::begin() const {
-  if (IsEmpty()) {
+  if (empty()) {
     return end();
   }
   ConstIterator rv(buckets_.begin(), buckets_.end(), buckets_.begin()->begin());
@@ -372,7 +370,7 @@ typename HashSet<T>::ConstIterator HashSet<T>::end() const {
 
 template <HashSetValType T>
 typename HashSet<T>::Iterator HashSet<T>::begin() {
-  if (IsEmpty()) {
+  if (empty()) {
     return end();
   }
   Iterator rv(this, buckets_.begin(), buckets_.begin()->begin());
