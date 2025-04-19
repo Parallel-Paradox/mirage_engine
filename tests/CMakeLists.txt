@@ -29,7 +29,8 @@ add_executable(test.mirage_base
     mirage_base/container/hash_map_tests.cpp
     mirage_base/container/hash_set_tests.cpp
     mirage_base/container/singly_linked_list_tests.cpp
-    mirage_base/util/optional_tests.cpp)
+    mirage_base/util/optional_tests.cpp
+    mirage_base/util/func_trait_tests.cpp)
 gtest_discover_tests(test.mirage_base)
 if (MIRAGE_BUILD_SPLIT)
   target_link_libraries(test.mirage_base mirage_base)
