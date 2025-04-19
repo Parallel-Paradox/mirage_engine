@@ -17,7 +17,7 @@ concept IsQueryParam = ((std::derived_from<Ts, QueryParamsTag>) && ...);
 struct QueryParamsTag_Ref : QueryParamsTag {};
 
 template <typename... Ts>
-  requires IsComponentRef<Ts...>
+  requires IsComponentRefList<Ts...>
 struct Ref : QueryParamsTag_Ref {
   using TypeList = base::TypeList<Ts...>;
 };
@@ -27,7 +27,7 @@ struct Ref : QueryParamsTag_Ref {
 struct QueryParamsTag_With : QueryParamsTag {};
 
 template <typename... Ts>
-  requires IsComponent<Ts...>
+  requires IsComponentList<Ts...>
 struct With : QueryParamsTag_With {
   using TypeList = base::TypeList<Ts...>;
 };
@@ -37,7 +37,7 @@ struct With : QueryParamsTag_With {
 struct QueryParamsTag_Without : QueryParamsTag {};
 
 template <typename... Ts>
-  requires IsComponent<Ts...>
+  requires IsComponentList<Ts...>
 struct Without : QueryParamsTag_Without {
   using TypeList = base::TypeList<Ts...>;
 };

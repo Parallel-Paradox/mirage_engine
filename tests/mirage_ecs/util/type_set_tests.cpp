@@ -6,7 +6,7 @@ using namespace mirage;
 using namespace mirage::ecs;
 
 TEST(TypeSetTests, AddType) {
-  EXPECT_TRUE(base::HashType<TypeSet>);
+  EXPECT_TRUE(base::IsHashType<TypeSet>);
   auto set = TypeSet::New<int64_t>();
 
   set.AddType<int32_t>();

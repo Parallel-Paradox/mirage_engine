@@ -9,14 +9,19 @@ namespace mirage::ecs {
 
 struct Component {};
 
-template <typename... Ts>
+template <typename T>
 concept IsComponent =
-    ((std::derived_from<Ts, Component> && std::move_constructible<Ts>) && ...);
+    std::derived_from<T, Component> && std::move_constructible<T>;
 
 template <typename... Ts>
+concept IsComponentList = (IsComponent<Ts> && ...);
+
+template <typename T>
 concept IsComponentRef =
-    ((std::is_reference_v<Ts> && IsComponent<std::remove_reference_t<Ts>>) &&
-     ...);
+    std::is_reference_v<T> && IsComponent<std::remove_reference_t<T>>;
+
+template <typename... Ts>
+concept IsComponentRefList = (IsComponentRef<Ts> && ...);
 
 struct Resource {};
 

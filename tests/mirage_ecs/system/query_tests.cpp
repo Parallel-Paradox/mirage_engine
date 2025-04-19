@@ -20,14 +20,14 @@ struct WithTag : Component {};
 struct WithoutTag : Component {};
 
 TEST(QueryTests, ParamsConceptCheck) {
-  bool is_component_ref = IsComponentRef<Position&, const Velocity&>;
+  bool is_component_ref = IsComponentRefList<Position&, const Velocity&>;
   EXPECT_TRUE(is_component_ref);
   is_component_ref = IsComponentRef<int32_t&>;
   EXPECT_FALSE(is_component_ref);
   is_component_ref = IsComponentRef<Position>;
   EXPECT_FALSE(is_component_ref);
 
-  bool is_component = IsComponent<Position, Velocity>;
+  bool is_component = IsComponentList<Position, Velocity>;
   EXPECT_TRUE(is_component);
   is_component = IsComponent<int32_t>;
   EXPECT_FALSE(is_component);
@@ -42,7 +42,7 @@ TEST(QueryTests, ParamsConceptCheck) {
 TEST(QueryTests, ExtractQuery) {
   using ValidQuery = Query<Ref<Position&, const Velocity&>, With<WithTag>,
                            Without<WithoutTag>>;
-  EXPECT_TRUE(ExtractType<ValidQuery>);
+  EXPECT_TRUE(IsExtractType<ValidQuery>);
 
   constexpr bool ref_checker =
       std::same_as<ValidQuery::RefTypeList,

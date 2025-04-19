@@ -11,7 +11,7 @@ namespace mirage::base {
 
 template <typename T>
 concept HashMapKeyType =
-    std::move_constructible<std::remove_const_t<T>> && HashType<T>;
+    std::move_constructible<std::remove_const_t<T>> && IsHashType<T>;
 
 template <HashMapKeyType Key, std::move_constructible Val>
 class HashKeyVal : public KeyVal<Key, Val> {

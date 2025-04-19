@@ -5,11 +5,11 @@
 
 namespace mirage::base {
 
-template <typename T>  // NOLINT: Unused empty type.
-struct Hash {};
+template <typename T>
+struct Hash;
 
 template <typename T>
-concept HashType =
+concept IsHashType =
     std::equality_comparable<T> &&
     std::move_constructible<Hash<std::remove_const_t<T>>> &&
     std::copy_constructible<Hash<std::remove_const_t<T>>> &&
