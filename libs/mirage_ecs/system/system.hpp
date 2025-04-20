@@ -51,7 +51,7 @@ class System {
     requires IsSystem<Func>
   void set_system_func(Func func, std::index_sequence<Index...>) {
     using ArgsTypeList = base::FuncArgsTypeList<Func>;
-    system_func_ = [func = std::move(func)](Context& context) {
+    system_func_ = [func = std::move(func)]([[maybe_unused]] Context& context) {
       func(Extract<base::GetTypeFromList<ArgsTypeList, Index>>::From(
           context)...);
     };
