@@ -49,37 +49,31 @@ struct Without : QueryParamsTag_Without {
 // ----------
 
 template <typename ParamsTag, typename T, typename... Ts>
-  requires IsQueryParam<ParamsTag> && IsQueryParam<T>
-struct QueryParamsTypeList {
-  // clang-format off
-  using TypeList = std::conditional_t<std::derived_from<T, ParamsTag>,
-    typename T::TypeList,
-    typename QueryParamsTypeList<ParamsTag, Ts...>::TypeList
-  >;
-  // clang-format on
-};
+  requires IsQueryParam<ParamsTag> && IsQueryParam<T> && IsQueryParam<Ts...>
+consteval auto QueryParamsTypeList() {
+  if constexpr (std::derived_from<T, ParamsTag>) {
+    return typename T::TypeList();
+  } else {
+    return QueryParamsTypeList<ParamsTag, Ts...>();
+  }
+}
 
-template <typename ParamsTag, typename T>
-  requires IsQueryParam<ParamsTag> && IsQueryParam<T>
-struct QueryParamsTypeList<ParamsTag, T> {
-  // clang-format off
-  using TypeList = std::conditional_t<std::derived_from<T, ParamsTag>,
-    typename T::TypeList,
-    base::TypeList<>
-  >;
-  // clang-format on
-};
+template <typename ParamsTag>
+  requires IsQueryParam<ParamsTag>
+consteval auto QueryParamsTypeList() {
+  return base::TypeList();
+}
 
 template <typename... Ts>
   requires IsQueryParam<Ts...>
 class Query {
  public:
   using RefTypeList =
-      typename QueryParamsTypeList<QueryParamsTag_Ref, Ts...>::TypeList;
+      decltype(QueryParamsTypeList<QueryParamsTag_Ref, Ts...>());
   using WithTypeList =
-      typename QueryParamsTypeList<QueryParamsTag_With, Ts...>::TypeList;
+      decltype(QueryParamsTypeList<QueryParamsTag_With, Ts...>());
   using WithoutTypeList =
-      typename QueryParamsTypeList<QueryParamsTag_Without, Ts...>::TypeList;
+      decltype(QueryParamsTypeList<QueryParamsTag_Without, Ts...>());
 
   class Iterator;
   class ConstIterator;

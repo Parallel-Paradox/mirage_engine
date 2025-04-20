@@ -42,20 +42,29 @@ TEST(QueryTests, ParamsConceptCheck) {
 TEST(QueryTests, ExtractQuery) {
   using ValidQuery = Query<Ref<Position&, const Velocity&>, With<WithTag>,
                            Without<WithoutTag>>;
-  EXPECT_TRUE(IsExtractType<ValidQuery>);
-
   constexpr bool ref_checker =
       std::same_as<ValidQuery::RefTypeList,
                    base::TypeList<Position&, const Velocity&>>;
-  EXPECT_TRUE(ref_checker);
-
   constexpr bool with_checker =
       std::same_as<ValidQuery::WithTypeList, base::TypeList<WithTag>>;
-  EXPECT_TRUE(with_checker);
-
   constexpr bool without_checker =
       std::same_as<ValidQuery::WithoutTypeList, base::TypeList<WithoutTag>>;
+  EXPECT_TRUE(IsExtractable<ValidQuery>);
+  EXPECT_TRUE(ref_checker);
+  EXPECT_TRUE(with_checker);
   EXPECT_TRUE(without_checker);
+
+  using EmptyQuery = Query<>;
+  constexpr bool empty_ref_checker =
+      std::same_as<EmptyQuery::RefTypeList, base::TypeList<>>;
+  constexpr bool empty_with_checker =
+      std::same_as<EmptyQuery::WithTypeList, base::TypeList<>>;
+  constexpr bool empty_without_checker =
+      std::same_as<EmptyQuery::WithoutTypeList, base::TypeList<>>;
+  EXPECT_TRUE(IsExtractable<EmptyQuery>);
+  EXPECT_TRUE(empty_ref_checker);
+  EXPECT_TRUE(empty_with_checker);
+  EXPECT_TRUE(empty_without_checker);
 }
 
 TEST(QueryTests, ComponentList) {
