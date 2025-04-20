@@ -11,7 +11,7 @@ namespace mirage::base {
 
 template <typename T>
 concept HashMapKeyType =
-    std::move_constructible<std::remove_const_t<T>> && IsHashType<T>;
+    std::move_constructible<std::remove_const_t<T>> && IsHashable<T>;
 
 template <HashMapKeyType Key, std::move_constructible Val>
 class HashKeyVal : public KeyVal<Key, Val> {
@@ -193,8 +193,8 @@ Optional<HashKeyVal<Key, Val>> HashMap<Key, Val>::Insert(Key key, Val val) {
 
 template <HashMapKeyType Key, std::move_constructible Val>
 Optional<HashKeyVal<Key, Val>> HashMap<Key, Val>::Remove(const Key& key) {
-  Optional<HashKeyVal<const Key, Val>> removed_kv = kv_set_.Remove(key);
-  if (!removed_kv.is_valid()) {
+  if (Optional<HashKeyVal<const Key, Val>> removed_kv = kv_set_.Remove(key);
+      !removed_kv.is_valid()) {
     return Optional<HashKeyVal<Key, Val>>::None();
   } else {
     auto kv_inner = removed_kv.Unwrap();

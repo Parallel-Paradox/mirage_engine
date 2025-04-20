@@ -6,26 +6,29 @@
 namespace mirage::base {
 
 template <size_t I, typename Head, typename... Tail>
-  requires(I < 1 + sizeof...(Tail))
-struct GetType : GetType<I - 1, Tail...> {};
+  requires /* check bound */ (I < 1 + sizeof...(Tail))
+struct GetTypeFromArgs : GetTypeFromArgs<I - 1, Tail...> {};
 
 template <typename Head, typename... Tail>
-struct GetType<0, Head, Tail...> {
+struct GetTypeFromArgs<0, Head, Tail...> {
   using Type = Head;
 };
 
 template <typename... Ts>
 struct TypeList {
-  [[nodiscard]] constexpr static size_t size() noexcept {
+  [[nodiscard]] consteval static size_t size() noexcept {
     return sizeof...(Ts);
   }
 
   template <size_t I>
-    requires(I < size())
+    requires /* check bound */ (I < size())
   struct Get {
-    using Type = typename GetType<I, Ts...>::Type;
+    using Type = typename GetTypeFromArgs<I, Ts...>::Type;
   };
 };
+
+template <typename TypeList, size_t Index>
+using GetTypeFromList = typename TypeList::template Get<Index>::Type;
 
 }  // namespace mirage::base
 

@@ -11,12 +11,12 @@ template <typename T>
 struct Extract;
 
 template <typename T>
-concept IsExtractType = requires(Context& context) {
+concept IsExtractable = requires(Context& context) {
   { Extract<T>::From(context) } -> std::same_as<T>;
 };
 
 template <typename... Ts>
-concept ExtractTypeList = (IsExtractType<Ts> && ...);
+concept IsExtractableList = (IsExtractable<Ts> && ...);
 
 }  // namespace mirage::ecs
 

@@ -17,28 +17,34 @@ enum class FuncType {
 struct FuncTraitBase {
   using ReturnType = void;
   using ArgsTypeList = TypeList<>;
-  constexpr static FuncType kFuncType = FuncType::kInvalid;
+  constexpr static auto kFuncType = FuncType::kInvalid;
 };
 
-template <class Func>
+template <typename Func>
 struct FuncTrait : FuncTraitBase {};
 
-template <class Ret, class... Args>
+template <typename Ret, typename... Args>
 struct FuncTrait<Ret(Args...)> : FuncTraitBase {
   using ReturnType = Ret;
   using ArgsTypeList = TypeList<Args...>;
-  constexpr static FuncType kFuncType = FuncType::kFunc;
+  constexpr static auto kFuncType = FuncType::kFunc;
 };
 
-template <class Ret, class... Args>
+template <typename Ret, typename... Args>
 struct FuncTrait<Ret (*)(Args...)> : FuncTrait<Ret(Args...)> {
-  constexpr static FuncType kFuncType = FuncType::kFuncPtr;
+  constexpr static auto kFuncType = FuncType::kFuncPtr;
 };
 
-template <class Ret, class... Args>
+template <typename Ret, typename... Args>
 struct FuncTrait<Ret (&)(Args...)> : FuncTrait<Ret(Args...)> {
-  constexpr static FuncType kFuncType = FuncType::kFuncRef;
+  constexpr static auto kFuncType = FuncType::kFuncRef;
 };
+
+template <typename Func>
+using FuncReturnType = typename FuncTrait<Func>::ReturnType;
+
+template <typename Func>
+using FuncArgsTypeList = typename FuncTrait<Func>::ArgsTypeList;
 
 }  // namespace mirage::base
 

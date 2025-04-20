@@ -6,7 +6,7 @@
 
 using namespace mirage::base;
 
-int32_t Add(int32_t a, int32_t b) { return a + b; }
+int32_t Add(const int32_t a, const int32_t b) { return a + b; }
 
 template <typename AddFuncTrait>
 void TestAddFuncTrait(FuncType func_type) {
@@ -14,12 +14,14 @@ void TestAddFuncTrait(FuncType func_type) {
   using Arg1 = typename AddFuncTrait::ArgsTypeList::template Get<1>::Type;
 
   constexpr bool ret = std::same_as<typename AddFuncTrait::ReturnType, int32_t>;
-  constexpr size_t arg_size = AddFuncTrait::ArgsTypeList::size();
+  constexpr size_t args_size = AddFuncTrait::ArgsTypeList::size();
+  // Note: The const declaration of parameters that are passed by value will be
+  // implicitly removed in its signature.
   constexpr bool arg0 = std::same_as<Arg0, int32_t>;
   constexpr bool arg1 = std::same_as<Arg1, int32_t>;
 
   EXPECT_TRUE(ret);
-  EXPECT_EQ(arg_size, 2);
+  EXPECT_EQ(args_size, 2);
   EXPECT_TRUE(arg0);
   EXPECT_TRUE(arg1);
   EXPECT_EQ(AddFuncTrait::kFuncType, func_type);

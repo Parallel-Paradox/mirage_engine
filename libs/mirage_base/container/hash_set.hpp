@@ -13,7 +13,7 @@
 namespace mirage::base {
 
 template <typename T>
-concept HashSetValType = std::move_constructible<T> && IsHashType<T>;
+concept HashSetValType = std::move_constructible<T> && IsHashable<T>;
 
 // TODO: fmt HashSet
 
