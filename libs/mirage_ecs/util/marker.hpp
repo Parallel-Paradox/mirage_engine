@@ -7,7 +7,9 @@
 
 namespace mirage::ecs {
 
-struct Component {};
+struct Component {
+  virtual ~Component() {}
+};
 
 template <typename T>
 concept IsComponent =
@@ -23,7 +25,13 @@ concept IsComponentRef =
 template <typename... Ts>
 concept IsComponentRefList = (IsComponentRef<Ts> && ...);
 
-struct Resource {};
+struct Resource {
+  virtual ~Resource() {}
+};
+
+template <typename T>
+concept IsResource =
+    std::derived_from<T, Resource> && std::move_constructible<T>;
 
 }  // namespace mirage::ecs
 

@@ -15,6 +15,7 @@ namespace mirage::base {
 template <typename T>
 concept HashSetValType = std::move_constructible<T> && IsHashable<T>;
 
+// TODO: SwissTable maybe?
 // TODO: fmt HashSet
 
 template <HashSetValType T>

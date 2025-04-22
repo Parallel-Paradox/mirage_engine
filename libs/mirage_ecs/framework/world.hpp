@@ -1,8 +1,11 @@
 #ifndef MIRAGE_ECS_FRAMEWORK_WORLD
 #define MIRAGE_ECS_FRAMEWORK_WORLD
 
+#include <concepts>
+
 #include "mirage_base/auto_ptr/owned.hpp"
 #include "mirage_base/container/hash_map.hpp"
+#include "mirage_base/util/optional.hpp"
 #include "mirage_ecs/define.hpp"
 #include "mirage_ecs/entity/archetype.hpp"
 #include "mirage_ecs/util/marker.hpp"
@@ -13,13 +16,70 @@ namespace mirage::ecs {
 
 class World {
  public:
+  using ResourceMap = base::HashMap<TypeId, base::Owned<Resource>>;
+  using ArchetypeMap = base::HashMap<TypeSet, Archetype>;
+
   World() = default;
   ~World() = default;
 
+  template <IsResource T, typename... Args>
+  T& InitializeResource(Args&&... args);
+
+  template <IsResource T, typename... Args>
+  base::Optional<T> SetResource(Args&&... args);
+
+  template <IsResource T>
+  T* TryGetResource();
+
+  template <IsResource T>
+  T& GetResource();
+
  private:
-  base::HashMap<TypeId, base::Owned<Resource>> resource_map_;
-  base::HashMap<TypeSet, Archetype> archetype_map_;
+  ResourceMap resource_map_;
+  ArchetypeMap archetype_map_;
 };
+
+template <IsResource T, typename... Args>
+T& World::InitializeResource(Args&&... args) {
+  T* resource_ptr = TryGetResource<T>();
+  if (resource_ptr) {
+    return *resource_ptr;
+  }
+
+  resource_ptr = new T(std::forward<Args>(args)...);
+  base::Owned<Resource> owned_resource =
+      base::Owned<Resource>(static_cast<Resource*>(resource_ptr));
+  resource_map_.Insert(TypeId::Of<T>(), std::move(owned_resource));
+  return *resource_ptr;
+}
+
+template <IsResource T, typename... Args>
+base::Optional<T> World::SetResource(Args&&... args) {
+  base::Optional<base::HashKeyVal<TypeId, base::Owned<Resource>>> optional_kv =
+      resource_map_.Insert(TypeId::Of<T>(),
+                           base::Owned<Resource>(static_cast<Resource*>(
+                               new T(std::forward<Args>(args)...))));
+  if (optional_kv.is_valid()) {
+    return base::Optional<T>::None();
+  }
+  auto kv = optional_kv.Unwrap();
+  T* resource = static_cast<T*>(kv.val().raw_ptr());
+  return base::Optional<T>::New(std::move(*resource));
+}
+
+template <IsResource T>
+T* World::TryGetResource() {
+  ResourceMap::Iterator iter = resource_map_.TryFind(TypeId::Of<T>());
+  if (iter == resource_map_.end()) {
+    return nullptr;
+  }
+  return static_cast<T*>(iter->val().raw_ptr());
+}
+
+template <IsResource T>
+T& World::GetResource() {
+  return *TryGetResource<T>();
+}
 
 }  // namespace mirage::ecs
 

@@ -25,7 +25,6 @@ concept IsSystem = std::same_as<base::FuncReturnType<Func>, void> &&
 
 class System {
  public:
-  MIRAGE_ECS System() = default;
   MIRAGE_ECS ~System() = default;
 
   MIRAGE_ECS System(const System&) = delete;
@@ -46,7 +45,11 @@ class System {
     return system;
   }
 
+  void Run(Context& context);
+
  private:
+  MIRAGE_ECS System() = default;
+
   template <typename Func, size_t... Index>
     requires IsSystem<Func>
   void set_system_func(Func func, std::index_sequence<Index...>) {

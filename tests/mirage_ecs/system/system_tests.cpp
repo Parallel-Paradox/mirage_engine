@@ -8,4 +8,7 @@ using namespace mirage::ecs;
 
 void EmptySystem() {}
 
-TEST(SystemTests, Construct) { System system = System::From(EmptySystem); }
+TEST(SystemTests, Construct) {
+  System system = System::From(EmptySystem);
+  EXPECT_TRUE(std::is_const_v<std::remove_reference_t<const int32_t&>>);
+}

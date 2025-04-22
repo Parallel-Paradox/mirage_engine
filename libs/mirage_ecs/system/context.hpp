@@ -5,7 +5,10 @@
 
 namespace mirage::ecs {
 
-class MIRAGE_ECS Context{};
+class MIRAGE_ECS Context {
+ public:
+ private:
+};
 
 }  // namespace mirage::ecs
 
