@@ -1,12 +1,12 @@
 message(STATUS "Building mirage_base...")
 
 set(SRC
-    auto_ptr/ref_count.cpp
-    sync/lock.cpp)
+    "auto_ptr/ref_count.cpp"
+    "sync/lock.cpp")
 if (MSVC)
-  set(SRC ${SRC} sync/lock_impl_msvc.cpp)
+  set(SRC ${SRC} "sync/lock_impl_msvc.cpp")
 else ()
-  set(SRC ${SRC} sync/lock_impl_posix.cpp)
+  set(SRC ${SRC} "sync/lock_impl_posix.cpp")
 endif ()
 
 if (MIRAGE_BUILD_SPLIT)

@@ -1,13 +1,13 @@
 message(STATUS "Building mirage_ecs...")
 
 set(SRC
-    entity/archetype.cpp
-    framework/plugin.cpp
-    framework/world.cpp
-    system/context.cpp
-    system/system.cpp
-    util/type_id.cpp
-    util/type_set.cpp)
+    "entity/archetype.cpp"
+    "framework/plugin.cpp"
+    "framework/world.cpp"
+    "system/context.cpp"
+    "system/system.cpp"
+    "util/type_id.cpp"
+    "util/type_set.cpp")
 
 if (MIRAGE_BUILD_SPLIT)
   add_library(mirage_ecs SHARED ${SRC})
