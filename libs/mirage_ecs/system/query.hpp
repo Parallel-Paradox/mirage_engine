@@ -89,7 +89,8 @@ class Query {
 
 template <typename... Ts>
 struct Extract<Query<Ts...>> {
-  static Query<Ts...> From([[maybe_unused]] Context& context) {
+  static Query<Ts...> From([[maybe_unused]] World& world,
+                           [[maybe_unused]] SystemContext& context) {
     // TODO
     return Query<Ts...>();
   }

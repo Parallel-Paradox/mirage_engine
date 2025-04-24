@@ -3,16 +3,17 @@
 
 #include <concepts>
 
-#include "mirage_ecs/system/context.hpp"
-
 namespace mirage::ecs {
+
+class World;
+class SystemContext;
 
 template <typename T>
 struct Extract;
 
 template <typename T>
-concept IsExtractable = requires(Context& context) {
-  { Extract<T>::From(context) } -> std::same_as<T>;
+concept IsExtractable = requires(World& world, SystemContext& context) {
+  { Extract<T>::From(world, context) } -> std::same_as<T>;
 };
 
 template <typename... Ts>

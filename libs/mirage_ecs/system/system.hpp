@@ -6,8 +6,8 @@
 
 #include "mirage_base/util/func_trait.hpp"
 #include "mirage_ecs/define.hpp"
-#include "mirage_ecs/system/context.hpp"
 #include "mirage_ecs/system/extract.hpp"
+#include "mirage_ecs/system/system_context.hpp"
 
 namespace mirage::ecs {
 
@@ -45,7 +45,10 @@ class System {
     return system;
   }
 
-  void Run(Context& context);
+  MIRAGE_ECS void Run(World& world);
+
+  MIRAGE_ECS SystemContext& context();
+  MIRAGE_ECS const SystemContext& context() const;
 
  private:
   MIRAGE_ECS System() = default;
@@ -54,13 +57,15 @@ class System {
     requires IsSystem<Func>
   void set_system_func(Func func, std::index_sequence<Index...>) {
     using ArgsTypeList = base::FuncArgsTypeList<Func>;
-    system_func_ = [func = std::move(func)]([[maybe_unused]] Context& context) {
+    system_func_ = [func = std::move(func)](World& world,
+                                            SystemContext& context) {
       func(Extract<base::GetTypeFromList<ArgsTypeList, Index>>::From(
-          context)...);
+          world, context)...);
     };
   }
 
-  std::function<void(Context& context)> system_func_;
+  SystemContext context_;
+  std::function<void(World&, SystemContext& context)> system_func_;
 };
 
 }  // namespace mirage::ecs
