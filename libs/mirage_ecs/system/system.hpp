@@ -38,12 +38,10 @@ class System {
   MIRAGE_ECS System(System&&) = default;
   MIRAGE_ECS System& operator=(System&&) = default;
 
-  MIRAGE_ECS System(SystemFunc&& system_func,
-                    base::Owned<SystemContext>&& context);
-
   template <typename Func>
     requires IsSystem<Func>
-  static System From(Func func, base::Owned<SystemContext>&& context) {
+  static System From(Func func, base::Owned<SystemContext>&& context =
+                                    base::Owned<SystemContext>::New()) {
     using ArgsTypeList = base::FuncArgsTypeList<Func>;
     constexpr size_t kParamsCount = ArgsTypeList::size();
     return System(EraseFuncSignature(std::move(func),
@@ -54,6 +52,9 @@ class System {
   MIRAGE_ECS void Run(World& world);
 
  private:
+  MIRAGE_ECS System(SystemFunc&& system_func,
+                    base::Owned<SystemContext>&& context);
+
   template <typename Func, size_t... Index>
     requires IsSystem<Func>
   static SystemFunc EraseFuncSignature(Func func,
