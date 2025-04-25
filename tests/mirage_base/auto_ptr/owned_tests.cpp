@@ -26,7 +26,7 @@ TEST(OwnedPtrTests, Construct) {
 
   // Default Construct
   Owned<Base> owned;
-  EXPECT_TRUE(owned.IsNull());
+  EXPECT_EQ(owned, nullptr);
 
   // List Construct
   owned = Owned<Base>::New(&is_destructed);
@@ -37,7 +37,7 @@ TEST(OwnedPtrTests, Construct) {
   auto raw_owned = Owned(base);
   owned = std::move(raw_owned);
   EXPECT_EQ(owned.raw_ptr(), base);
-  EXPECT_TRUE(raw_owned.IsNull());  // NOLINT: Use after move.
+  EXPECT_FALSE(raw_owned);  // NOLINT: Use after move.
 
   EXPECT_EQ(is_destructed, 1);
   raw_owned = nullptr;  // NOLINT: Test nullptr setter

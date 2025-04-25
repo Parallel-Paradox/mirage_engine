@@ -4,6 +4,7 @@
 #include <concepts>
 #include <functional>
 
+#include "mirage_base/auto_ptr/owned.hpp"
 #include "mirage_base/util/func_trait.hpp"
 #include "mirage_ecs/define.hpp"
 #include "mirage_ecs/system/extract.hpp"
@@ -25,6 +26,10 @@ concept IsSystem = std::same_as<base::FuncReturnType<Func>, void> &&
 
 class System {
  public:
+  using SystemFunc =
+      std::function<void(World&, base::Owned<SystemContext>& context)>;
+
+  MIRAGE_ECS System() = delete;
   MIRAGE_ECS ~System() = default;
 
   MIRAGE_ECS System(const System&) = delete;
@@ -33,39 +38,36 @@ class System {
   MIRAGE_ECS System(System&&) = default;
   MIRAGE_ECS System& operator=(System&&) = default;
 
+  MIRAGE_ECS System(SystemFunc&& system_func,
+                    base::Owned<SystemContext>&& context);
+
   template <typename Func>
     requires IsSystem<Func>
-  static System From(Func func) {
+  static System From(Func func, base::Owned<SystemContext>&& context) {
     using ArgsTypeList = base::FuncArgsTypeList<Func>;
     constexpr size_t kParamsCount = ArgsTypeList::size();
-
-    System system;
-    system.set_system_func(std::move(func),
-                           std::make_index_sequence<kParamsCount>{});
-    return system;
+    return System(EraseFuncSignature(std::move(func),
+                                     std::make_index_sequence<kParamsCount>{}),
+                  std::move(context));
   }
 
   MIRAGE_ECS void Run(World& world);
 
-  MIRAGE_ECS SystemContext& context();
-  MIRAGE_ECS const SystemContext& context() const;
-
  private:
-  MIRAGE_ECS System() = default;
-
   template <typename Func, size_t... Index>
     requires IsSystem<Func>
-  void set_system_func(Func func, std::index_sequence<Index...>) {
+  static SystemFunc EraseFuncSignature(Func func,
+                                       std::index_sequence<Index...>) {
     using ArgsTypeList = base::FuncArgsTypeList<Func>;
-    system_func_ = [func = std::move(func)](World& world,
-                                            SystemContext& context) {
+    return [func = std::move(func)](World& world,
+                                    base::Owned<SystemContext>& context) {
       func(Extract<base::GetTypeFromList<ArgsTypeList, Index>>::From(
           world, context)...);
     };
   }
 
-  SystemContext context_;
-  std::function<void(World&, SystemContext& context)> system_func_;
+  SystemFunc system_func_;
+  base::Owned<SystemContext> context_;
 };
 
 }  // namespace mirage::ecs

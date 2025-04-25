@@ -3,8 +3,8 @@
 
 #include <type_traits>
 
+#include "mirage_base/auto_ptr/owned.hpp"
 #include "mirage_base/define.hpp"
-#include "mirage_ecs/define.hpp"
 #include "mirage_ecs/framework/world.hpp"
 #include "mirage_ecs/system/extract.hpp"
 #include "mirage_ecs/system/system_context.hpp"
@@ -12,9 +12,14 @@
 
 namespace mirage::ecs {
 
+struct SystemArgs_Res {};
+
+template <typename T>
+concept IsSystemArgs_Res = std::derived_from<T, SystemArgs_Res>;
+
 template <typename T>
   requires IsResource<T>
-class Res {
+class Res : SystemArgs_Res {
  public:
   Res() = default;
   ~Res() = default;
@@ -33,7 +38,8 @@ class Res {
 template <typename T>
   requires IsResource<T>
 struct Extract<Res<T>> {
-  static Res<T> From(World& world, [[maybe_unused]] SystemContext& context) {
+  static Res<T> From(World& world,
+                     [[maybe_unused]] base::Owned<SystemContext>& context) {
     T* raw_ptr = nullptr;
     if constexpr (std::is_const_v<T>) {
       raw_ptr = world.TryGetResource<std::remove_const<T>>();

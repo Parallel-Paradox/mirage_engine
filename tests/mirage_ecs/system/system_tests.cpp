@@ -10,7 +10,8 @@ using namespace mirage::ecs;
 void EmptySystem() {}
 
 TEST(SystemTests, EmptyConstruct) {
-  System empty_system = System::From(EmptySystem);
+  System empty_system =
+      System::From(EmptySystem, base::Owned<SystemContext>::New());
   EXPECT_TRUE(std::is_const_v<std::remove_reference_t<const int32_t&>>);
 }
 
@@ -25,7 +26,7 @@ TEST(SystemTests, EditResource) {
   world.InitializeResource<GlobalNum>();
   EXPECT_EQ(world.GetResource<GlobalNum>().num, 0);
 
-  auto edit_num = System::From(EditNum);
+  auto edit_num = System::From(EditNum, base::Owned<SystemContext>::New());
   edit_num.Run(world);
   EXPECT_EQ(world.GetResource<GlobalNum>().num, 1);
 }

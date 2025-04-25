@@ -1,6 +1,7 @@
 #ifndef MIRAGE_ECS_SYSTEM_QUERY
 #define MIRAGE_ECS_SYSTEM_QUERY
 
+#include "mirage_base/auto_ptr/owned.hpp"
 #include "mirage_base/util/type_list.hpp"
 #include "mirage_ecs/system/extract.hpp"
 #include "mirage_ecs/util/marker.hpp"
@@ -89,8 +90,9 @@ class Query {
 
 template <typename... Ts>
 struct Extract<Query<Ts...>> {
-  static Query<Ts...> From([[maybe_unused]] World& world,
-                           [[maybe_unused]] SystemContext& context) {
+  static Query<Ts...> From(
+      [[maybe_unused]] World& world,
+      [[maybe_unused]] base::Owned<SystemContext>& context) {
     // TODO
     return Query<Ts...>();
   }

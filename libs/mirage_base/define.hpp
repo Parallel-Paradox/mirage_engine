@@ -16,10 +16,10 @@
 #endif
 
 #if defined(MIRAGE_BUILD_DEBUG)
-#define MIRAGE_DCHECK(condition) assert(condition)
+#define MIRAGE_DCHECK(condition) assert(!!(condition))
 #else
 #define MIRAGE_DCHECK(condition) ((void)0)
 #endif
-#define MIRAGE_CHECK(condition) assert(condition)
+#define MIRAGE_CHECK(condition) assert(!!(condition))
 
 #endif  // MIRAGE_BASE_DEFINE
