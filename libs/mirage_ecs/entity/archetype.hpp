@@ -1,5 +1,5 @@
-#ifndef MIRAGE_ECS_ARCHETYPE_ARCHETYPE
-#define MIRAGE_ECS_ARCHETYPE_ARCHETYPE
+#ifndef MIRAGE_ECS_ENTITY_ARCHETYPE
+#define MIRAGE_ECS_ENTITY_ARCHETYPE
 
 #include "mirage_base/container/hash_map.hpp"
 #include "mirage_ecs/define.hpp"
@@ -44,4 +44,4 @@ Archetype Archetype::New() {
 
 }  // namespace mirage::ecs
 
-#endif  // MIRAGE_ECS_ARCHETYPE_ARCHETYPE
+#endif  // MIRAGE_ECS_ENTITY_ARCHETYPE

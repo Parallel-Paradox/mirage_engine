@@ -7,7 +7,7 @@ using namespace mirage;
 using namespace mirage::ecs;
 
 TEST(ArchetypeTests, OffsetAndAlignment) {
-  const auto archetype = Archetype::New<int64_t, int32_t, bool>();
+  const auto archetype = Archetype::New<bool, int64_t, int32_t>();
   EXPECT_EQ(archetype.entity_align(), 8);
   EXPECT_EQ(archetype.entity_size(), 16);
 
