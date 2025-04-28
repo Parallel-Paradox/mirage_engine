@@ -7,9 +7,7 @@
 
 namespace mirage::ecs {
 
-struct Component {
-  virtual ~Component() {}
-};
+struct Component {};
 
 template <typename T>
 concept IsComponent =
