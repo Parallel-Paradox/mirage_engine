@@ -23,7 +23,7 @@ DataChunk::~DataChunk() {
       ((Component *)type_ptr)->~Component();
     }
   }
-  delete[] raw_ptr_;
+  ::operator delete[](raw_ptr_, std::align_val_t(header_->entity_align));
 
   byte_size_ = 0;
   capacity_ = 0;
