@@ -45,7 +45,11 @@ class Shared {
   T* operator->() const;
   T& operator*() const;
   T* raw_ptr() const;
+
+  explicit operator bool() const;
+  bool operator==(std::nullptr_t) const;
   [[nodiscard]] bool IsNull() const;
+
   [[nodiscard]] size_t ref_cnt() const;
   [[nodiscard]] size_t weak_ref_cnt() const;
 
@@ -161,6 +165,16 @@ T& Shared<T, R>::operator*() const {
 template <typename T, IsRefCount R>
 T* Shared<T, R>::raw_ptr() const {
   return raw_ptr_;
+}
+
+template <typename T, IsRefCount R>
+Shared<T, R>::operator bool() const {
+  return raw_ptr_ != nullptr;
+}
+
+template <typename T, IsRefCount R>
+bool Shared<T, R>::operator==(std::nullptr_t) const {
+  return raw_ptr_ == nullptr;
 }
 
 template <typename T, IsRefCount R>
