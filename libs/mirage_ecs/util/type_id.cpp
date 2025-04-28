@@ -29,15 +29,16 @@ size_t TypeMeta::type_align() const { return type_align_; }
 
 size_t TypeMeta::hash_code() const { return hash_code_; }
 
-size_t TypeMeta::bit_flag() const { return bit_flag_; }
+size_t TypeMeta::bit_flag() const {
+  return static_cast<size_t>(1) << hash_code_ % (sizeof(size_t) * 8);
+}
 
 TypeMeta::TypeMeta(const std::type_index type_index, const size_t type_size,
                    const size_t type_align)
     : type_index_(type_index),
       type_size_(type_size),
       type_align_(type_align),
-      hash_code_(type_index.hash_code()),
-      bit_flag_(static_cast<size_t>(1) << hash_code_ % (sizeof(size_t) * 8)) {}
+      hash_code_(type_index.hash_code()) {}
 
 TypeId::TypeId(const TypeMeta& type_meta) : type_meta_(&type_meta) {}
 

@@ -13,6 +13,11 @@ template <typename T>
 concept IsComponent =
     std::derived_from<T, Component> && std::move_constructible<T>;
 
+template <IsComponent T>
+void DestroyComponent(void* component_ptr) {
+  ((T*)component_ptr)->~T();
+}
+
 template <typename... Ts>
 concept IsComponentList = (IsComponent<Ts> && ...);
 

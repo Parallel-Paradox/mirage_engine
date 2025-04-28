@@ -42,7 +42,6 @@ class TypeMeta {
   size_t type_size_{0};
   size_t type_align_{0};
   size_t hash_code_{0};
-  size_t bit_flag_{0};
 };
 
 class MIRAGE_ECS TypeId {
