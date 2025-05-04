@@ -11,7 +11,7 @@ namespace mirage::ecs {
 
 class DataChunk {
  public:
-  struct MIRAGE_ECS Header {
+  struct Header {
     size_t entity_align{0};
     size_t entity_size{0};
     base::HashMap<TypeId, size_t> type_addr_offset_map;

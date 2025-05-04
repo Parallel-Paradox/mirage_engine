@@ -1,5 +1,6 @@
 #include "mirage_ecs/entity/entity_layout.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <numeric>
 

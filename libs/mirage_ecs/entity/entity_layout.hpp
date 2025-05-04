@@ -10,7 +10,7 @@ namespace mirage::ecs {
 
 template <IsComponent T>
 void DestroyComponent(void *component_ptr) {
-  ((T *)component_ptr)->~T();  // NOLINT: Avoid virtual table in component
+  static_cast<T *>(component_ptr)->~T();
 }
 
 class EntityLayout {
@@ -21,31 +21,31 @@ class EntityLayout {
   };
   using ComponentMetaMap = base::HashMap<TypeId, ComponentMeta>;
 
-  ~EntityLayout() = default;
+  MIRAGE_ECS ~EntityLayout() = default;
 
   EntityLayout(const EntityLayout &) = delete;
   EntityLayout &operator=(const EntityLayout &) = delete;
 
-  EntityLayout(EntityLayout &&) = default;
-  EntityLayout &operator=(EntityLayout &&) = default;
+  MIRAGE_ECS EntityLayout(EntityLayout &&) = default;
+  MIRAGE_ECS EntityLayout &operator=(EntityLayout &&) = default;
 
   template <IsComponent... Ts>
   static EntityLayout New();
 
-  [[nodiscard]] size_t align() const;
-  [[nodiscard]] size_t size() const;
-  [[nodiscard]] const TypeSet &component_type_set() const;
-  [[nodiscard]] const ComponentMetaMap &component_meta_map() const;
+  [[nodiscard]] MIRAGE_ECS size_t align() const;
+  [[nodiscard]] MIRAGE_ECS size_t size() const;
+  [[nodiscard]] MIRAGE_ECS const TypeSet &component_type_set() const;
+  [[nodiscard]] MIRAGE_ECS const ComponentMetaMap &component_meta_map() const;
 
  private:
-  EntityLayout() = default;
+  MIRAGE_ECS EntityLayout() = default;
 
-  void set_component_type_set(TypeSet &&type_set);
+  MIRAGE_ECS void set_component_type_set(TypeSet &&type_set);
 
   size_t align_{0};
   size_t size_{0};
-  TypeSet component_type_set_;
-  ComponentMetaMap component_meta_map_;
+  TypeSet component_type_set_{};
+  ComponentMetaMap component_meta_map_{};
 };
 
 template <IsComponent... Ts>

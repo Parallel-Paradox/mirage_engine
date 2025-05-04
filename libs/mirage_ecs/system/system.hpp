@@ -60,8 +60,9 @@ class System {
   static SystemFunc EraseFuncSignature(Func func,
                                        std::index_sequence<Index...>) {
     using ArgsTypeList = base::FuncArgsTypeList<Func>;
-    return [func = std::move(func)](World& world,
-                                    base::Owned<SystemContext>& context) {
+    return [func = std::move(func)](
+               [[maybe_unused]] World& world,
+               [[maybe_unused]] base::Owned<SystemContext>& context) {
       func(Extract<base::GetTypeFromList<ArgsTypeList, Index>>::From(
           world, context)...);
     };

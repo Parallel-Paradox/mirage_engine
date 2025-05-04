@@ -20,10 +20,10 @@ DataChunk::~DataChunk() {
     std::byte *entity_ptr = raw_ptr_ + i * header_->entity_size;
     for (const auto &type_addr_offset : header_->type_addr_offset_map) {
       std::byte *type_ptr = entity_ptr + type_addr_offset.val();
-      ((Component *)type_ptr)->~Component();
+      reinterpret_cast<Component *>(type_ptr)->~Component();
     }
   }
-  ::operator delete[](raw_ptr_, std::align_val_t(header_->entity_align));
+  ::operator delete[](raw_ptr_, std::align_val_t{header_->entity_align});
 
   byte_size_ = 0;
   capacity_ = 0;
@@ -52,13 +52,12 @@ DataChunk &DataChunk::operator=(DataChunk &&other) noexcept {
   return *this;
 }
 
-DataChunk::DataChunk(base::SharedLocal<Header> &&header, size_t capacity)
+DataChunk::DataChunk(base::SharedLocal<Header> &&header, const size_t capacity)
     : header_(std::move(header)),
       byte_size_(header_->entity_size * capacity),
-      raw_ptr_(new(std::align_val_t(header_->entity_align))
-                   std::byte[byte_size_]),
-      capacity_(capacity),
-      size_(0) {
+      raw_ptr_(static_cast<std::byte *>(::operator new[](
+          byte_size_, std::align_val_t{header_->entity_align}))),
+      capacity_(capacity) {
   MIRAGE_DCHECK(header_ != nullptr);
 }
 
