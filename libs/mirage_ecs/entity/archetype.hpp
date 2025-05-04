@@ -4,7 +4,7 @@
 #include "mirage_base/auto_ptr/shared.hpp"
 #include "mirage_base/container/hash_map.hpp"
 #include "mirage_ecs/define.hpp"
-#include "mirage_ecs/entity/data_chunk.hpp"
+#include "mirage_ecs/entity/entity_chunk.hpp"
 #include "mirage_ecs/util/marker.hpp"
 #include "mirage_ecs/util/type_id.hpp"
 #include "mirage_ecs/util/type_set.hpp"
@@ -24,21 +24,14 @@ class Archetype {
 
   template <IsComponent... Ts>
   static Archetype New();
-  explicit MIRAGE_ECS Archetype(TypeSet &&type_set);
-
-  [[nodiscard]] MIRAGE_ECS const TypeSet &type_set() const;
-  [[nodiscard]] MIRAGE_ECS const base::SharedLocal<DataChunk::Header> &
-  data_chunk_header() const;
 
  private:
   // TODO
-  TypeSet type_set_;
-  base::SharedLocal<DataChunk::Header> data_chunk_header_{nullptr};
 };
 
 template <IsComponent... Ts>
 Archetype Archetype::New() {
-  return Archetype(TypeSet::New<Ts...>());
+  // TODO
 }
 
 }  // namespace mirage::ecs
