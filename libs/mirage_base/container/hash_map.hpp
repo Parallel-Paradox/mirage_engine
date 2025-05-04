@@ -5,6 +5,7 @@
 #include <type_traits>
 
 #include "mirage_base/container/hash_set.hpp"
+#include "mirage_base/define.hpp"
 #include "mirage_base/util/key_val.hpp"
 
 namespace mirage::base {
@@ -75,6 +76,9 @@ class HashMap {
 
   ConstIterator TryFind(const Key& key) const;
   Iterator TryFind(const Key& key);
+
+  const Val& operator[](const Key& key) const;
+  Val& operator[](const Key& key);
 
   [[nodiscard]] bool empty() const;
   [[nodiscard]] size_t size() const;
@@ -213,6 +217,25 @@ template <HashMapKeyType Key, std::move_constructible Val>
 typename HashMap<Key, Val>::Iterator HashMap<Key, Val>::TryFind(
     const Key& key) {
   return Iterator(kv_set_.TryFind(key));
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+const Val& HashMap<Key, Val>::operator[](const Key& key) const {
+  return TryFind(key)->val();
+}
+
+template <HashMapKeyType Key, std::move_constructible Val>
+Val& HashMap<Key, Val>::operator[](const Key& key) {
+  Iterator iter = TryFind(key);
+  if (iter != end()) return iter->val();
+
+  if constexpr (std::copy_constructible<Key> &&
+                std::default_initializable<Val>) {
+    Insert(key, Val());
+    return TryFind(key)->val();
+  } else {
+    NOT_REACHABLE;
+  }
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>

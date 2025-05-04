@@ -22,4 +22,6 @@
 #endif
 #define MIRAGE_CHECK(condition) assert(!!(condition))
 
+#define NOT_REACHABLE assert(false)
+
 #endif  // MIRAGE_BASE_DEFINE

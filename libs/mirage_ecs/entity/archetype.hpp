@@ -22,8 +22,7 @@ class Archetype {
   MIRAGE_ECS Archetype(Archetype &&other) noexcept = default;
   MIRAGE_ECS Archetype &operator=(Archetype &&other) noexcept = default;
 
-  template <typename... Ts>
-    requires IsComponentList<Ts...>
+  template <IsComponent... Ts>
   static Archetype New();
   explicit MIRAGE_ECS Archetype(TypeSet &&type_set);
 
@@ -37,8 +36,7 @@ class Archetype {
   base::SharedLocal<DataChunk::Header> data_chunk_header_{nullptr};
 };
 
-template <typename... Ts>
-  requires IsComponentList<Ts...>
+template <IsComponent... Ts>
 Archetype Archetype::New() {
   return Archetype(TypeSet::New<Ts...>());
 }

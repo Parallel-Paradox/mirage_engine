@@ -20,16 +20,12 @@ struct WithTag : Component {};
 struct WithoutTag : Component {};
 
 TEST(QueryTests, ParamsConceptCheck) {
-  bool is_component_ref = IsComponentRefList<Position&, const Velocity&>;
-  EXPECT_TRUE(is_component_ref);
-  is_component_ref = IsComponentRef<int32_t&>;
+  bool is_component_ref = IsComponentRef<int32_t&>;
   EXPECT_FALSE(is_component_ref);
   is_component_ref = IsComponentRef<Position>;
   EXPECT_FALSE(is_component_ref);
 
-  bool is_component = IsComponentList<Position, Velocity>;
-  EXPECT_TRUE(is_component);
-  is_component = IsComponent<int32_t>;
+  bool is_component = IsComponent<int32_t>;
   EXPECT_FALSE(is_component);
 
   bool is_query_param = IsQueryParam<Ref<Position&, const Velocity&>,
