@@ -48,8 +48,11 @@ class Array {
 
   T Pop();
 
-  T& operator[](size_t index) const;
-  T* TryGet(size_t index) const;
+  T& operator[](size_t index);
+  T* TryGet(size_t index);
+
+  const T& operator[](size_t index) const;
+  const T* TryGet(size_t index) const;
 
   bool operator==(const Array& other) const;
 
@@ -284,12 +287,25 @@ T Array<T>::Pop() {
 }
 
 template <std::move_constructible T>
-T& Array<T>::operator[](size_t index) const {
+T& Array<T>::operator[](size_t index) {
   return data_[index].ref();
 }
 
 template <std::move_constructible T>
-T* Array<T>::TryGet(size_t index) const {
+T* Array<T>::TryGet(size_t index) {
+  if (index >= size_) {
+    return nullptr;
+  }
+  return data_[index].ptr();
+}
+
+template <std::move_constructible T>
+const T& Array<T>::operator[](size_t index) const {
+  return data_[index].ref();
+}
+
+template <std::move_constructible T>
+const T* Array<T>::TryGet(size_t index) const {
   if (index >= size_) {
     return nullptr;
   }

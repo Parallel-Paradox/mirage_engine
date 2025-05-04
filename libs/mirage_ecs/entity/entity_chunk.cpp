@@ -63,6 +63,18 @@ EntityChunk::EntityChunk(base::SharedLocal<EntityLayout> &&entity_layout,
   MIRAGE_DCHECK(entity_layout_ != nullptr);
 }
 
+EntityView EntityChunk::operator[](const size_t index) {
+  MIRAGE_DCHECK(index < size_);
+  return EntityView(entity_layout_.raw_ptr(),
+                    raw_ptr_ + index * entity_layout_->size());
+}
+
+const EntityView EntityChunk::operator[](const size_t index) const {
+  MIRAGE_DCHECK(index < size_);
+  return EntityView(entity_layout_.raw_ptr(),
+                    raw_ptr_ + index * entity_layout_->size());
+}
+
 const EntityLayout &EntityChunk::entity_layout() const {
   return *entity_layout_;
 }
@@ -74,3 +86,6 @@ std::byte *EntityChunk::raw_ptr() const { return raw_ptr_; }
 size_t EntityChunk::capacity() const { return capacity_; }
 
 size_t EntityChunk::size() const { return size_; }
+
+EntityView::EntityView(EntityLayout *entity_layout, std::byte *raw_ptr)
+    : entity_layout_(entity_layout), raw_ptr_(raw_ptr) {}
