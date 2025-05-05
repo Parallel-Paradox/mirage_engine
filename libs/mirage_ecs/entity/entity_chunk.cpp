@@ -21,7 +21,7 @@ EntityChunk::~EntityChunk() {
     std::byte *entity_ptr = raw_ptr_ + i * entity_layout_->size();
     for (const auto &component_meta : entity_layout_->component_meta_map()) {
       std::byte *type_ptr = entity_ptr + component_meta.val().offset;
-      component_meta.val().destructor(static_cast<void *>(type_ptr));
+      component_meta.val().destroy_component(static_cast<void *>(type_ptr));
     }
   }
   ::operator delete[](raw_ptr_, std::align_val_t{entity_layout_->align()});

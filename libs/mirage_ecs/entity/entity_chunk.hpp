@@ -61,11 +61,11 @@ class EntityView {
   EntityView() = delete;
   MIRAGE_ECS ~EntityView() = default;
 
-  EntityView(const EntityView &) = default;
-  EntityView &operator=(const EntityView &) = default;
+  MIRAGE_ECS EntityView(const EntityView &) = default;
+  MIRAGE_ECS EntityView &operator=(const EntityView &) = default;
 
-  EntityView(EntityView &&other) noexcept = default;
-  EntityView &operator=(EntityView &&other) noexcept = default;
+  MIRAGE_ECS EntityView(EntityView &&other) noexcept = default;
+  MIRAGE_ECS EntityView &operator=(EntityView &&other) noexcept = default;
 
   template <IsComponent T>
   const T *TryGet() const;
@@ -81,7 +81,7 @@ class EntityView {
 
  private:
   friend class EntityChunk;
-  EntityView(EntityLayout *entity_layout, std::byte *raw_ptr);
+  MIRAGE_ECS EntityView(EntityLayout *entity_layout, std::byte *raw_ptr);
 
   template <IsComponent T>
   T *TryGetImpl() const;
