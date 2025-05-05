@@ -29,6 +29,10 @@ class EntityChunk {
   MIRAGE_ECS EntityChunk(base::SharedLocal<EntityLayout> &&entity_layout,
                          size_t capacity);
 
+  void Push(/* TODO */);
+  void SwapRemove(size_t index);
+  void Clear();
+
   EntityView operator[](size_t index);
   const EntityView operator[](size_t index) const;
 

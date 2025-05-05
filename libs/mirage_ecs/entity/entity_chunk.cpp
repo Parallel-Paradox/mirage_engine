@@ -12,24 +12,7 @@
 using namespace mirage;
 using namespace mirage::ecs;
 
-EntityChunk::~EntityChunk() {
-  if (raw_ptr_ == nullptr) {
-    return;
-  }
-
-  for (size_t i = 0; i < size_; ++i) {
-    std::byte *entity_ptr = raw_ptr_ + i * entity_layout_->size();
-    for (const auto &component_meta : entity_layout_->component_meta_map()) {
-      std::byte *type_ptr = entity_ptr + component_meta.val().offset;
-      component_meta.val().destroy_component(static_cast<void *>(type_ptr));
-    }
-  }
-  ::operator delete[](raw_ptr_, std::align_val_t{entity_layout_->align()});
-
-  byte_size_ = 0;
-  capacity_ = 0;
-  size_ = 0;
-}
+EntityChunk::~EntityChunk() { Clear(); }
 
 EntityChunk::EntityChunk(EntityChunk &&other) noexcept
     : entity_layout_(std::move(other.entity_layout_)),
@@ -61,6 +44,29 @@ EntityChunk::EntityChunk(base::SharedLocal<EntityLayout> &&entity_layout,
           byte_size_, std::align_val_t{entity_layout_->align()}))),
       capacity_(capacity) {
   MIRAGE_DCHECK(entity_layout_ != nullptr);
+  MIRAGE_DCHECK(raw_ptr_ != nullptr);
+  MIRAGE_DCHECK(capacity_ > 0);
+}
+
+void EntityChunk::Clear() {
+  if (raw_ptr_ == nullptr) {
+    return;
+  }
+
+  for (size_t i = 0; i < size_; ++i) {
+    std::byte *entity_ptr = raw_ptr_ + i * entity_layout_->size();
+    for (const auto &component_meta : entity_layout_->component_meta_map()) {
+      std::byte *type_ptr = entity_ptr + component_meta.val().offset;
+      component_meta.val().func_table.destruct(static_cast<void *>(type_ptr));
+    }
+  }
+  ::operator delete[](raw_ptr_, std::align_val_t{entity_layout_->align()});
+
+  entity_layout_ = nullptr;
+  byte_size_ = 0;
+  raw_ptr_ = nullptr;
+  capacity_ = 0;
+  size_ = 0;
 }
 
 EntityView EntityChunk::operator[](const size_t index) {

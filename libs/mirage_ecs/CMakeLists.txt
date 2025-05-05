@@ -2,6 +2,7 @@ message(STATUS "Building mirage_ecs...")
 
 set(SRC
     "entity/archetype.cpp"
+    "entity/component_package.cpp"
     "entity/entity_chunk.cpp"
     "entity/entity_layout.cpp"
     "framework/plugin.cpp"

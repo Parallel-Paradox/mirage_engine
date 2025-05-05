@@ -2,33 +2,18 @@
 #define MIRAGE_ECS_ENTITY_ENTITY_LAYOUT
 
 #include "mirage_base/container/hash_map.hpp"
+#include "mirage_ecs/entity/component_func_table.hpp"
 #include "mirage_ecs/util/marker.hpp"
 #include "mirage_ecs/util/type_id.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
 namespace mirage::ecs {
 
-template <IsComponent T>
-void DestroyComponent(void *component_ptr) {
-  static_cast<T *>(component_ptr)->~T();
-}
-
-template <IsComponent T>
-void SwapComponent(void *lhs, void *rhs) {
-  T *typed_lhs = static_cast<T *>(lhs);
-  T *typed_rhs = static_cast<T *>(rhs);
-
-  T tmp = std::move(*typed_lhs);
-  *typed_lhs = std::move(*typed_rhs);
-  *typed_rhs = std::move(tmp);
-}
-
 class EntityLayout {
  public:
   struct ComponentMeta {
     size_t offset;
-    void (*destroy_component)(void *);
-    void (*swap_component)(void *, void *);
+    ComponentFuncTable func_table;
   };
   using ComponentMetaMap = base::HashMap<TypeId, ComponentMeta>;
 
@@ -64,11 +49,8 @@ EntityLayout EntityLayout::New() {
   EntityLayout layout;
   layout.set_component_type_set(TypeSet::New<Ts...>());
 
-  ((layout.component_meta_map_[TypeId::Of<Ts>()].destroy_component =
-        DestroyComponent<Ts>),
-   ...);
-  ((layout.component_meta_map_[TypeId::Of<Ts>()].swap_component =
-        SwapComponent<Ts>),
+  ((layout.component_meta_map_[TypeId::Of<Ts>()].func_table =
+        ComponentFuncTable::Of<Ts>()),
    ...);
 
   return layout;
