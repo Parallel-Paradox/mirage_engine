@@ -12,12 +12,18 @@
 
 namespace mirage::ecs {
 
-consteval bool IsArgsExtractable(base::TypeList<>) { return true; }
+template <IsExtractable T>
+consteval bool CheckIsExtractable() {
+  return IsExtractable<T>;
+};
 
-template <typename Arg0, typename... Args>
-  requires IsExtractable<Arg0>
-consteval bool IsArgsExtractable(base::TypeList<Arg0, Args...>) {
-  return IsArgsExtractable(base::TypeList<Args...>());
+template <typename... Args>
+consteval bool IsArgsExtractable(base::TypeList<Args...>) {
+  if constexpr (sizeof...(Args) == 0) {
+    return true;
+  } else {
+    return (CheckIsExtractable<Args>(), ...);
+  }
 }
 
 template <typename Func>
