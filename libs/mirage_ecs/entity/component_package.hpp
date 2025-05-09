@@ -3,6 +3,8 @@
 
 #include <cstddef>
 
+#include "mirage_base/container/hash_map.hpp"
+#include "mirage_base/util/optional.hpp"
 #include "mirage_ecs/entity/component_func_table.hpp"
 #include "mirage_ecs/util/marker.hpp"
 #include "mirage_ecs/util/type_id.hpp"
@@ -41,9 +43,32 @@ class ComponentData {
 
 class ComponentPackage {
  public:
+  using ComponentDataMap = base::HashMap<TypeId, ComponentData>;
+
+  MIRAGE_ECS ComponentPackage() = default;
+  MIRAGE_ECS ~ComponentPackage() = default;
+
+  ComponentPackage(const ComponentPackage &) = delete;
+  ComponentPackage &operator=(const ComponentPackage &) = delete;
+
+  MIRAGE_ECS ComponentPackage(ComponentPackage &&) = default;
+  MIRAGE_ECS ComponentPackage &operator=(ComponentPackage &&) = default;
+
+  template <IsComponent T>
+  base::Optional<T> Add(T &&components);
+  MIRAGE_ECS base::Optional<ComponentData> Add(ComponentData &&component_data);
+
+  template <IsComponent T>
+  base::Optional<T> Remove();
+  MIRAGE_ECS base::Optional<ComponentData> Remove(const TypeId &type_id);
+
+  [[nodiscard]] MIRAGE_ECS size_t size() const;
+  [[nodiscard]] MIRAGE_ECS const TypeSet &type_set() const;
+  [[nodiscard]] MIRAGE_ECS const ComponentDataMap &component_data_map() const;
+
  private:
   TypeSet type_set_;
-  // TODO
+  ComponentDataMap component_data_map_;
 };
 
 template <IsComponent T>
