@@ -43,8 +43,10 @@ class Array {
   template <typename... Args>
   void Insert(size_t index, Args&&... args);
 
-  template <typename... Args>
-  void Insert(ConstIterator iter, Args&&... args);
+  T Remove(size_t index);
+  T SwapRemove(size_t index);
+
+  void Swap(size_t index_a, size_t index_b);
 
   T Pop();
 
@@ -271,12 +273,32 @@ void Array<T>::Insert(const size_t index, Args&&... args) {
 }
 
 template <std::move_constructible T>
-template <typename... Args>
-void Array<T>::Insert(ConstIterator iter, Args&&... args) {
-  MIRAGE_DCHECK(!empty());
-  MIRAGE_DCHECK(iter);
-  MIRAGE_DCHECK(iter >= begin());
-  Insert(iter - begin(), std::forward<Args>(args)...);
+T Array<T>::Remove(const size_t index) {
+  MIRAGE_DCHECK(index < size_);
+  T rv = std::move(*this[index]);
+  --size_;
+  for (size_t i = index; i < size_; ++i) {
+    *this[i] = *this[i + 1];
+  }
+  return rv;
+}
+
+template <std::move_constructible T>
+T Array<T>::SwapRemove(const size_t index) {
+  MIRAGE_DCHECK(index < size_);
+  Swap(index, size_ - 1);
+  return Pop();
+}
+
+template <std::move_constructible T>
+void Array<T>::Swap(const size_t index_a, const size_t index_b) {
+  MIRAGE_DCHECK(index_a < size_);
+  MIRAGE_DCHECK(index_b < size_);
+  if (index_a == index_b) return;
+
+  T temp = std::move(*this[index_a]);
+  *this[index_a] = std::move(*this[index_b]);
+  *this[index_b] = std::move(temp);
 }
 
 template <std::move_constructible T>

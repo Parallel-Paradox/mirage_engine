@@ -103,7 +103,33 @@ TEST(ArrayTests, Insert) {
   Array<int32_t> result = {0, 3, 1, 2};
   EXPECT_EQ(array, result);
 
-  array.Insert(array.begin(), 4);
+  array.Insert(0, 4);
   result = {4, 0, 3, 1, 2};
   EXPECT_EQ(array, result);
+}
+
+TEST(ArrayTests, Remove) {
+  Array<int32_t> array = {0, 1, 2, 3};
+  Array<int32_t> expect_array;
+
+  array.SwapRemove(0);
+  expect_array = {3, 1, 2};
+  EXPECT_EQ(array, expect_array);
+
+  array.Remove(0);
+  expect_array = {1, 2};
+  EXPECT_EQ(array, expect_array);
+}
+
+TEST(ArrayTests, Swap) {
+  Array<int32_t> array = {0, 1, 2};
+  Array<int32_t> expect_array;
+
+  array.Swap(0, 0);
+  expect_array = {0, 1, 2};
+  EXPECT_EQ(array, expect_array);
+
+  array.Swap(0, 1);
+  expect_array = {1, 0, 2};
+  EXPECT_EQ(array, expect_array);
 }

@@ -15,8 +15,6 @@ class alignas(T) AlignedMemory {
   AlignedMemory(const AlignedMemory&) = delete;
   AlignedMemory(AlignedMemory&&) = delete;
 
-  explicit AlignedMemory(T&& val) { new (ptr()) T(std::move(val)); }
-
   T* ptr() { return (T*)mem_; }  // NOLINT: std::byte* to T*
   T* operator->() { return ptr(); }
 
