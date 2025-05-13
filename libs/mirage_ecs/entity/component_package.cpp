@@ -33,6 +33,13 @@ ComponentData &ComponentData::operator=(ComponentData &&other) noexcept {
   return *this;
 }
 
+void *ComponentData::Take() && {
+  void *raw_ptr = raw_ptr_;
+  raw_ptr_ = nullptr;
+  destroy_func_ = nullptr;
+  return raw_ptr;
+}
+
 void *ComponentData::raw_ptr() const { return raw_ptr_; }
 
 const TypeId &ComponentData::type_id() const { return type_id_; }

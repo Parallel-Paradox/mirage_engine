@@ -48,6 +48,32 @@ EntityChunk::EntityChunk(base::SharedLocal<EntityLayout> &&entity_layout,
   MIRAGE_DCHECK(capacity_ > 0);
 }
 
+bool EntityChunk::Push(ComponentPackage &component_package) {
+  MIRAGE_DCHECK(entity_layout_->component_type_set() ==
+                component_package.type_set());
+  if (size_ < capacity_) {
+    return false;
+  }
+  std::byte *entity_ptr = raw_ptr_ + size_ * entity_layout_->size();
+  for (const auto &kv : entity_layout_->component_meta_map()) {
+    const auto &type_id = kv.key();
+    const auto &component_meta = kv.val();
+
+    auto component_data = component_package.Remove(type_id).Unwrap();
+    std::byte *type_ptr = entity_ptr + component_meta.offset;
+    component_meta.func_table.move(std::move(component_data).Take(),
+                                   static_cast<void *>(type_ptr));
+  }
+  ++size_;
+  return true;
+}
+
+bool EntityChunk::SwapRemove(const size_t index) {
+  MIRAGE_DCHECK(index < size_);
+  // TODO
+  return true;
+}
+
 void EntityChunk::Clear() {
   if (raw_ptr_ == nullptr) {
     return;

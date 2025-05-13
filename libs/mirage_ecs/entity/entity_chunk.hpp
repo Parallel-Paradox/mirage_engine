@@ -4,6 +4,7 @@
 #include <cstddef>
 
 #include "mirage_base/auto_ptr/shared.hpp"
+#include "mirage_ecs/entity/component_package.hpp"
 #include "mirage_ecs/entity/entity_layout.hpp"
 #include "mirage_ecs/util/marker.hpp"
 #include "mirage_ecs/util/type_id.hpp"
@@ -29,8 +30,8 @@ class EntityChunk {
   MIRAGE_ECS EntityChunk(base::SharedLocal<EntityLayout> &&entity_layout,
                          size_t capacity);
 
-  void Push(/* TODO */);
-  void SwapRemove(size_t index);
+  bool Push(ComponentPackage &component_package);
+  bool SwapRemove(size_t index);
   void Clear();
 
   EntityView operator[](size_t index);

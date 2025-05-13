@@ -26,6 +26,7 @@ consteval bool IsArgsExtractable(base::TypeList<Args...>) {
   }
 }
 
+// TODO: Coroutine system
 template <typename Func>
 concept IsSystem = std::same_as<base::FuncReturnType<Func>, void> &&
                    IsArgsExtractable(base::FuncArgsTypeList<Func>());

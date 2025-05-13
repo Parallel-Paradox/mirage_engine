@@ -11,24 +11,21 @@ void DestructComponent(void *component_ptr) {
 }
 
 template <IsComponent T>
-void SwapComponent(void *lhs, void *rhs) {
-  T *typed_lhs = static_cast<T *>(lhs);
-  T *typed_rhs = static_cast<T *>(rhs);
-
-  T tmp = std::move(*typed_lhs);
-  *typed_lhs = std::move(*typed_rhs);
-  *typed_rhs = std::move(tmp);
+void MoveComponent(void *target, void *destination) {
+  T *typed_target = static_cast<T *>(target);
+  T *typed_destination = static_cast<T *>(destination);
+  *typed_destination = std::move(*typed_target);
 }
 
 struct ComponentFuncTable {
-  void (*destruct)(void *){nullptr};
-  void (*swap)(void *, void *){nullptr};
+  void (*destruct)(void *component_ptr){nullptr};
+  void (*move)(void *target, void *destination){nullptr};
 
   template <IsComponent T>
   static ComponentFuncTable Of() {
     return ComponentFuncTable{
         .destruct = DestructComponent<T>,
-        .swap = SwapComponent<T>,
+        .move = MoveComponent<T>,
     };
   }
 };

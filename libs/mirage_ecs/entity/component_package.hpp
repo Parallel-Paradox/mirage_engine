@@ -29,6 +29,8 @@ class ComponentData {
   template <IsComponent T>
   T Unwrap() const;
 
+  MIRAGE_ECS void *Take() &&;
+
   [[nodiscard]] MIRAGE_ECS void *raw_ptr() const;
   [[nodiscard]] MIRAGE_ECS const TypeId &type_id() const;
 
@@ -86,7 +88,7 @@ T ComponentData::Unwrap() const {
 
 template <IsComponent T>
 base::Optional<T> ComponentPackage::Add(T component) {
-  auto component_data_optional =
+  base::Optional<ComponentData> component_data_optional =
       Add(ComponentData::New<T>(std::move(component)));
   if (!component_data_optional.is_valid()) {
     return base::Optional<T>::None();
@@ -97,7 +99,8 @@ base::Optional<T> ComponentPackage::Add(T component) {
 
 template <IsComponent T>
 base::Optional<T> ComponentPackage::Remove() {
-  auto component_data_optional = Remove(TypeId::Of<T>());
+  base::Optional<ComponentData> component_data_optional =
+      Remove(TypeId::Of<T>());
   if (!component_data_optional.is_valid()) {
     return base::Optional<T>::None();
   }
