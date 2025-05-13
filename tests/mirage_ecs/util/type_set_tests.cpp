@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "mirage_ecs/util/type_id.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
 using namespace mirage;
@@ -47,6 +48,9 @@ TEST(TypeSetTests, QueryMatch) {
   EXPECT_TRUE(set.Without(without_set_success));
   EXPECT_FALSE(set.With(without_set_success));
   EXPECT_FALSE(set.Without(with_set_success));
+
+  EXPECT_TRUE(set.With(TypeId::Of<int64_t>()));
+  EXPECT_TRUE(set.Without(TypeId::Of<bool>()));
 
   const auto with_set_fail_0 = TypeSet::New<int64_t, int32_t, bool>();
   const auto with_set_fail_1 = TypeSet::New<int32_t, bool>();

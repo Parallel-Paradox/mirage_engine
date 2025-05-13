@@ -1,5 +1,7 @@
 #include "mirage_ecs/util/type_set.hpp"
 
+#include "mirage_ecs/util/type_id.hpp"
+
 using namespace mirage;
 using namespace mirage::ecs;
 
@@ -63,7 +65,7 @@ void TypeSet::RemoveTypeId(const TypeId& type_id) {
 bool TypeSet::With(const TypeSet& set) const {
   const auto& set_type_array = set.type_array();
   if (set_type_array.empty()) return true;
-  if ((set.mask() | mask()) != mask() ||
+  if ((set.mask() | mask_) != mask_ ||
       set_type_array.size() > type_array_.size())
     return false;
 
@@ -74,6 +76,15 @@ bool TypeSet::With(const TypeSet& set) const {
     if (type_id > set_type_id) return false;
   }
   return set_type_iter == set_type_array.end();
+}
+
+bool TypeSet::With(const TypeId& type_id) const {
+  if ((type_id.bit_flag() & mask_) == 0) return false;
+  for (const auto& type : type_array_) {
+    if (type == type_id) return true;
+    if (type > type_id) return false;
+  }
+  return false;
 }
 
 bool TypeSet::Without(const TypeSet& set) const {
@@ -90,6 +101,8 @@ bool TypeSet::Without(const TypeSet& set) const {
   }
   return true;
 }
+
+bool TypeSet::Without(const TypeId& type_id) const { return !With(type_id); }
 
 const base::Array<TypeId>& TypeSet::type_array() const { return type_array_; }
 

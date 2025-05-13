@@ -33,7 +33,9 @@ class TypeSet {
   MIRAGE_ECS void RemoveTypeId(const TypeId &type_id);
 
   [[nodiscard]] MIRAGE_ECS bool With(const TypeSet &set) const;
+  [[nodiscard]] MIRAGE_ECS bool With(const TypeId &type_id) const;
   [[nodiscard]] MIRAGE_ECS bool Without(const TypeSet &set) const;
+  [[nodiscard]] MIRAGE_ECS bool Without(const TypeId &type_id) const;
 
   [[nodiscard]] MIRAGE_ECS const base::Array<TypeId> &type_array() const;
   [[nodiscard]] MIRAGE_ECS size_t mask() const;
