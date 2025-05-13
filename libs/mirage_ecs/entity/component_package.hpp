@@ -33,7 +33,8 @@ class ComponentData {
   [[nodiscard]] MIRAGE_ECS const TypeId &type_id() const;
 
  private:
-  ComponentData(void *raw_ptr, TypeId type_id, void (*destroy_func)(void *));
+  MIRAGE_ECS ComponentData(void *raw_ptr, TypeId type_id,
+                           void (*destroy_func)(void *));
 
   void *raw_ptr_{nullptr};
 
@@ -55,8 +56,8 @@ class ComponentPackage {
   MIRAGE_ECS ComponentPackage &operator=(ComponentPackage &&) = default;
 
   template <IsComponent T>
-  base::Optional<T> Add(T &&components);
-  MIRAGE_ECS base::Optional<ComponentData> Add(ComponentData &&component_data);
+  base::Optional<T> Add(T components);
+  MIRAGE_ECS base::Optional<ComponentData> Add(ComponentData component_data);
 
   template <IsComponent T>
   base::Optional<T> Remove();
@@ -81,6 +82,27 @@ ComponentData ComponentData::New(T component) {
 template <IsComponent T>
 T ComponentData::Unwrap() const {
   return std::move(*static_cast<T *>(raw_ptr_));
+}
+
+template <IsComponent T>
+base::Optional<T> ComponentPackage::Add(T component) {
+  auto component_data_optional =
+      Add(ComponentData::New<T>(std::move(component)));
+  if (!component_data_optional.is_valid()) {
+    return base::Optional<T>::None();
+  }
+  auto component_data = component_data_optional.Unwrap();
+  return base::Optional<T>::New(component_data.template Unwrap<T>());
+}
+
+template <IsComponent T>
+base::Optional<T> ComponentPackage::Remove() {
+  auto component_data_optional = Remove(TypeId::Of<T>());
+  if (!component_data_optional.is_valid()) {
+    return base::Optional<T>::None();
+  }
+  auto component_data = component_data_optional.Unwrap();
+  return base::Optional<T>::New(component_data.template Unwrap<T>());
 }
 
 }  // namespace mirage::ecs

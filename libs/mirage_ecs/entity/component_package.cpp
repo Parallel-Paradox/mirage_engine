@@ -1,5 +1,10 @@
 #include "mirage_ecs/entity/component_package.hpp"
 
+#include <utility>
+
+#include "mirage_base/util/optional.hpp"
+
+using namespace mirage;
 using namespace mirage::ecs;
 
 ComponentData::~ComponentData() {
@@ -31,3 +36,38 @@ ComponentData &ComponentData::operator=(ComponentData &&other) noexcept {
 void *ComponentData::raw_ptr() const { return raw_ptr_; }
 
 const TypeId &ComponentData::type_id() const { return type_id_; }
+
+ComponentData::ComponentData(void *raw_ptr, TypeId type_id,
+                             void (*destroy_func)(void *))
+    : raw_ptr_(raw_ptr), type_id_(type_id), destroy_func_(destroy_func) {}
+
+base::Optional<ComponentData> ComponentPackage::Add(
+    ComponentData component_data) {
+  type_set_.AddTypeId(component_data.type_id());
+  auto kv_optional = component_data_map_.Insert(component_data.type_id(),
+                                                std::move(component_data));
+  if (!kv_optional.is_valid()) {
+    return base::Optional<ComponentData>::None();
+  }
+  auto kv = kv_optional.Unwrap();
+  return base::Optional<ComponentData>::New(std::move(kv.val()));
+}
+
+base::Optional<ComponentData> ComponentPackage::Remove(const TypeId &type_id) {
+  type_set_.RemoveTypeId(type_id);
+  auto kv_optional = component_data_map_.Remove(type_id);
+  if (!kv_optional.is_valid()) {
+    return base::Optional<ComponentData>::None();
+  }
+  auto kv = kv_optional.Unwrap();
+  return base::Optional<ComponentData>::New(std::move(kv.val()));
+}
+
+size_t ComponentPackage::size() const { return component_data_map_.size(); }
+
+const TypeSet &ComponentPackage::type_set() const { return type_set_; }
+
+const ComponentPackage::ComponentDataMap &ComponentPackage::component_data_map()
+    const {
+  return component_data_map_;
+}

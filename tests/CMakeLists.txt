@@ -41,6 +41,7 @@ endif ()
 message(STATUS "Building test.mirage_ecs...")
 add_executable(test.mirage_ecs
     "mirage_ecs/entity/archetype_tests.cpp"
+    "mirage_ecs/entity/component_package_tests.cpp"
     "mirage_ecs/entity/entity_layout_tests.cpp"
     "mirage_ecs/system/query_tests.cpp"
     "mirage_ecs/system/system_tests.cpp"
