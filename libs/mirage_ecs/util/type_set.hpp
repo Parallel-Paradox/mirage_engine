@@ -24,18 +24,19 @@ class TypeSet {
   template <typename... Ts>
   static TypeSet New();
 
-  template <typename T, typename... Ts>
-  static void AddTypeTo(TypeSet &set);
-
   template <typename T>
   void AddType();
   MIRAGE_ECS void AddTypeId(TypeId type_id);
 
+  template <typename T>
+  void RemoveType();
+  MIRAGE_ECS void RemoveTypeId(const TypeId &type_id);
+
   [[nodiscard]] MIRAGE_ECS bool With(const TypeSet &set) const;
   [[nodiscard]] MIRAGE_ECS bool Without(const TypeSet &set) const;
 
-  [[nodiscard]] MIRAGE_ECS const base::Array<TypeId> &GetTypeArray() const;
-  [[nodiscard]] MIRAGE_ECS size_t GetMask() const;
+  [[nodiscard]] MIRAGE_ECS const base::Array<TypeId> &type_array() const;
+  [[nodiscard]] MIRAGE_ECS size_t mask() const;
 
   MIRAGE_ECS bool operator==(const TypeSet &other) const;
 
@@ -48,14 +49,8 @@ template <typename... Ts>
 TypeSet TypeSet::New() {
   TypeSet set;
   set.type_array_.Reserve(sizeof...(Ts));
-  if constexpr (sizeof...(Ts) > 0) AddTypeTo<Ts...>(set);
+  (set.AddType<Ts>(), ...);
   return set;
-}
-
-template <typename T, typename... Ts>
-void TypeSet::AddTypeTo(TypeSet &set) {
-  set.AddType<T>();
-  if constexpr (sizeof...(Ts) > 0) AddTypeTo<Ts...>(set);
 }
 
 template <typename T>
@@ -63,11 +58,16 @@ void TypeSet::AddType() {
   AddTypeId(TypeId::Of<T>());
 }
 
+template <typename T>
+void TypeSet::RemoveType() {
+  RemoveTypeId(TypeId::Of<T>());
+}
+
 }  // namespace ecs
 
 template <>
 struct base::Hash<ecs::TypeSet> {
-  size_t operator()(const ecs::TypeSet &set) const { return set.GetMask(); }
+  size_t operator()(const ecs::TypeSet &set) const { return set.mask(); }
 };
 
 }  // namespace mirage

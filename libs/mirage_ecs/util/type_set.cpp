@@ -3,15 +3,13 @@
 using namespace mirage;
 using namespace mirage::ecs;
 
-
 TypeSet::TypeSet(TypeSet&& other) noexcept
     : type_array_(std::move(other.type_array_)), mask_(other.mask_) {
   other.type_array_.Clear();
   other.mask_ = 0;
 }
 
-TypeSet& TypeSet::operator=(
-    TypeSet&& other) noexcept {
+TypeSet& TypeSet::operator=(TypeSet&& other) noexcept {
   if (this == &other) return *this;
   this->~TypeSet();
   new (this) TypeSet(std::move(other));
@@ -36,16 +34,36 @@ void TypeSet::AddTypeId(const TypeId type_id) {
   }
   mask_ |= type_id.bit_flag();
   if (iter != type_array_.end()) {
-    type_array_.Insert(iter, type_id);
+    type_array_.Insert(iter - type_array_.begin(), type_id);
   } else {
     type_array_.Emplace(type_id);
   }
 }
 
+void TypeSet::RemoveTypeId(const TypeId& type_id) {
+  auto remove_iter = type_array_.end();
+  bool should_remove_bit_flag = true;
+  for (auto iter = type_array_.begin(); iter != type_array_.end(); ++iter) {
+    if (*iter > type_id && remove_iter == type_array_.end()) return;
+    if (*iter == type_id) {
+      remove_iter = iter;
+    } else if (iter->bit_flag() == type_id.bit_flag()) {
+      should_remove_bit_flag = false;
+    }
+  }
+  if (remove_iter == type_array_.end()) {
+    return;
+  }
+  type_array_.Remove(remove_iter - type_array_.begin());
+  if (should_remove_bit_flag) {
+    mask_ &= ~type_id.bit_flag();
+  }
+}
+
 bool TypeSet::With(const TypeSet& set) const {
-  const auto& set_type_array = set.GetTypeArray();
+  const auto& set_type_array = set.type_array();
   if (set_type_array.empty()) return true;
-  if ((set.GetMask() | GetMask()) != GetMask() ||
+  if ((set.mask() | mask()) != mask() ||
       set_type_array.size() > type_array_.size())
     return false;
 
@@ -59,7 +77,7 @@ bool TypeSet::With(const TypeSet& set) const {
 }
 
 bool TypeSet::Without(const TypeSet& set) const {
-  const auto& set_type_array = set.GetTypeArray();
+  const auto& set_type_array = set.type_array();
   if (type_array_.empty() || set_type_array.empty()) return true;
 
   auto set_type_iter = set_type_array.begin();
@@ -73,11 +91,9 @@ bool TypeSet::Without(const TypeSet& set) const {
   return true;
 }
 
-const base::Array<TypeId>& TypeSet::GetTypeArray() const {
-  return type_array_;
-}
+const base::Array<TypeId>& TypeSet::type_array() const { return type_array_; }
 
-size_t TypeSet::GetMask() const { return mask_; }
+size_t TypeSet::mask() const { return mask_; }
 
 bool TypeSet::operator==(const TypeSet& other) const {
   return mask_ == other.mask_ && type_array_ == other.type_array_;

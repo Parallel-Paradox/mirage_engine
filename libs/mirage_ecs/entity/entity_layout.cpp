@@ -21,13 +21,13 @@ const EntityLayout::ComponentMetaMap& EntityLayout::component_meta_map() const {
 }
 
 void EntityLayout::set_component_type_set(TypeSet&& type_set) {
-  size_t entity_align = type_set.GetTypeArray()[0].type_align();
-  for (const TypeId& type_id : type_set.GetTypeArray()) {
+  size_t entity_align = type_set.type_array()[0].type_align();
+  for (const TypeId& type_id : type_set.type_array()) {
     entity_align = std::lcm(entity_align, type_id.type_align());
   }
   align_ = entity_align;
 
-  base::Array<TypeId> type_array = type_set.GetTypeArray();
+  base::Array<TypeId> type_array = type_set.type_array();
   auto cmp = [](const TypeId& lhs, const TypeId& rhs) {
     if (lhs.type_align() == rhs.type_align()) {
       return lhs.type_size() > rhs.type_size();

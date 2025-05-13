@@ -12,9 +12,21 @@ TEST(TypeSetTests, AddType) {
   set.AddType<int32_t>();
   const auto expect_set = TypeSet::New<int64_t, int32_t, int64_t>();
   EXPECT_EQ(set, expect_set);
-  EXPECT_EQ(set.GetTypeArray(), expect_set.GetTypeArray());
+  EXPECT_EQ(set.type_array(), expect_set.type_array());
 
-  set.AddType<int32_t>();
+  set.AddTypeId(TypeId::Of<int32_t>());
+  EXPECT_EQ(set, expect_set);
+}
+
+TEST(TypeSetTests, RemoveType) {
+  auto set = TypeSet::New<int64_t, int32_t>();
+
+  set.RemoveType<int32_t>();
+  const auto expect_set = TypeSet::New<int64_t>();
+  EXPECT_EQ(set, expect_set);
+  EXPECT_EQ(set.type_array(), expect_set.type_array());
+
+  set.RemoveTypeId(TypeId::Of<int32_t>());
   EXPECT_EQ(set, expect_set);
 }
 
