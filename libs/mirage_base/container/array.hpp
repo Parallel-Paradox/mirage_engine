@@ -275,10 +275,10 @@ void Array<T>::Insert(const size_t index, Args&&... args) {
 template <std::move_constructible T>
 T Array<T>::Remove(const size_t index) {
   MIRAGE_DCHECK(index < size_);
-  T rv = std::move(*this[index]);
+  T rv = std::move((*this)[index]);
   --size_;
   for (size_t i = index; i < size_; ++i) {
-    *this[i] = *this[i + 1];
+    (*this)[i] = (*this)[i + 1];
   }
   return rv;
 }
@@ -296,9 +296,9 @@ void Array<T>::Swap(const size_t index_a, const size_t index_b) {
   MIRAGE_DCHECK(index_b < size_);
   if (index_a == index_b) return;
 
-  T temp = std::move(*this[index_a]);
-  *this[index_a] = std::move(*this[index_b]);
-  *this[index_b] = std::move(temp);
+  T temp = std::move((*this)[index_a]);
+  (*this)[index_a] = std::move((*this)[index_b]);
+  (*this)[index_b] = std::move(temp);
 }
 
 template <std::move_constructible T>
