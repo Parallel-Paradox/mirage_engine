@@ -5,7 +5,7 @@
 #include <type_traits>
 
 #include "mirage_base/container/hash_set.hpp"
-#include "mirage_base/define.hpp"
+#include "mirage_base/define/check.hpp"
 #include "mirage_base/util/key_val.hpp"
 
 namespace mirage::base {

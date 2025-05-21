@@ -1,7 +1,5 @@
-#ifndef MIRAGE_ECS_DEFINE
-#define MIRAGE_ECS_DEFINE
-
-#include "mirage_base/define.hpp"
+#ifndef MIRAGE_ECS_DEFINE_EXPORT
+#define MIRAGE_ECS_DEFINE_EXPORT
 
 #if defined(MIRAGE_BUILD_SHARED) && defined(MIRAGE_BUILD_MSVC)
 #if defined(MIRAGE_BUILD_ECS) || defined(MIRAGE_BUILD_ENGINE)
@@ -13,4 +11,4 @@
 #define MIRAGE_ECS
 #endif
 
-#endif  // MIRAGE_ECS_DEFINE
+#endif

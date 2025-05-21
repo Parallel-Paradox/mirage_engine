@@ -2,7 +2,7 @@
 #define MIRAGE_ECS_UTIL_TYPE_SET
 
 #include "mirage_base/container/array.hpp"
-#include "mirage_ecs/define.hpp"
+#include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/util/type_id.hpp"
 
 namespace mirage {

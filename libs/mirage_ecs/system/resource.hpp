@@ -4,7 +4,7 @@
 #include <type_traits>
 
 #include "mirage_base/auto_ptr/owned.hpp"
-#include "mirage_base/define.hpp"
+#include "mirage_base/define/check.hpp"
 #include "mirage_ecs/framework/world.hpp"
 #include "mirage_ecs/system/extract.hpp"
 #include "mirage_ecs/system/system_context.hpp"

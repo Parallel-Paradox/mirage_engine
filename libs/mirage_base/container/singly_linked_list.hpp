@@ -5,7 +5,7 @@
 #include <initializer_list>
 #include <iterator>
 
-#include "mirage_base/define.hpp"
+#include "mirage_base/define/check.hpp"
 
 namespace mirage::base {
 

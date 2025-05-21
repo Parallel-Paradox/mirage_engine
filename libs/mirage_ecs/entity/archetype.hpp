@@ -3,7 +3,7 @@
 
 #include "mirage_base/auto_ptr/shared.hpp"
 #include "mirage_base/container/hash_map.hpp"
-#include "mirage_ecs/define.hpp"
+#include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/entity/entity_chunk.hpp"
 #include "mirage_ecs/util/marker.hpp"
 #include "mirage_ecs/util/type_id.hpp"

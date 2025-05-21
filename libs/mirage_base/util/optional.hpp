@@ -1,7 +1,7 @@
 #ifndef MIRAGE_BASE_UTIL_OPTIONAL
 #define MIRAGE_BASE_UTIL_OPTIONAL
 
-#include "mirage_base/define.hpp"
+#include "mirage_base/define/check.hpp"
 #include "mirage_base/util/aligned_memory.hpp"
 
 namespace mirage::base {

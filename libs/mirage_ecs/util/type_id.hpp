@@ -5,7 +5,7 @@
 #include <typeindex>
 
 #include "mirage_base/util/hash.hpp"
-#include "mirage_ecs/define.hpp"
+#include "mirage_ecs/define/export.hpp"
 
 namespace mirage {
 namespace ecs {

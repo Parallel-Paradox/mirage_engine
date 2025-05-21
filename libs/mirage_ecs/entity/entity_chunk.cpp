@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "mirage_base/auto_ptr/shared.hpp"
-#include "mirage_base/define.hpp"
+#include "mirage_base/define/check.hpp"
 #include "mirage_ecs/entity/entity_layout.hpp"
 #include "mirage_ecs/util/marker.hpp"
 

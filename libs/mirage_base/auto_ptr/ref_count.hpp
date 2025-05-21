@@ -3,7 +3,7 @@
 
 #include <concepts>
 
-#include "mirage_base/define.hpp"
+#include "mirage_base/define/export.hpp"
 #include "mirage_base/sync/lock.hpp"
 
 namespace mirage::base {

@@ -1,7 +1,7 @@
 #ifndef MIRAGE_ECS_SYSTEM_SYSTEM_CONTEXT
 #define MIRAGE_ECS_SYSTEM_SYSTEM_CONTEXT
 
-#include "mirage_ecs/define.hpp"
+#include "mirage_ecs/define/export.hpp"
 
 namespace mirage::ecs {
 

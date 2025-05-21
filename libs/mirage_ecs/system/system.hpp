@@ -6,7 +6,7 @@
 
 #include "mirage_base/auto_ptr/owned.hpp"
 #include "mirage_base/util/func_trait.hpp"
-#include "mirage_ecs/define.hpp"
+#include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/system/extract.hpp"
 #include "mirage_ecs/system/system_context.hpp"
 

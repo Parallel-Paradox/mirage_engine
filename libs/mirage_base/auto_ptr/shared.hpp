@@ -4,6 +4,7 @@
 #include <cstddef>
 
 #include "mirage_base/auto_ptr/ref_count.hpp"
+#include "mirage_base/define/check.hpp"
 
 namespace mirage::base {
 

@@ -1,7 +1,7 @@
 #ifndef MIRAGE_BASE_SYNCHRONIZE_LOCK
 #define MIRAGE_BASE_SYNCHRONIZE_LOCK
 
-#include "mirage_base/define.hpp"
+#include "mirage_base/define/export.hpp"
 #include "mirage_base/sync/lock_impl.hpp"
 
 namespace mirage::base {
