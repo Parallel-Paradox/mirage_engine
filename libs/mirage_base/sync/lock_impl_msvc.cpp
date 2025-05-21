@@ -1,8 +1,6 @@
-#ifdef MIRAGE_BUILD_MSVC
+#include <windows.h>
 
 #include "mirage_base/sync/lock_impl.hpp"
-
-#include <windows.h>
 
 using namespace mirage::base;
 
@@ -21,9 +19,7 @@ LockImpl::LockImpl() {
   InitializeSRWLock(static_cast<SRWLOCK*>(native_handle_));
 }
 
-LockImpl::~LockImpl() {
-  delete static_cast<SRWLOCK*>(native_handle_);
-}
+LockImpl::~LockImpl() { delete static_cast<SRWLOCK*>(native_handle_); }
 
 bool LockImpl::TryAcquire() const {
   return TryAcquireSRWLockExclusive(static_cast<SRWLOCK*>(native_handle_));
@@ -36,5 +32,3 @@ void LockImpl::AcquireInternal() const {
 void LockImpl::Release() const {
   ReleaseSRWLockExclusive(static_cast<SRWLOCK*>(native_handle_));
 }
-
-#endif

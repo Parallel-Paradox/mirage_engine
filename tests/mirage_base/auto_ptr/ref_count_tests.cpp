@@ -6,7 +6,7 @@
 
 using namespace mirage::base;
 
-TEST(RefCountTests, Counstruct) {
+TEST(RefCountTests, Construct) {
   EXPECT_TRUE(IsRefCount<RefCountLocal>);
   EXPECT_TRUE(IsRefCount<RefCountAsync>);
   EXPECT_EQ(RefCountLocal(1).cnt(), 1);

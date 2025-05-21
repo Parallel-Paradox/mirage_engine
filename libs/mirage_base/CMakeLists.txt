@@ -3,10 +3,16 @@ message(STATUS "Building mirage_base...")
 set(SRC
     "auto_ptr/ref_count.cpp"
     "sync/lock.cpp")
-if (MSVC)
+
+include(CheckIncludeFileCXX)
+check_include_file_cxx("windows.h" HAS_WINDOWS_H)
+check_include_file_cxx("pthread.h" HAS_PTHREAD_H)
+if (HAS_WINDOWS_H)
   set(SRC ${SRC} "sync/lock_impl_msvc.cpp")
-else ()
+elseif (HAS_PTHREAD_H)
   set(SRC ${SRC} "sync/lock_impl_posix.cpp")
+else ()
+  message(FATAL_ERROR "No lock implementation found")
 endif ()
 
 if (MIRAGE_BUILD_SPLIT)

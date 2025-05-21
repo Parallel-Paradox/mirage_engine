@@ -1,5 +1,3 @@
-#ifndef MIRAGE_BUILD_MSVC
-
 #include <pthread.h>
 
 #include "mirage_base/sync/lock_impl.hpp"
@@ -40,5 +38,3 @@ void LockImpl::AcquireInternal() const {
 void LockImpl::Release() const {
   pthread_mutex_unlock(static_cast<pthread_mutex_t*>(native_handle_));
 }
-
-#endif

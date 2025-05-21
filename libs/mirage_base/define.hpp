@@ -1,9 +1,7 @@
 #ifndef MIRAGE_BASE_DEFINE
 #define MIRAGE_BASE_DEFINE
 
-#if defined(MIRAGE_BUILD_DEBUG)
 #include <cassert>
-#endif
 
 #if defined(MIRAGE_BUILD_SHARED) && defined(MIRAGE_BUILD_MSVC)
 #if defined(MIRAGE_BUILD_BASE) || defined(MIRAGE_BUILD_ENGINE)

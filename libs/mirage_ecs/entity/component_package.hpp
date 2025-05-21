@@ -4,6 +4,7 @@
 #include <cstddef>
 
 #include "mirage_base/container/hash_map.hpp"
+#include "mirage_base/define.hpp"
 #include "mirage_base/util/optional.hpp"
 #include "mirage_ecs/entity/component_func_table.hpp"
 #include "mirage_ecs/util/marker.hpp"
@@ -83,6 +84,7 @@ ComponentData ComponentData::New(T component) {
 
 template <IsComponent T>
 T ComponentData::Unwrap() const {
+  MIRAGE_DCHECK(type_id_ == TypeId::Of<T>());
   return std::move(*static_cast<T *>(raw_ptr_));
 }
 
