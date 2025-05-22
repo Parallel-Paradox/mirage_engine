@@ -5,8 +5,8 @@
 
 #include "mirage_base/auto_ptr/owned.hpp"
 #include "mirage_base/container/hash_map.hpp"
-#include "mirage_base/util/optional.hpp"
 #include "mirage_base/util/type_id.hpp"
+#include "mirage_base/wrap/optional.hpp"
 #include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/entity/archetype.hpp"
 #include "mirage_ecs/util/marker.hpp"

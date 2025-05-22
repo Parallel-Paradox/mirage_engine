@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "mirage_base/util/optional.hpp"
+#include "mirage_base/wrap/optional.hpp"
 
 using namespace mirage::base;
 

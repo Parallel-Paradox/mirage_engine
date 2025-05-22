@@ -1,8 +1,8 @@
-#ifndef MIRAGE_BASE_UTIL_OPTIONAL
-#define MIRAGE_BASE_UTIL_OPTIONAL
+#ifndef MIRAGE_BASE_WRAP_OPTIONAL
+#define MIRAGE_BASE_WRAP_OPTIONAL
 
 #include "mirage_base/define/check.hpp"
-#include "mirage_base/util/aligned_memory.hpp"
+#include "mirage_base/wrap/aligned_memory.hpp"
 
 namespace mirage::base {
 
@@ -61,4 +61,4 @@ class Optional {
 
 }  // namespace mirage::base
 
-#endif  // MIRAGE_BASE_UTIL_OPTIONAL
+#endif  // MIRAGE_BASE_WRAP_OPTIONAL

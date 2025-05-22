@@ -1,5 +1,5 @@
-#ifndef MIRAGE_ECS_ARCHETYPE_TYPE_ID
-#define MIRAGE_ECS_ARCHETYPE_TYPE_ID
+#ifndef MIRAGE_BASE_UTIL_TYPE_ID
+#define MIRAGE_BASE_UTIL_TYPE_ID
 
 #include <cstddef>
 #include <typeindex>
@@ -81,4 +81,4 @@ struct base::Hash<TypeId> {
 
 }  // namespace mirage::base
 
-#endif  // MIRAGE_ECS_ARCHETYPE_TYPE_ID
+#endif  // MIRAGE_BASE_UTIL_TYPE_ID

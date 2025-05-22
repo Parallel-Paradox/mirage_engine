@@ -8,7 +8,7 @@
 #include "mirage_base/container/array.hpp"
 #include "mirage_base/container/singly_linked_list.hpp"
 #include "mirage_base/util/hash.hpp"
-#include "mirage_base/util/optional.hpp"
+#include "mirage_base/wrap/optional.hpp"
 
 namespace mirage::base {
 

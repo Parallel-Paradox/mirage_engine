@@ -1,5 +1,5 @@
-#ifndef MIRAGE_BASE_UTIL_ALIGNED_MEMORY
-#define MIRAGE_BASE_UTIL_ALIGNED_MEMORY
+#ifndef MIRAGE_BASE_WRAP_ALIGNED_MEMORY
+#define MIRAGE_BASE_WRAP_ALIGNED_MEMORY
 
 #include <concepts>
 #include <cstddef>
@@ -33,4 +33,4 @@ class alignas(T) AlignedMemory {
 
 }  // namespace mirage::base
 
-#endif  // MIRAGE_BASE_UTIL_ALIGNED_MEMORY
+#endif  // MIRAGE_BASE_WRAP_ALIGNED_MEMORY
