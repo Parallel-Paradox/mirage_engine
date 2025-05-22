@@ -46,7 +46,5 @@ if is_config("mirage_split", false) then
   target("mirage_engine")
     set_kind(get_config("kind"))
     add_defines("MIRAGE_BUILD_ENGINE")
-    add_rules("build_mirage_base")
-    add_rules("build_mirage_ecs")
   target_end()
 end
