@@ -2,7 +2,8 @@ message(STATUS "Building mirage_base...")
 
 set(SRC
     "auto_ptr/ref_count.cpp"
-    "sync/lock.cpp")
+    "sync/lock.cpp"
+    "util/type_id.cpp")
 
 include(CheckIncludeFileCXX)
 check_include_file_cxx("windows.h" HAS_WINDOWS_H)

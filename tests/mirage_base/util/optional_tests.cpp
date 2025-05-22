@@ -4,7 +4,7 @@
 
 using namespace mirage::base;
 
-TEST(UtilTests, UnwrapOptional) {
+TEST(OptionalTests, UnwrapOptional) {
   auto num = Optional<int32_t>::None();
   EXPECT_FALSE(num.is_valid());
   // num.Unwrap(); // Panic if try to unwrap invalid Optional.
@@ -15,7 +15,7 @@ TEST(UtilTests, UnwrapOptional) {
   EXPECT_FALSE(num.is_valid());
 }
 
-TEST(UtilTests, MoveOptional) {
+TEST(OptionalTests, MoveOptional) {
   auto num = Optional<int32_t>::New(1);
   EXPECT_TRUE(num.is_valid());
   Optional<int32_t> move_num(std::move(num));

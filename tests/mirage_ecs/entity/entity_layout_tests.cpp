@@ -3,6 +3,7 @@
 #include "mirage_ecs/entity/entity_layout.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
+using namespace mirage;
 using namespace mirage::ecs;
 
 struct Bool : Component {
@@ -26,7 +27,7 @@ TEST(EntityLayoutTests, OffsetAndAlignment) {
   EXPECT_TRUE(type_set.With(TypeSet::New<Bool, Int64, Int32>()));
 
   const auto& offset_map = layout.component_meta_map();
-  EXPECT_EQ(offset_map[TypeId::Of<Int64>()].offset, 0);
-  EXPECT_EQ(offset_map[TypeId::Of<Int32>()].offset, 8);
-  EXPECT_EQ(offset_map[TypeId::Of<Bool>()].offset, 12);
+  EXPECT_EQ(offset_map[base::TypeId::Of<Int64>()].offset, 0);
+  EXPECT_EQ(offset_map[base::TypeId::Of<Int32>()].offset, 8);
+  EXPECT_EQ(offset_map[base::TypeId::Of<Bool>()].offset, 12);
 }

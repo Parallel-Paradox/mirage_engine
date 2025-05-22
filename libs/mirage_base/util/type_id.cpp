@@ -1,6 +1,6 @@
-#include "mirage_ecs/util/type_id.hpp"
+#include "mirage_base/util/type_id.hpp"
 
-using namespace mirage::ecs;
+using namespace mirage::base;
 
 bool TypeMeta::operator==(const TypeMeta& other) const {
   return (this == &other) ||
@@ -20,6 +20,8 @@ std::strong_ordering TypeMeta::operator<=>(const TypeMeta& other) const {
   }
   return std::strong_ordering::greater;
 }
+
+std::type_index TypeMeta::type_index() const { return type_index_; }
 
 const char* TypeMeta::type_name() const { return type_index_.name(); }
 
@@ -53,6 +55,8 @@ bool TypeId::operator!=(const TypeId& other) const {
 std::strong_ordering TypeId::operator<=>(const TypeId& other) const {
   return *type_meta_ <=> *other.type_meta_;
 }
+
+std::type_index TypeId::type_index() const { return type_meta_->type_index(); }
 
 const char* TypeId::type_name() const { return type_meta_->type_name(); }
 

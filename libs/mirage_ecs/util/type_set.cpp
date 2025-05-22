@@ -1,6 +1,6 @@
 #include "mirage_ecs/util/type_set.hpp"
 
-#include "mirage_ecs/util/type_id.hpp"
+#include "mirage_base/util/type_id.hpp"
 
 using namespace mirage;
 using namespace mirage::ecs;
@@ -104,7 +104,9 @@ bool TypeSet::Without(const TypeSet& set) const {
 
 bool TypeSet::Without(const TypeId& type_id) const { return !With(type_id); }
 
-const base::Array<TypeId>& TypeSet::type_array() const { return type_array_; }
+const base::Array<base::TypeId>& TypeSet::type_array() const {
+  return type_array_;
+}
 
 size_t TypeSet::mask() const { return mask_; }
 

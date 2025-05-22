@@ -2,14 +2,16 @@
 #define MIRAGE_ECS_UTIL_TYPE_SET
 
 #include "mirage_base/container/array.hpp"
+#include "mirage_base/util/type_id.hpp"
 #include "mirage_ecs/define/export.hpp"
-#include "mirage_ecs/util/type_id.hpp"
 
 namespace mirage {
 namespace ecs {
 
 class TypeSet {
  public:
+  using TypeId = base::TypeId;
+
   MIRAGE_ECS TypeSet() = default;
   MIRAGE_ECS ~TypeSet() = default;
 
@@ -19,7 +21,7 @@ class TypeSet {
   MIRAGE_ECS TypeSet(TypeSet &&other) noexcept;
   MIRAGE_ECS TypeSet &operator=(TypeSet &&other) noexcept;
 
-  MIRAGE_ECS [[nodiscard]] TypeSet Clone() const;
+  [[nodiscard]] MIRAGE_ECS TypeSet Clone() const;
 
   template <typename... Ts>
   static TypeSet New();

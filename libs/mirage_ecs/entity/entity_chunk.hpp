@@ -4,10 +4,10 @@
 #include <cstddef>
 
 #include "mirage_base/auto_ptr/shared.hpp"
+#include "mirage_base/util/type_id.hpp"
 #include "mirage_ecs/entity/component_package.hpp"
 #include "mirage_ecs/entity/entity_layout.hpp"
 #include "mirage_ecs/util/marker.hpp"
-#include "mirage_ecs/util/type_id.hpp"
 
 namespace mirage::ecs {
 
@@ -119,7 +119,7 @@ template <IsComponent T>
 T *EntityView::TryGetImpl() const {
   const auto &meta_map = entity_layout_->component_meta_map();
   EntityLayout::ComponentMetaMap::ConstIterator iter =
-      meta_map.TryFind(TypeId::Of<T>());
+      meta_map.TryFind(base::TypeId::Of<T>());
   if (iter == meta_map.end()) {
     return nullptr;
   }

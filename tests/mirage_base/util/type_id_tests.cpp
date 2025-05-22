@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "mirage_ecs/util/type_id.hpp"
+#include "mirage_base/util/type_id.hpp"
 
-using namespace mirage::ecs;
+using namespace mirage::base;
 
 TEST(TypeIdTests, Consistent) {
   const TypeId type_id = TypeId::Of<size_t>();
@@ -12,6 +12,7 @@ TEST(TypeIdTests, Consistent) {
 
 TEST(TypeIdTests, Information) {
   const TypeId type_id = TypeId::Of<size_t>();
+  EXPECT_EQ(type_id.type_index(), typeid(size_t));
   EXPECT_STREQ(type_id.type_name(), typeid(size_t).name());
   EXPECT_EQ(type_id.type_size(), sizeof(size_t));
   EXPECT_EQ(type_id.type_align(), alignof(size_t));

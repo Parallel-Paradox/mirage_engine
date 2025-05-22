@@ -2,9 +2,9 @@
 #define MIRAGE_ECS_ENTITY_ENTITY_LAYOUT
 
 #include "mirage_base/container/hash_map.hpp"
+#include "mirage_base/util/type_id.hpp"
 #include "mirage_ecs/entity/component_func_table.hpp"
 #include "mirage_ecs/util/marker.hpp"
-#include "mirage_ecs/util/type_id.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
 namespace mirage::ecs {
@@ -15,6 +15,7 @@ class EntityLayout {
     size_t offset;
     ComponentFuncTable func_table;
   };
+  using TypeId = base::TypeId;
   using ComponentMetaMap = base::HashMap<TypeId, ComponentMeta>;
 
   MIRAGE_ECS ~EntityLayout() = default;
@@ -49,7 +50,7 @@ EntityLayout EntityLayout::New() {
   EntityLayout layout;
   layout.set_component_type_set(TypeSet::New<Ts...>());
 
-  ((layout.component_meta_map_[TypeId::Of<Ts>()].func_table =
+  ((layout.component_meta_map_[base::TypeId::Of<Ts>()].func_table =
         ComponentFuncTable::Of<Ts>()),
    ...);
 

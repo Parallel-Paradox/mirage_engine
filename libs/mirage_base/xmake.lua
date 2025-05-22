@@ -3,7 +3,8 @@ rule("build_mirage_base")
     target:add("defines", "MIRAGE_BUILD_BASE")
     files = {
       "auto_ptr/ref_count.cpp",
-      "sync/lock.cpp"
+      "sync/lock.cpp",
+      "util/type_id.cpp"
     }
     if target:has_cxxincludes("windows.h") then
       table.insert(files, "sync/lock_impl_msvc.cpp")

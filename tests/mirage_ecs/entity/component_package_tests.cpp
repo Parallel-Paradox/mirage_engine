@@ -6,6 +6,7 @@
 #include "mirage_ecs/util/marker.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
+using namespace mirage;
 using namespace mirage::ecs;
 
 struct DestructCounter : Component {
@@ -36,7 +37,7 @@ TEST(ComponentPackageTests, AddComponent) {
   auto rv2 = package.Add(DestructCounter(&counter2));
 
   EXPECT_EQ(package.size(), 1);
-  EXPECT_TRUE(package.type_set().With(TypeId::Of<DestructCounter>()));
+  EXPECT_TRUE(package.type_set().With(base::TypeId::Of<DestructCounter>()));
   EXPECT_FALSE(rv1.is_valid());
   EXPECT_TRUE(rv2.is_valid());
   EXPECT_EQ(counter1, 0);
@@ -60,7 +61,7 @@ TEST(ComponentPackageTests, RemoveComponent) {
   EXPECT_TRUE(rv.is_valid());
   EXPECT_EQ(counter, 0);
   EXPECT_EQ(package.size(), 0);
-  EXPECT_TRUE(package.type_set().Without(TypeId::Of<DestructCounter>()));
+  EXPECT_TRUE(package.type_set().Without(base::TypeId::Of<DestructCounter>()));
 
   size_t* counter_ptr = rv.Unwrap().counter_ptr;
   EXPECT_EQ(counter, 1);

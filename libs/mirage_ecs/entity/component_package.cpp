@@ -42,7 +42,7 @@ void *ComponentData::Take() && {
 
 void *ComponentData::raw_ptr() const { return raw_ptr_; }
 
-const TypeId &ComponentData::type_id() const { return type_id_; }
+const base::TypeId &ComponentData::type_id() const { return type_id_; }
 
 ComponentData::ComponentData(void *raw_ptr, TypeId type_id,
                              void (*destroy_func)(void *))
