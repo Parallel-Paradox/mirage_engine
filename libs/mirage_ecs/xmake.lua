@@ -10,5 +10,6 @@ if is_config("mirage_split", true) then
   target("mirage_ecs")
     set_kind(get_config("kind"))
     add_rules("build_mirage_ecs")
+    add_deps("mirage_base")
   target_end()
 end
