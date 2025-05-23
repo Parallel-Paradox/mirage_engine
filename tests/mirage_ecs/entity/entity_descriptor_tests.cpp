@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "mirage_ecs/entity/entity_layout.hpp"
+#include "mirage_ecs/entity/entity_descriptor.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
 using namespace mirage;
@@ -18,8 +18,8 @@ struct Int64 : Component {
   int64_t value{0};
 };
 
-TEST(EntityLayoutTests, OffsetAndAlignment) {
-  const auto layout = EntityLayout::New<Bool, Int64, Int32>();
+TEST(EntityDescriptorTests, OffsetAndAlignment) {
+  const auto layout = EntityDescriptor::New<Bool, Int64, Int32>();
   EXPECT_EQ(layout.align(), 8);
   EXPECT_EQ(layout.size(), 16);
 

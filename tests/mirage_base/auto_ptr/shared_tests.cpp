@@ -29,11 +29,11 @@ TEST(SharedPtrTests, Construct) {
 
   // Default construct
   SharedAsync<Base> shared;
-  EXPECT_TRUE(shared.IsNull());
+  EXPECT_TRUE(shared.is_null());
 
   // List construct
   shared = SharedAsync<Base>::New(&is_destructed);
-  EXPECT_FALSE(shared.IsNull());
+  EXPECT_FALSE(shared.is_null());
   EXPECT_EQ(shared.ref_cnt(), 1);
   EXPECT_EQ(shared.weak_ref_cnt(), 0);
 
@@ -57,7 +57,7 @@ TEST(SharedPtrTests, Construct) {
   // Move construct
   SharedAsync<Base> move_shared(std::move(shared));
   EXPECT_EQ(move_shared.raw_ptr(), base);
-  EXPECT_TRUE(shared.IsNull());  // NOLINT: Use after move.
+  EXPECT_TRUE(shared.is_null());  // NOLINT: Use after move.
 
   move_shared.Reset();
   EXPECT_EQ(is_destructed, 2);  // Destructor is called.
@@ -96,8 +96,8 @@ TEST(SharedPtrTests, ConvertBaseToDerive) {
   // Convert from derive to base is always successful.
   auto derive = SharedLocal<Derive>::New(&base_destructed, &derive_destructed);
   SharedLocal<Base> base = std::move(derive).Convert<Base>();
-  EXPECT_TRUE(derive.IsNull());  // NOLINT(*-use-after-move): Allow for test.
-  EXPECT_FALSE(base.IsNull());
+  EXPECT_TRUE(derive.is_null());  // NOLINT(*-use-after-move): Allow for test.
+  EXPECT_FALSE(base.is_null());
   base.Reset();
 
   // Even holder is base, derive destructor is still called.
@@ -111,8 +111,8 @@ TEST(SharedPtrTests, ConvertDeriveToBase) {
   auto base = SharedLocal<Base>::New(&base_destructed);
   const SharedLocal<Derive> derive_from_base =
       std::move(base).TryConvert<Derive>();
-  EXPECT_TRUE(derive_from_base.IsNull());
-  EXPECT_FALSE(base.IsNull());  // NOLINT: Use after move.
+  EXPECT_TRUE(derive_from_base.is_null());
+  EXPECT_FALSE(base.is_null());  // NOLINT: Use after move.
   EXPECT_EQ(base_destructed, 0);
 
   // Convert from base to derive when derive is the origin type.
@@ -120,8 +120,8 @@ TEST(SharedPtrTests, ConvertDeriveToBase) {
   auto derive = SharedLocal<Derive>::New(&base_destructed, &derive_destructed);
   SharedLocal<Base> base_from_derive = std::move(derive).TryConvert<Base>();
   derive = std::move(base_from_derive).TryConvert<Derive>();
-  EXPECT_FALSE(derive.IsNull());
-  EXPECT_TRUE(base_from_derive.IsNull());  // NOLINT: Use after move.
+  EXPECT_FALSE(derive.is_null());
+  EXPECT_TRUE(base_from_derive.is_null());  // NOLINT: Use after move.
   EXPECT_EQ(base_destructed, 0);
   EXPECT_EQ(derive_destructed, 0);
 }

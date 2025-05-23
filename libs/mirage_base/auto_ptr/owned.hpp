@@ -39,7 +39,7 @@ class Owned {
 
   explicit operator bool() const;
   bool operator==(std::nullptr_t) const;
-  [[nodiscard]] bool IsNull() const;
+  [[nodiscard]] bool is_null() const;
 
  private:
   T* raw_ptr_{nullptr};
@@ -132,7 +132,7 @@ bool Owned<T>::operator==(std::nullptr_t) const {
 }
 
 template <typename T>
-bool Owned<T>::IsNull() const {
+bool Owned<T>::is_null() const {
   return raw_ptr_ == nullptr;
 }
 

@@ -6,7 +6,7 @@
 #include "mirage_base/auto_ptr/shared.hpp"
 #include "mirage_base/util/type_id.hpp"
 #include "mirage_ecs/entity/component_package.hpp"
-#include "mirage_ecs/entity/entity_layout.hpp"
+#include "mirage_ecs/entity/entity_descriptor.hpp"
 #include "mirage_ecs/util/marker.hpp"
 
 namespace mirage::ecs {
@@ -27,8 +27,8 @@ class EntityChunk {
   MIRAGE_ECS EntityChunk(EntityChunk &&other) noexcept;
   MIRAGE_ECS EntityChunk &operator=(EntityChunk &&other) noexcept;
 
-  MIRAGE_ECS EntityChunk(base::SharedLocal<EntityLayout> &&entity_layout,
-                         size_t capacity);
+  MIRAGE_ECS EntityChunk(
+      base::SharedLocal<EntityDescriptor> &&entity_descriptor, size_t capacity);
 
   bool Push(ComponentPackage &component_package);
   bool SwapRemove(size_t index);
@@ -43,7 +43,7 @@ class EntityChunk {
   // ConstIterator begin() const;
   // ConstIterator end() const;
 
-  [[nodiscard]] MIRAGE_ECS const EntityLayout &entity_layout() const;
+  [[nodiscard]] MIRAGE_ECS const EntityDescriptor &entity_descriptor() const;
 
   [[nodiscard]] MIRAGE_ECS size_t byte_size() const;
   [[nodiscard]] MIRAGE_ECS std::byte *raw_ptr() const;
@@ -52,7 +52,7 @@ class EntityChunk {
   [[nodiscard]] MIRAGE_ECS size_t size() const;
 
  private:
-  base::SharedLocal<EntityLayout> entity_layout_{nullptr};
+  base::SharedLocal<EntityDescriptor> entity_descriptor_{nullptr};
 
   size_t byte_size_{0};
   std::byte *raw_ptr_{nullptr};
@@ -86,12 +86,13 @@ class EntityView {
 
  private:
   friend class EntityChunk;
-  MIRAGE_ECS EntityView(EntityLayout *entity_layout, std::byte *raw_ptr);
+  MIRAGE_ECS EntityView(EntityDescriptor *entity_descriptor,
+                        std::byte *raw_ptr);
 
   template <IsComponent T>
   T *TryGetImpl() const;
 
-  EntityLayout *entity_layout_{nullptr};
+  EntityDescriptor *entity_descriptor_{nullptr};
   std::byte *raw_ptr_{nullptr};
 };
 
@@ -117,8 +118,8 @@ T &EntityView::Get() {
 
 template <IsComponent T>
 T *EntityView::TryGetImpl() const {
-  const auto &meta_map = entity_layout_->component_meta_map();
-  EntityLayout::ComponentMetaMap::ConstIterator iter =
+  const auto &meta_map = entity_descriptor_->component_meta_map();
+  EntityDescriptor::ComponentMetaMap::ConstIterator iter =
       meta_map.TryFind(base::TypeId::Of<T>());
   if (iter == meta_map.end()) {
     return nullptr;

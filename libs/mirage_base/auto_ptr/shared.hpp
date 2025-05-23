@@ -49,7 +49,7 @@ class Shared {
 
   explicit operator bool() const;
   bool operator==(std::nullptr_t) const;
-  [[nodiscard]] bool IsNull() const;
+  [[nodiscard]] bool is_null() const;
 
   [[nodiscard]] size_t ref_cnt() const;
   [[nodiscard]] size_t weak_ref_cnt() const;
@@ -179,7 +179,7 @@ bool Shared<T, R>::operator==(std::nullptr_t) const {
 }
 
 template <typename T, IsRefCount R>
-bool Shared<T, R>::IsNull() const {
+bool Shared<T, R>::is_null() const {
   return raw_ptr_ == nullptr;
 }
 

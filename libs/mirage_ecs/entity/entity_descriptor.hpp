@@ -1,5 +1,5 @@
-#ifndef MIRAGE_ECS_ENTITY_ENTITY_LAYOUT
-#define MIRAGE_ECS_ENTITY_ENTITY_LAYOUT
+#ifndef MIRAGE_ECS_ENTITY_ENTITY_DESCRIPTOR
+#define MIRAGE_ECS_ENTITY_ENTITY_DESCRIPTOR
 
 #include "mirage_base/container/hash_map.hpp"
 #include "mirage_base/util/type_id.hpp"
@@ -9,7 +9,7 @@
 
 namespace mirage::ecs {
 
-class EntityLayout {
+class EntityDescriptor {
  public:
   struct ComponentMeta {
     size_t offset;
@@ -18,16 +18,16 @@ class EntityLayout {
   using TypeId = base::TypeId;
   using ComponentMetaMap = base::HashMap<TypeId, ComponentMeta>;
 
-  MIRAGE_ECS ~EntityLayout() = default;
+  MIRAGE_ECS ~EntityDescriptor() = default;
 
-  EntityLayout(const EntityLayout &) = delete;
-  EntityLayout &operator=(const EntityLayout &) = delete;
+  EntityDescriptor(const EntityDescriptor &) = delete;
+  EntityDescriptor &operator=(const EntityDescriptor &) = delete;
 
-  MIRAGE_ECS EntityLayout(EntityLayout &&) = default;
-  MIRAGE_ECS EntityLayout &operator=(EntityLayout &&) = default;
+  MIRAGE_ECS EntityDescriptor(EntityDescriptor &&) = default;
+  MIRAGE_ECS EntityDescriptor &operator=(EntityDescriptor &&) = default;
 
   template <IsComponent... Ts>
-  static EntityLayout New();
+  static EntityDescriptor New();
 
   [[nodiscard]] MIRAGE_ECS size_t align() const;
   [[nodiscard]] MIRAGE_ECS size_t size() const;
@@ -35,7 +35,7 @@ class EntityLayout {
   [[nodiscard]] MIRAGE_ECS const ComponentMetaMap &component_meta_map() const;
 
  private:
-  MIRAGE_ECS EntityLayout() = default;
+  MIRAGE_ECS EntityDescriptor() = default;
 
   MIRAGE_ECS void set_component_type_set(TypeSet &&type_set);
 
@@ -46,8 +46,8 @@ class EntityLayout {
 };
 
 template <IsComponent... Ts>
-EntityLayout EntityLayout::New() {
-  EntityLayout layout;
+EntityDescriptor EntityDescriptor::New() {
+  EntityDescriptor layout;
   layout.set_component_type_set(TypeSet::New<Ts...>());
 
   ((layout.component_meta_map_[base::TypeId::Of<Ts>()].func_table =
@@ -59,4 +59,4 @@ EntityLayout EntityLayout::New() {
 
 }  // namespace mirage::ecs
 
-#endif  // MIRAGE_ECS_ENTITY_ENTITY_LAYOUT
+#endif  // MIRAGE_ECS_ENTITY_ENTITY_DESCRIPTOR

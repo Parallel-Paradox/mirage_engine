@@ -30,7 +30,7 @@ TEST(OwnedPtrTests, Construct) {
 
   // List Construct
   owned = Owned<Base>::New(&is_destructed);
-  EXPECT_FALSE(owned.IsNull());
+  EXPECT_FALSE(owned.is_null());
 
   // Raw construct and set with move
   const auto base = new Base(&is_destructed);
@@ -46,7 +46,7 @@ TEST(OwnedPtrTests, Construct) {
   // Move Construct
   auto move_owned = Owned(std::move(owned));
   EXPECT_EQ(move_owned->base_destructed, &is_destructed);
-  EXPECT_TRUE(owned.IsNull());  // NOLINT: Use after move.
+  EXPECT_TRUE(owned.is_null());  // NOLINT: Use after move.
 
   EXPECT_EQ(is_destructed, 1);
   move_owned = nullptr;  // NOLINT: Test nullptr setter
@@ -69,8 +69,8 @@ TEST(OwnedPtrTests, ConvertDeriveToBase) {
   // Convert from derive to base is always successful.
   auto derive = Owned<Derive>::New(&base_destructed, &derive_destructed);
   Owned<Base> base = std::move(derive).Convert<Base>();
-  EXPECT_TRUE(derive.IsNull());  // NOLINT(*-use-after-move): Allow for test.
-  EXPECT_FALSE(base.IsNull());
+  EXPECT_TRUE(derive.is_null());  // NOLINT(*-use-after-move): Allow for test.
+  EXPECT_FALSE(base.is_null());
   base.Reset();
 
   // Even holder is base, derive destructor is still called.
@@ -83,8 +83,8 @@ TEST(OwnedPtrTests, ConvertBaseToDerive) {
   int32_t base_destructed = 0;
   auto base = Owned<Base>::New(&base_destructed);
   const Owned<Derive> derive_from_base = std::move(base).TryConvert<Derive>();
-  EXPECT_TRUE(derive_from_base.IsNull());
-  EXPECT_FALSE(base.IsNull());  // NOLINT: Use after move.
+  EXPECT_TRUE(derive_from_base.is_null());
+  EXPECT_FALSE(base.is_null());  // NOLINT: Use after move.
   EXPECT_EQ(base_destructed, 0);
 
   // Convert from base to derive when derive is the origin type.
@@ -92,8 +92,8 @@ TEST(OwnedPtrTests, ConvertBaseToDerive) {
   auto derive = Owned<Derive>::New(&base_destructed, &derive_destructed);
   Owned<Base> base_from_derive = std::move(derive).TryConvert<Base>();
   derive = std::move(base_from_derive).TryConvert<Derive>();
-  EXPECT_FALSE(derive.IsNull());
-  EXPECT_TRUE(base_from_derive.IsNull());  // NOLINT: Use after move.
+  EXPECT_FALSE(derive.is_null());
+  EXPECT_TRUE(base_from_derive.is_null());  // NOLINT: Use after move.
   EXPECT_EQ(base_destructed, 0);
   EXPECT_EQ(derive_destructed, 0);
 }
