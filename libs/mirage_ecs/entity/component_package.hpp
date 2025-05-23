@@ -7,7 +7,6 @@
 #include "mirage_base/util/type_id.hpp"
 #include "mirage_base/wrap/optional.hpp"
 #include "mirage_ecs/define/export.hpp"
-#include "mirage_ecs/entity/component_func_table.hpp"
 #include "mirage_ecs/util/marker.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 

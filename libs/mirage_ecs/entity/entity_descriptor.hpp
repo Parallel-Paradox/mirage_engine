@@ -1,9 +1,10 @@
 #ifndef MIRAGE_ECS_ENTITY_ENTITY_DESCRIPTOR
 #define MIRAGE_ECS_ENTITY_ENTITY_DESCRIPTOR
 
+#include <concepts>
+
 #include "mirage_base/container/hash_map.hpp"
 #include "mirage_base/util/type_id.hpp"
-#include "mirage_ecs/entity/component_func_table.hpp"
 #include "mirage_ecs/util/marker.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
@@ -13,7 +14,8 @@ class EntityDescriptor {
  public:
   struct ComponentMeta {
     size_t offset;
-    ComponentFuncTable func_table;
+    void (*destruct_func)(void *ptr){nullptr};
+    void (*move_func)(void *target, void *destination){nullptr};
   };
   using TypeId = base::TypeId;
   using ComponentMetaMap = base::HashMap<TypeId, ComponentMeta>;
@@ -37,7 +39,7 @@ class EntityDescriptor {
  private:
   MIRAGE_ECS EntityDescriptor() = default;
 
-  MIRAGE_ECS void set_component_type_set(TypeSet &&type_set);
+  MIRAGE_ECS void InitializeLayout(TypeSet &&type_set);
 
   size_t align_{0};
   size_t size_{0};
@@ -45,13 +47,28 @@ class EntityDescriptor {
   ComponentMetaMap component_meta_map_{};
 };
 
+template <typename T>
+void DestructFunc(void *ptr) {
+  static_cast<T *>(ptr)->~T();
+}
+
+template <std::move_constructible T>
+void MoveFunc(void *target, void *destination) {
+  T *typed_target = static_cast<T *>(target);
+  T *typed_destination = static_cast<T *>(destination);
+  *typed_destination = std::move(*typed_target);
+}
+
 template <IsComponent... Ts>
 EntityDescriptor EntityDescriptor::New() {
   EntityDescriptor layout;
-  layout.set_component_type_set(TypeSet::New<Ts...>());
+  layout.InitializeLayout(TypeSet::New<Ts...>());
 
-  ((layout.component_meta_map_[base::TypeId::Of<Ts>()].func_table =
-        ComponentFuncTable::Of<Ts>()),
+  ((layout.component_meta_map_[base::TypeId::Of<Ts>()].destruct_func =
+        DestructFunc<Ts>),
+   ...);
+  ((layout.component_meta_map_[base::TypeId::Of<Ts>()].move_func =
+        MoveFunc<Ts>),
    ...);
 
   return layout;

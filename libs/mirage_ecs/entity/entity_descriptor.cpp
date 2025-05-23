@@ -1,8 +1,9 @@
+#include "mirage_ecs/entity/entity_descriptor.hpp"
+
 #include <algorithm>
 #include <cstddef>
 #include <numeric>
 
-#include "mirage_ecs/entity/entity_descriptor.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
 using namespace mirage::ecs;
@@ -20,7 +21,7 @@ const EntityDescriptor::ComponentMetaMap& EntityDescriptor::component_meta_map()
   return component_meta_map_;
 }
 
-void EntityDescriptor::set_component_type_set(TypeSet&& type_set) {
+void EntityDescriptor::InitializeLayout(TypeSet&& type_set) {
   size_t entity_align = type_set.type_array()[0].type_align();
   for (const TypeId& type_id : type_set.type_array()) {
     entity_align = std::lcm(entity_align, type_id.type_align());

@@ -62,8 +62,8 @@ bool EntityChunk::Push(ComponentPackage &component_package) {
 
     auto component_data = component_package.Remove(type_id).Unwrap();
     std::byte *type_ptr = entity_ptr + component_meta.offset;
-    component_meta.func_table.move(std::move(component_data).Take(),
-                                   static_cast<void *>(type_ptr));
+    component_meta.move_func(std::move(component_data).Take(),
+                             static_cast<void *>(type_ptr));
   }
   ++size_;
   return true;
@@ -85,7 +85,7 @@ void EntityChunk::Clear() {
     for (const auto &component_meta :
          entity_descriptor_->component_meta_map()) {
       std::byte *type_ptr = entity_ptr + component_meta.val().offset;
-      component_meta.val().func_table.destruct(static_cast<void *>(type_ptr));
+      component_meta.val().destruct_func(static_cast<void *>(type_ptr));
     }
   }
   ::operator delete[](raw_ptr_, std::align_val_t{entity_descriptor_->align()});
