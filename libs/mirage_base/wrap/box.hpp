@@ -3,6 +3,8 @@
 
 #include <concepts>
 
+#include "mirage_base/util/type_id.hpp"
+
 namespace mirage::base {
 
 class Box {
@@ -35,6 +37,38 @@ class Box {
 
   [[nodiscard]] bool is_valid() const;
   [[nodiscard]] bool is_soo() const;  // small object optimization
+
+ private:
+  union {
+    void* ptr{nullptr};
+    std::byte buffer[3 * sizeof(void*)];
+  } obj_;
+
+  template <typename T>
+  consteval static bool AllowSmallObjectOptimize() {
+    return std::move_constructible<T> &&
+           (alignof(decltype(obj_)) % alignof(T) == 0) &&
+           (sizeof(T) <= sizeof(decltype(obj_)));
+  }
+
+  enum Action {
+    kMove,
+    kDestruct,
+    kGet,
+    kTypeId,
+  };
+
+  using HandleFuncPtr = void* (*)(Action action, Box* target, Box* dest,
+                                  const TypeMeta* type_meta);
+  template <typename T>
+  static void* HandleFunc(Action action, Box* target, Box* dest,
+                          const TypeMeta* type_meta);
+  template <typename T>
+    requires /* check soo */ (AllowSmallObjectOptimize<T>())
+  static void* SooHandleFunc(Action action, Box* target, Box* dest,
+                             const TypeMeta* type_meta);
+
+  HandleFuncPtr handle_func_{nullptr};
 };
 
 }  // namespace mirage::base
