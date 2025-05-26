@@ -62,7 +62,7 @@ class MIRAGE_BASE Box {
   static void* LargeHandler(Action action, Box* target, Box* dest,
                             const TypeMeta* type_meta);
   template <typename T>
-    requires /* check soo */ (AllowSmallObjectOptimize<T>())
+    requires /* check soo */ (Box::AllowSmallObjectOptimize<T>())
   static void* SmallHandler(Action action, Box* target, Box* dest,
                             const TypeMeta* type_meta);
 
@@ -117,7 +117,7 @@ const T* Box::TryCast() const {
 }
 
 template <typename T>
-void* Box::LargeHandler(Action action, Box* target, Box* dest,
+void* Box::LargeHandler(const Action action, Box* target, Box* dest,
                         const TypeMeta* type_meta) {
   switch (action) {
     case kMove:
@@ -134,14 +134,14 @@ void* Box::LargeHandler(Action action, Box* target, Box* dest,
       }
       break;
     case kTypeMeta:
-      return static_cast<void*>(const_cast<TypeMeta*>(&TypeMeta::Of<T>()));
+      return const_cast<TypeMeta*>(&TypeMeta::Of<T>());
   }
   return nullptr;
 }
 
 template <typename T>
-  requires /* check soo */ (AllowSmallObjectOptimize<T>())
-void* Box::SmallHandler(Action action, Box* target, Box* dest,
+  requires /* check soo */ (Box::AllowSmallObjectOptimize<T>())
+void* Box::SmallHandler(const Action action, Box* target, Box* dest,
                         const TypeMeta* type_meta) {
   switch (action) {
     case kMove:
@@ -154,11 +154,11 @@ void* Box::SmallHandler(Action action, Box* target, Box* dest,
     case kGet:
       MIRAGE_DCHECK(type_meta != nullptr);
       if (target->type_id() == TypeId(*type_meta)) {
-        return static_cast<void*>(&target->obj_.buffer);
+        return &target->obj_.buffer;
       }
       break;
     case kTypeMeta:
-      return static_cast<void*>(const_cast<TypeMeta*>(&TypeMeta::Of<T>()));
+      return const_cast<TypeMeta*>(&TypeMeta::Of<T>());
   }
   return nullptr;
 }

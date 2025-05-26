@@ -1,9 +1,8 @@
 message(STATUS "Building mirage_base...")
 
-set(SRC
-    "auto_ptr/ref_count.cpp"
-    "sync/lock.cpp"
-    "util/type_id.cpp")
+file(GLOB_RECURSE SRC "**.cpp")
+file(GLOB_RECURSE EXCLUDED "sync/lock_impl*.cpp")
+list(REMOVE_ITEM SRC ${EXCLUDED})
 
 include(CheckIncludeFileCXX)
 check_include_file_cxx("windows.h" HAS_WINDOWS_H)

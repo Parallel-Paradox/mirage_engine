@@ -14,9 +14,9 @@ struct alignas(alignof(void*) << 1) BigAlign {};
 struct DestructCnt {
   int32_t* destruct_cnt{nullptr};
 
-  DestructCnt(int32_t* destruct_cnt) : destruct_cnt(destruct_cnt) {}
+  explicit DestructCnt(int32_t* destruct_cnt) : destruct_cnt(destruct_cnt) {}
 
-  DestructCnt(DestructCnt&& other) : destruct_cnt(other.destruct_cnt) {
+  DestructCnt(DestructCnt&& other) noexcept : destruct_cnt(other.destruct_cnt) {
     other.destruct_cnt = nullptr;
   }
 
@@ -31,15 +31,13 @@ struct Vec4 {
   size_t x, y, z, w;
   DestructCnt destruct_cnt;
 
-  Vec4(size_t x, size_t y, size_t z, size_t w, DestructCnt destruct_cnt)
+  Vec4(const size_t x, const size_t y, const size_t z, const size_t w,
+       DestructCnt destruct_cnt)
       : x(x), y(y), z(z), w(w), destruct_cnt(std::move(destruct_cnt)) {}
 
-  Vec4(Vec4&& other)
-      : x(other.x),
-        y(other.y),
-        z(other.z),
-        w(other.w),
-        destruct_cnt(std::move(other.destruct_cnt)) {}
+  Vec4(Vec4&& other) noexcept
+      : Vec4(other.x, other.y, other.z, other.w,
+             std::move(other.destruct_cnt)) {}
 
   bool operator==(const Vec4& rhs) const {
     return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
@@ -68,10 +66,10 @@ TEST(BoxTests, AssignValue) {
   EXPECT_EQ(*box.TryCast<decltype(1.0)>(), 1.0);
 
   int32_t destruct_cnt = 0;
-  box = Vec4{1, 2, 3, 4, {&destruct_cnt}};
+  box = Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}};
   EXPECT_TRUE(box.is_valid());
   EXPECT_EQ(box.type_id(), TypeId::Of<Vec4>());
-  auto expect_vec = Vec4{1, 2, 3, 4, {&destruct_cnt}};
+  const auto expect_vec = Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}};
   EXPECT_EQ(*box.TryCast<Vec4>(), expect_vec);
 }
 
@@ -87,7 +85,7 @@ TEST(BoxTests, ResetSmallObject) {
 
 TEST(BoxTests, ResetLargeObject) {
   int32_t destruct_cnt = 0;
-  auto box = Box::New(Vec4{1, 2, 3, 4, {&destruct_cnt}});
+  auto box = Box::New(Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}});
   EXPECT_TRUE(box.is_valid());
   EXPECT_EQ(destruct_cnt, 0);
   box.Reset();
