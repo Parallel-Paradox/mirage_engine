@@ -36,6 +36,8 @@ TypeId Box::type_id() const {
   return TypeId(*static_cast<const TypeMeta*>(Call(kTypeMeta)));
 }
 
+void* Box::raw_ptr() const { return Call(kGet); }
+
 void* Box::Call(Action action, Box* dest, const TypeMeta* type_meta) const {
   return handle_func_(action, const_cast<Box*>(this), dest, type_meta);
 }

@@ -51,6 +51,28 @@ TEST(BoxTests, SooCondition) {
   EXPECT_FALSE(Box::AllowSmallObjectOptimize<Vec4>());
 }
 
+TEST(BoxTests, MoveSmall) {
+  int32_t destruct_cnt = 0;
+  auto box = Box::New(DestructCnt{&destruct_cnt});
+  auto box_move = std::move(box);
+  EXPECT_FALSE(box.is_valid());
+  EXPECT_TRUE(box_move.is_valid());
+  EXPECT_EQ(box_move.type_id(), TypeId::Of<DestructCnt>());
+  EXPECT_EQ(destruct_cnt, 0);
+}
+
+TEST(BoxTests, MoveLarge) {
+  int32_t destruct_cnt = 0;
+  auto box = Box::New(Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}});
+  auto box_move = std::move(box);
+  EXPECT_FALSE(box.is_valid());
+  EXPECT_TRUE(box_move.is_valid());
+  EXPECT_EQ(box_move.type_id(), TypeId::Of<Vec4>());
+  const auto expect_vec = Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}};
+  EXPECT_EQ(*box_move.TryCast<Vec4>(), expect_vec);
+  EXPECT_EQ(destruct_cnt, 0);
+}
+
 TEST(BoxTests, AssignValue) {
   Box box;
   EXPECT_FALSE(box.is_valid());
@@ -73,7 +95,7 @@ TEST(BoxTests, AssignValue) {
   EXPECT_EQ(*box.TryCast<Vec4>(), expect_vec);
 }
 
-TEST(BoxTests, ResetSmallObject) {
+TEST(BoxTests, ResetSmall) {
   int32_t destruct_cnt = 0;
   auto box = Box::New(DestructCnt{&destruct_cnt});
   EXPECT_TRUE(box.is_valid());
@@ -83,7 +105,7 @@ TEST(BoxTests, ResetSmallObject) {
   EXPECT_EQ(destruct_cnt, 1);
 }
 
-TEST(BoxTests, ResetLargeObject) {
+TEST(BoxTests, ResetLarge) {
   int32_t destruct_cnt = 0;
   auto box = Box::New(Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}});
   EXPECT_TRUE(box.is_valid());

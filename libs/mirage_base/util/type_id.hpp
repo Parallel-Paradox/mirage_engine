@@ -75,7 +75,7 @@ class MIRAGE_BASE TypeId {
 };
 
 template <>
-struct base::Hash<TypeId> {
+struct Hash<TypeId> {
   size_t operator()(const TypeId &type_id) const { return type_id.hash_code(); }
 };
 
