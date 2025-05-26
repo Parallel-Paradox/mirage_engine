@@ -103,7 +103,9 @@ T Box::Unwrap() {
   T* ptr = TryCast<T>();
   MIRAGE_DCHECK(ptr != nullptr);
 
-  return std::move(*ptr);
+  T rv = std::move(*ptr);
+  Reset();
+  return rv;
 }
 
 template <typename T>

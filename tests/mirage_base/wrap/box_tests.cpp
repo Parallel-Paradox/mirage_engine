@@ -92,3 +92,15 @@ TEST(BoxTests, ResetLargeObject) {
   EXPECT_FALSE(box.is_valid());
   EXPECT_EQ(destruct_cnt, 1);
 }
+
+TEST(BoxTests, Unwrap) {
+  int32_t destruct_cnt = 0;
+  auto box = Box::New(Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}});
+  EXPECT_TRUE(box.is_valid());
+
+  auto vec = box.Unwrap<Vec4>();
+  EXPECT_FALSE(box.is_valid());
+  EXPECT_EQ(destruct_cnt, 0);
+  const auto expect_vec = Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}};
+  EXPECT_EQ(vec, expect_vec);
+}
