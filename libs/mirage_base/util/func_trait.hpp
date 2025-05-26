@@ -7,7 +7,7 @@
 
 namespace mirage::base {
 
-enum class FuncType {
+enum FuncType {
   kInvalid,
   kFunc,
   kFuncPtr,

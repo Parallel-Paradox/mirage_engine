@@ -8,19 +8,6 @@
 using namespace mirage::base;
 using namespace mirage::ecs;
 
-Optional<Box> ComponentPackage::Add(Box component) {
-  MIRAGE_DCHECK(component.is_valid());
-
-  type_set_.AddTypeId(component.type_id());
-  auto kv_optional =
-      component_data_map_.Insert(component.type_id(), std::move(component));
-  if (!kv_optional.is_valid()) {
-    return Optional<Box>::None();
-  }
-  auto kv = kv_optional.Unwrap();
-  return Optional<Box>::New(std::move(kv.val()));
-}
-
 Optional<Box> ComponentPackage::Remove(const TypeId &type_id) {
   type_set_.RemoveTypeId(type_id);
   auto kv_optional = component_data_map_.Remove(type_id);
@@ -38,4 +25,17 @@ const TypeSet &ComponentPackage::type_set() const { return type_set_; }
 const ComponentPackage::ComponentMap &ComponentPackage::component_data_map()
     const {
   return component_data_map_;
+}
+
+Optional<Box> ComponentPackage::Add(Box component) {
+  MIRAGE_DCHECK(component.is_valid());
+
+  type_set_.AddTypeId(component.type_id());
+  auto kv_optional =
+      component_data_map_.Insert(component.type_id(), std::move(component));
+  if (!kv_optional.is_valid()) {
+    return Optional<Box>::None();
+  }
+  auto kv = kv_optional.Unwrap();
+  return Optional<Box>::New(std::move(kv.val()));
 }

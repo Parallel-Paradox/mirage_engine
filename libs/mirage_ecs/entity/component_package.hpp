@@ -34,7 +34,6 @@ class ComponentPackage {
 
   template <IsComponent T>
   Optional<T> Add(T components);
-  MIRAGE_ECS Optional<Box> Add(Box component);
 
   template <IsComponent T>
   Optional<T> Remove();
@@ -45,6 +44,8 @@ class ComponentPackage {
   [[nodiscard]] MIRAGE_ECS const ComponentMap &component_data_map() const;
 
  private:
+  MIRAGE_ECS Optional<Box> Add(Box component);
+
   TypeSet type_set_;
   ComponentMap component_data_map_;
 };

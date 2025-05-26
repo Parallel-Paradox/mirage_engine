@@ -15,9 +15,15 @@
 namespace mirage::ecs {
 
 class World {
- public:
   using TypeId = base::TypeId;
-  using ResourceMap = base::HashMap<TypeId, base::Owned<Resource>>;
+
+  template <typename T>
+  using Optional = base::Optional<T>;
+  template <typename T>
+  using Owned = base::Owned<T>;
+
+ public:
+  using ResourceMap = base::HashMap<TypeId, Owned<Resource>>;
   using ArchetypeMap = base::HashMap<TypeSet, Archetype>;
 
   World() = default;
@@ -27,7 +33,7 @@ class World {
   T& InitializeResource(Args&&... args);
 
   template <IsResource T, typename... Args>
-  base::Optional<T> SetResource(Args&&... args);
+  Optional<T> SetResource(Args&&... args);
 
   template <IsResource T>
   T* TryGetResource();
@@ -48,24 +54,24 @@ T& World::InitializeResource(Args&&... args) {
   }
 
   resource_ptr = new T(std::forward<Args>(args)...);
-  base::Owned<Resource> owned_resource =
-      base::Owned<Resource>(static_cast<Resource*>(resource_ptr));
+  Owned<Resource> owned_resource =
+      Owned<Resource>(static_cast<Resource*>(resource_ptr));
   resource_map_.Insert(TypeId::Of<T>(), std::move(owned_resource));
   return *resource_ptr;
 }
 
 template <IsResource T, typename... Args>
 base::Optional<T> World::SetResource(Args&&... args) {
-  base::Optional<base::HashKeyVal<TypeId, base::Owned<Resource>>> optional_kv =
+  Optional<base::HashKeyVal<TypeId, Owned<Resource>>> optional_kv =
       resource_map_.Insert(TypeId::Of<T>(),
-                           base::Owned<Resource>(static_cast<Resource*>(
+                           Owned<Resource>(static_cast<Resource*>(
                                new T(std::forward<Args>(args)...))));
   if (optional_kv.is_valid()) {
-    return base::Optional<T>::None();
+    return Optional<T>::None();
   }
   auto kv = optional_kv.Unwrap();
   T* resource = static_cast<T*>(kv.val().raw_ptr());
-  return base::Optional<T>::New(std::move(*resource));
+  return Optional<T>::New(std::move(*resource));
 }
 
 template <IsResource T>
