@@ -62,7 +62,7 @@ bool EntityChunk::Push(ComponentPackage &component_package) {
 
     auto component_data = component_package.Remove(type_id).Unwrap();
     std::byte *type_ptr = entity_ptr + component_meta.offset;
-    component_meta.move_func(std::move(component_data).Take(),
+    component_meta.move_func(std::move(component_data).raw_ptr(),
                              static_cast<void *>(type_ptr));
   }
   ++size_;
