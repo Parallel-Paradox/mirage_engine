@@ -15,13 +15,14 @@ namespace mirage::ecs {
 
 class ComponentPackage {
   using TypeId = base::TypeId;
-  using Box = base::Box;
 
+  template <typename T>
+  using Box = base::Box<T>;
   template <typename T>
   using Optional = base::Optional<T>;
 
  public:
-  using ComponentMap = base::HashMap<TypeId, Box>;
+  using ComponentMap = base::HashMap<TypeId, Box<Component>>;
 
   MIRAGE_ECS ComponentPackage() = default;
   MIRAGE_ECS ~ComponentPackage() = default;
@@ -37,14 +38,14 @@ class ComponentPackage {
 
   template <IsComponent T>
   Optional<T> Remove();
-  MIRAGE_ECS Optional<Box> Remove(const TypeId &type_id);
+  MIRAGE_ECS Optional<Box<Component>> Remove(const TypeId &type_id);
 
   [[nodiscard]] MIRAGE_ECS size_t size() const;
   [[nodiscard]] MIRAGE_ECS const TypeSet &type_set() const;
   [[nodiscard]] MIRAGE_ECS const ComponentMap &component_data_map() const;
 
  private:
-  MIRAGE_ECS Optional<Box> Add(Box component);
+  MIRAGE_ECS Optional<Box<Component>> Add(Box<Component> component);
 
   TypeSet type_set_;
   ComponentMap component_data_map_;
@@ -52,7 +53,8 @@ class ComponentPackage {
 
 template <IsComponent T>
 base::Optional<T> ComponentPackage::Add(T component) {
-  Optional<Box> component_optional = Add(Box::New<T>(std::move(component)));
+  Optional<Box<Component>> component_optional =
+      Add(Box<Component>::New<T>(std::move(component)));
   if (!component_optional.is_valid()) {
     return Optional<T>::None();
   }
@@ -61,7 +63,7 @@ base::Optional<T> ComponentPackage::Add(T component) {
 
 template <IsComponent T>
 base::Optional<T> ComponentPackage::Remove() {
-  Optional<Box> component_optional = Remove(TypeId::Of<T>());
+  Optional<Box<Component>> component_optional = Remove(TypeId::Of<T>());
   if (!component_optional.is_valid()) {
     return Optional<T>::None();
   }

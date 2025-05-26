@@ -4,42 +4,111 @@
 #include <concepts>
 
 #include "mirage_base/define/check.hpp"
-#include "mirage_base/define/export.hpp"
 #include "mirage_base/util/type_id.hpp"
 
 namespace mirage::base {
 
-class MIRAGE_BASE Box {
+template <typename Base>
+class Box {
  public:
   Box() = default;
-  ~Box();
+  ~Box() { Reset(); }
 
   Box(const Box&) = delete;
   Box& operator=(const Box&) = delete;
 
-  Box(Box&& other) noexcept;
-  Box& operator=(Box&& other) noexcept;
+  Box(Box&& other) noexcept {
+    if (other.handle_func_ != nullptr) {
+      other.Call(kMove, this);
+    }
+  }
 
-  template <std::move_constructible T>
-  static Box New(T val);
-
-  template <std::move_constructible T>
-  Box& operator=(T val);
-
-  template <std::move_constructible T>
-  T Unwrap();
+  Box& operator=(Box&& other) noexcept {
+    if (this == &other) {
+      return *this;
+    }
+    this->~Box();
+    new (this) Box(std::move(other));
+    return *this;
+  }
 
   template <typename T>
-  T* TryCast();
+    requires std::move_constructible<T> &&
+             (std::same_as<Base, void> || std::derived_from<T, Base>)
+  static Box New(T val) {
+    Box box;
+    if constexpr (AllowSmallObjectOptimize<T>()) {
+      box.handle_func_ = SmallHandler<T>;
+      new (&box.obj_.buffer) T(std::move(val));
+    } else {
+      box.handle_func_ = LargeHandler<T>;
+      box.obj_.ptr = new T(std::move(val));
+    }
+    return box;
+  }
 
   template <typename T>
-  const T* TryCast() const;
+    requires std::move_constructible<T> &&
+             (std::same_as<Base, void> || std::derived_from<T, Base>)
+  Box& operator=(T val) {
+    this->~Box();
+    new (this) Box(New<T>(std::move(val)));
+    return *this;
+  }
 
-  void Reset();
+  template <typename T>
+    requires std::move_constructible<T> &&
+             (std::same_as<Base, void> || std::derived_from<T, Base>)
+  T Unwrap() {
+    MIRAGE_DCHECK(is_valid());
 
-  [[nodiscard]] bool is_valid() const;
-  [[nodiscard]] TypeId type_id() const;
-  [[nodiscard]] void* raw_ptr() const;
+    T* ptr = TryCast<T>();
+    MIRAGE_DCHECK(ptr != nullptr);
+
+    T rv = std::move(*ptr);
+    Reset();
+    return rv;
+  }
+
+  template <typename T>
+    requires /* check type */ (!std::same_as<Base, void>)
+  Base* Get() {
+    return static_cast<Base*>(raw_ptr());
+  }
+
+  template <typename T>
+    requires /* check type */ (!std::same_as<Base, void>)
+  const Base* Get() const {
+    return static_cast<const Base*>(raw_ptr());
+  }
+
+  template <typename T>
+    requires std::same_as<Base, void> || std::derived_from<T, Base>
+  T* TryCast() {
+    return static_cast<T*>(Call(kGet, nullptr, &TypeMeta::Of<T>()));
+  }
+
+  template <typename T>
+    requires std::same_as<Base, void> || std::derived_from<T, Base>
+  const T* TryCast() const {
+    return static_cast<const T*>(Call(kGet, nullptr, &TypeMeta::Of<T>()));
+  }
+
+  void Reset() {
+    if (handle_func_ == nullptr) return;
+    Call(kDestruct);
+    obj_.ptr = nullptr;
+    handle_func_ = nullptr;
+  }
+
+  [[nodiscard]] bool is_valid() const { return handle_func_ != nullptr; }
+
+  [[nodiscard]] TypeId type_id() const {
+    MIRAGE_DCHECK(is_valid());
+    return TypeId(*static_cast<const TypeMeta*>(Call(kTypeMeta)));
+  }
+
+  [[nodiscard]] void* raw_ptr() const { return Call(kGet); }
 
   template <typename T>
   consteval static bool AllowSmallObjectOptimize() {
@@ -61,14 +130,58 @@ class MIRAGE_BASE Box {
 
   template <typename T>
   static void* LargeHandler(Action action, Box* target, Box* dest,
-                            const TypeMeta* type_meta);
+                            const TypeMeta* type_meta) {
+    switch (action) {
+      case kMove:
+        dest->obj_.ptr = target->obj_.ptr;
+        dest->handle_func_ = target->handle_func_;
+        target->obj_.ptr = nullptr;
+        target->handle_func_ = nullptr;
+        break;
+      case kDestruct:
+        delete static_cast<T*>(target->obj_.ptr);
+        break;
+      case kGet:
+        if (type_meta == nullptr || target->type_id() == TypeId(*type_meta)) {
+          return target->obj_.ptr;
+        }
+        break;
+      case kTypeMeta:
+        return const_cast<TypeMeta*>(&TypeMeta::Of<T>());
+    }
+    return nullptr;
+  }
+
   template <typename T>
     requires /* check soo */ (Box::AllowSmallObjectOptimize<T>())
   static void* SmallHandler(Action action, Box* target, Box* dest,
-                            const TypeMeta* type_meta);
+                            const TypeMeta* type_meta) {
+    T* ptr = reinterpret_cast<T*>(&target->obj_.buffer);
+    switch (action) {
+      case kMove:
+        new (&dest->obj_.buffer) T(std::move(*ptr));
+        dest->handle_func_ = target->handle_func_;
+        ptr->~T();
+        target->handle_func_ = nullptr;
+        break;
+      case kDestruct:
+        ptr->~T();
+        break;
+      case kGet:
+        if (type_meta == nullptr || target->type_id() == TypeId(*type_meta)) {
+          return ptr;
+        }
+        break;
+      case kTypeMeta:
+        return const_cast<TypeMeta*>(&TypeMeta::Of<T>());
+    }
+    return nullptr;
+  }
 
   void* Call(Action action, Box* dest = nullptr,
-             const TypeMeta* type_meta = nullptr) const;
+             const TypeMeta* type_meta = nullptr) const {
+    return handle_func_(action, const_cast<Box*>(this), dest, type_meta);
+  }
 
   union {
     void* ptr{nullptr};
@@ -77,97 +190,7 @@ class MIRAGE_BASE Box {
   HandleFuncPtr handle_func_{nullptr};
 };
 
-template <std::move_constructible T>
-Box Box::New(T val) {
-  Box box;
-  if constexpr (AllowSmallObjectOptimize<T>()) {
-    box.handle_func_ = SmallHandler<T>;
-    new (&box.obj_.buffer) T(std::move(val));
-  } else {
-    box.handle_func_ = LargeHandler<T>;
-    box.obj_.ptr = new T(std::move(val));
-  }
-  return box;
-}
-
-template <std::move_constructible T>
-Box& Box::operator=(T val) {
-  this->~Box();
-  new (this) Box(New<T>(std::move(val)));
-  return *this;
-}
-
-template <std::move_constructible T>
-T Box::Unwrap() {
-  MIRAGE_DCHECK(is_valid());
-
-  T* ptr = TryCast<T>();
-  MIRAGE_DCHECK(ptr != nullptr);
-
-  T rv = std::move(*ptr);
-  Reset();
-  return rv;
-}
-
-template <typename T>
-T* Box::TryCast() {
-  return static_cast<T*>(Call(kGet, nullptr, &TypeMeta::Of<T>()));
-}
-
-template <typename T>
-const T* Box::TryCast() const {
-  return static_cast<const T*>(Call(kGet, nullptr, &TypeMeta::Of<T>()));
-}
-
-template <typename T>
-void* Box::LargeHandler(const Action action, Box* target, Box* dest,
-                        const TypeMeta* type_meta) {
-  switch (action) {
-    case kMove:
-      dest->obj_.ptr = target->obj_.ptr;
-      dest->handle_func_ = target->handle_func_;
-      target->obj_.ptr = nullptr;
-      target->handle_func_ = nullptr;
-      break;
-    case kDestruct:
-      delete static_cast<T*>(target->obj_.ptr);
-      break;
-    case kGet:
-      if (type_meta == nullptr || target->type_id() == TypeId(*type_meta)) {
-        return target->obj_.ptr;
-      }
-      break;
-    case kTypeMeta:
-      return const_cast<TypeMeta*>(&TypeMeta::Of<T>());
-  }
-  return nullptr;
-}
-
-template <typename T>
-  requires /* check soo */ (Box::AllowSmallObjectOptimize<T>())
-void* Box::SmallHandler(const Action action, Box* target, Box* dest,
-                        const TypeMeta* type_meta) {
-  T* ptr = reinterpret_cast<T*>(&target->obj_.buffer);
-  switch (action) {
-    case kMove:
-      new (&dest->obj_.buffer) T(std::move(*ptr));
-      dest->handle_func_ = target->handle_func_;
-      ptr->~T();
-      target->handle_func_ = nullptr;
-      break;
-    case kDestruct:
-      ptr->~T();
-      break;
-    case kGet:
-      if (type_meta == nullptr || target->type_id() == TypeId(*type_meta)) {
-        return ptr;
-      }
-      break;
-    case kTypeMeta:
-      return const_cast<TypeMeta*>(&TypeMeta::Of<T>());
-  }
-  return nullptr;
-}
+using BoxAny = Box<void>;
 
 }  // namespace mirage::base
 
