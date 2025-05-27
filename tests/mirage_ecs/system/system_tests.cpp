@@ -21,7 +21,7 @@ void EditNum(const Res<GlobalNum> global_num) { global_num->num = 1; }
 
 TEST(SystemTests, EditResource) {
   World world;
-  world.InitializeResource<GlobalNum>();
+  world.InitResource<GlobalNum>();
   EXPECT_EQ(world.GetResource<GlobalNum>().num, 0);
 
   auto edit_num = System::From(EditNum);

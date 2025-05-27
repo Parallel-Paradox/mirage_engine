@@ -30,7 +30,7 @@ class World {
   ~World() = default;
 
   template <IsResource T, typename... Args>
-  T& InitializeResource(Args&&... args);
+  T& InitResource(Args&&... args);
 
   template <IsResource T, typename... Args>
   Optional<T> SetResource(Args&&... args);
@@ -47,7 +47,7 @@ class World {
 };
 
 template <IsResource T, typename... Args>
-T& World::InitializeResource(Args&&... args) {
+T& World::InitResource(Args&&... args) {
   T* resource_ptr = TryGetResource<T>();
   if (resource_ptr) {
     return *resource_ptr;

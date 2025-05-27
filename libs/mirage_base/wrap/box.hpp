@@ -71,18 +71,6 @@ class Box {
   }
 
   template <typename T>
-    requires /* check type */ (!std::same_as<Base, void>)
-  Base* Get() {
-    return static_cast<Base*>(raw_ptr());
-  }
-
-  template <typename T>
-    requires /* check type */ (!std::same_as<Base, void>)
-  const Base* Get() const {
-    return static_cast<const Base*>(raw_ptr());
-  }
-
-  template <typename T>
     requires std::same_as<Base, void> || std::derived_from<T, Base>
   T* TryCast() {
     return static_cast<T*>(Call(kGet, nullptr, &TypeMeta::Of<T>()));
@@ -108,7 +96,8 @@ class Box {
     return TypeId(*static_cast<const TypeMeta*>(Call(kTypeMeta)));
   }
 
-  [[nodiscard]] void* raw_ptr() const { return Call(kGet); }
+  Base* raw_ptr() { return static_cast<Base*>(Call(kGet)); }
+  const Base* raw_ptr() const { return static_cast<const Base*>(Call(kGet)); }
 
   template <typename T>
   consteval static bool AllowSmallObjectOptimize() {

@@ -46,6 +46,7 @@ struct Without : QueryParamsTag_Without {
 
 // ----------
 
+// TODO: Optimize finder
 template <typename ParamsTag, typename T, typename... Ts>
   requires IsQueryParam<ParamsTag> && IsQueryParam<T> && IsQueryParam<Ts...>
 consteval auto QueryParamsTypeList() {
