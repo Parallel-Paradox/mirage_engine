@@ -25,6 +25,10 @@ TypeSet TypeSet::Clone() const {
   return set;
 }
 
+void TypeSet::Reserve(size_t capacity) { type_array_.Reserve(capacity); }
+
+void TypeSet::ShrinkToFit() { type_array_.ShrinkToFit(); }
+
 void TypeSet::AddTypeId(const TypeId type_id) {
   auto iter = type_array_.begin();
   while (iter != type_array_.end()) {
@@ -109,6 +113,8 @@ const base::Array<base::TypeId>& TypeSet::type_array() const {
 }
 
 size_t TypeSet::mask() const { return mask_; }
+
+size_t TypeSet::size() const { return type_array_.size(); }
 
 bool TypeSet::operator==(const TypeSet& other) const {
   return mask_ == other.mask_ && type_array_ == other.type_array_;

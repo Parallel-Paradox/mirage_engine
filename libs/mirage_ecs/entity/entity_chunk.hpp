@@ -118,14 +118,13 @@ T &EntityView::Get() {
 
 template <IsComponent T>
 T *EntityView::TryGetImpl() const {
-  const auto &meta_map = entity_descriptor_->component_meta_map();
-  EntityDescriptor::ComponentMetaMap::ConstIterator iter =
-      meta_map.TryFind(base::TypeId::Of<T>());
-  if (iter == meta_map.end()) {
+  const auto &offset_map = entity_descriptor_->offset_map();
+  EntityDescriptor::OffsetMap::ConstIterator iter =
+      offset_map.TryFind(base::TypeId::Of<T>());
+  if (iter == offset_map.end()) {
     return nullptr;
   }
-  const auto &meta = iter->val();
-  return static_cast<T *>(raw_ptr_ + meta.offset);
+  return static_cast<T *>(raw_ptr_ + iter->val());
 }
 
 }  // namespace mirage::ecs

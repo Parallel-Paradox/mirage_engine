@@ -23,11 +23,11 @@ TEST(EntityDescriptorTests, OffsetAndAlignment) {
   EXPECT_EQ(layout.align(), 8);
   EXPECT_EQ(layout.size(), 16);
 
-  const auto& type_set = layout.component_type_set();
+  const auto& type_set = layout.type_set();
   EXPECT_TRUE(type_set.With(TypeSet::New<Bool, Int64, Int32>()));
 
-  const auto& offset_map = layout.component_meta_map();
-  EXPECT_EQ(offset_map[base::TypeId::Of<Int64>()].offset, 0);
-  EXPECT_EQ(offset_map[base::TypeId::Of<Int32>()].offset, 8);
-  EXPECT_EQ(offset_map[base::TypeId::Of<Bool>()].offset, 12);
+  const auto& offset_map = layout.offset_map();
+  EXPECT_EQ(offset_map[ComponentId::Of<Int64>()], 0);
+  EXPECT_EQ(offset_map[ComponentId::Of<Int32>()], 8);
+  EXPECT_EQ(offset_map[ComponentId::Of<Bool>()], 12);
 }

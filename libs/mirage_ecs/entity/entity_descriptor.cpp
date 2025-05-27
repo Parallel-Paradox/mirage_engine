@@ -1,56 +1,70 @@
 #include "mirage_ecs/entity/entity_descriptor.hpp"
 
-#include <algorithm>
-#include <cstddef>
 #include <numeric>
 
+#include "mirage_base/container/array.hpp"
+#include "mirage_ecs/component/component_id.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
 using namespace mirage::ecs;
+
+EntityDescriptor::EntityDescriptor(
+    base::Array<ComponentId> component_id_array) {
+  // Build type set and remove duplicates.
+  type_set_.Reserve(component_id_array.size());
+  for (auto iter = component_id_array.begin();
+       iter != component_id_array.end();) {
+    const size_t old_size = type_set_.size();
+    type_set_.AddTypeId(iter->type_id());
+    if (type_set_.size() == old_size) {
+      component_id_array.SwapRemove(iter - component_id_array.begin());
+    } else {
+      ++iter;
+    }
+  }
+  type_set_.ShrinkToFit();
+
+  // Set the least common multiple of all component alignments as the entity
+  // alignment.
+  size_t entity_align = type_set_.type_array()[0].type_align();
+  for (const TypeId& type_id : type_set_.type_array()) {
+    entity_align = std::lcm(entity_align, type_id.type_align());
+  }
+  align_ = entity_align;
+
+  // Layout components in descending order of alignment and size. Set offsets.
+  auto cmp = [](const ComponentId& lhs, const ComponentId& rhs) {
+    if (lhs.type_id().type_align() == rhs.type_id().type_align()) {
+      return lhs.type_id().type_size() > rhs.type_id().type_size();
+    }
+    return lhs.type_id().type_align() > rhs.type_id().type_align();
+  };
+  std::ranges::sort(component_id_array, cmp);
+
+  size_t offset = 0;
+  for (const ComponentId& component_id : component_id_array) {
+    auto type_id = component_id.type_id();
+    if (const size_t type_align = type_id.type_align();
+        offset % type_align != 0) {
+      offset += type_align - (offset % type_align);
+    }
+    offset_map_[component_id] = offset;
+    offset += type_id.type_size();
+  }
+
+  // Align the end of the entity.
+  if (offset % entity_align != 0) {
+    offset += entity_align - (offset % entity_align);
+  }
+  size_ = offset;
+}
 
 size_t EntityDescriptor::align() const { return align_; }
 
 size_t EntityDescriptor::size() const { return size_; }
 
-const TypeSet& EntityDescriptor::component_type_set() const {
-  return component_type_set_;
+const EntityDescriptor::OffsetMap& EntityDescriptor::offset_map() const {
+  return offset_map_;
 }
 
-const EntityDescriptor::ComponentMetaMap& EntityDescriptor::component_meta_map()
-    const {
-  return component_meta_map_;
-}
-
-void EntityDescriptor::InitializeLayout(TypeSet&& type_set) {
-  size_t entity_align = type_set.type_array()[0].type_align();
-  for (const TypeId& type_id : type_set.type_array()) {
-    entity_align = std::lcm(entity_align, type_id.type_align());
-  }
-  align_ = entity_align;
-
-  base::Array<TypeId> type_array = type_set.type_array();
-  auto cmp = [](const TypeId& lhs, const TypeId& rhs) {
-    if (lhs.type_align() == rhs.type_align()) {
-      return lhs.type_size() > rhs.type_size();
-    }
-    return lhs.type_align() > rhs.type_align();
-  };
-  std::ranges::sort(type_array, cmp);
-
-  size_t offset = 0;
-  for (const TypeId& type_id : type_array) {
-    if (const size_t type_align = type_id.type_align();
-        offset % type_align != 0) {
-      offset += type_align - (offset % type_align);
-    }
-    component_meta_map_[type_id].offset = offset;
-    offset += type_id.type_size();
-  }
-
-  if (offset % entity_align != 0) {
-    offset += entity_align - (offset % entity_align);
-  }
-  size_ = offset;
-
-  component_type_set_ = std::move(type_set);
-}
+const TypeSet& EntityDescriptor::type_set() const { return type_set_; }

@@ -23,6 +23,9 @@ class TypeSet {
 
   [[nodiscard]] MIRAGE_ECS TypeSet Clone() const;
 
+  void Reserve(size_t capacity);
+  void ShrinkToFit();
+
   template <typename... Ts>
   static TypeSet New();
 
@@ -42,6 +45,8 @@ class TypeSet {
   [[nodiscard]] MIRAGE_ECS const base::Array<TypeId> &type_array() const;
   [[nodiscard]] MIRAGE_ECS size_t mask() const;
 
+  [[nodiscard]] MIRAGE_ECS size_t size() const;
+
   MIRAGE_ECS bool operator==(const TypeSet &other) const;
 
  private:
@@ -52,8 +57,9 @@ class TypeSet {
 template <typename... Ts>
 TypeSet TypeSet::New() {
   TypeSet set;
-  set.type_array_.Reserve(sizeof...(Ts));
+  set.Reserve(sizeof...(Ts));
   (set.AddType<Ts>(), ...);
+  set.ShrinkToFit();
   return set;
 }
 

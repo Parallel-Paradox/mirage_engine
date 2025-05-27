@@ -50,19 +50,19 @@ EntityChunk::EntityChunk(
 }
 
 bool EntityChunk::Push(ComponentPackage &component_package) {
-  MIRAGE_DCHECK(entity_descriptor_->component_type_set() ==
-                component_package.type_set());
+  MIRAGE_DCHECK(entity_descriptor_->type_set() == component_package.type_set());
   if (size_ < capacity_) {
     return false;
   }
   std::byte *entity_ptr = raw_ptr_ + size_ * entity_descriptor_->size();
-  for (const auto &kv : entity_descriptor_->component_meta_map()) {
-    const auto &type_id = kv.key();
-    const auto &component_meta = kv.val();
+  for (const auto &kv : entity_descriptor_->offset_map()) {
+    ComponentId component_id = kv.key();
+    size_t offset = kv.val();
 
-    auto component_data = component_package.Remove(type_id).Unwrap();
-    std::byte *type_ptr = entity_ptr + component_meta.offset;
-    component_meta.move_func(std::move(component_data).raw_ptr(),
+    auto component_data =
+        component_package.Remove(component_id.type_id()).Unwrap();
+    std::byte *type_ptr = entity_ptr + offset;
+    component_id.move_func()(std::move(component_data).raw_ptr(),
                              static_cast<void *>(type_ptr));
   }
   ++size_;
@@ -82,10 +82,9 @@ void EntityChunk::Clear() {
 
   for (size_t i = 0; i < size_; ++i) {
     std::byte *entity_ptr = raw_ptr_ + i * entity_descriptor_->size();
-    for (const auto &component_meta :
-         entity_descriptor_->component_meta_map()) {
-      std::byte *type_ptr = entity_ptr + component_meta.val().offset;
-      component_meta.val().destruct_func(static_cast<void *>(type_ptr));
+    for (const auto &kv : entity_descriptor_->offset_map()) {
+      std::byte *type_ptr = entity_ptr + kv.val();
+      kv.key().destruct_func()(static_cast<void *>(type_ptr));
     }
   }
   ::operator delete[](raw_ptr_, std::align_val_t{entity_descriptor_->align()});
