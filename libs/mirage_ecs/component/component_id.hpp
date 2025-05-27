@@ -78,6 +78,8 @@ class MIRAGE_ECS ComponentId {
   bool operator!=(const ComponentId &other) const;
   std::strong_ordering operator<=>(const ComponentId &other) const;
 
+  bool operator==(const TypeId &other) const;
+
   [[nodiscard]] TypeId type_id() const;
   [[nodiscard]] ComponentMeta::DestructFunc destruct_func() const;
   [[nodiscard]] ComponentMeta::MoveFunc move_func() const;
@@ -92,6 +94,10 @@ template <>
 struct base::Hash<ecs::ComponentId> {
   size_t operator()(const ecs::ComponentId &component_id) const {
     return component_id.type_id().hash_code();
+  }
+
+  size_t operator()(const base::TypeId &type_id) const {
+    return type_id.hash_code();
   }
 };
 

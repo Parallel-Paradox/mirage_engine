@@ -72,10 +72,15 @@ class HashMap {
     requires std::copy_constructible<Key> && std::copy_constructible<Val>;
 
   Optional<HashKeyVal<Key, Val>> Insert(Key key, Val val);
-  Optional<HashKeyVal<Key, Val>> Remove(const Key& key);
 
-  ConstIterator TryFind(const Key& key) const;
-  Iterator TryFind(const Key& key);
+  template <HashSearchable<Key> Key1>
+  Optional<HashKeyVal<Key, Val>> Remove(const Key1& key);
+
+  template <HashSearchable<Key> Key1>
+  ConstIterator TryFind(const Key1& key) const;
+
+  template <HashSearchable<Key> Key1>
+  Iterator TryFind(const Key1& key);
 
   const Val& operator[](const Key& key) const;
   Val& operator[](const Key& key);
@@ -196,7 +201,8 @@ Optional<HashKeyVal<Key, Val>> HashMap<Key, Val>::Insert(Key key, Val val) {
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
-Optional<HashKeyVal<Key, Val>> HashMap<Key, Val>::Remove(const Key& key) {
+template <HashSearchable<Key> Key1>
+Optional<HashKeyVal<Key, Val>> HashMap<Key, Val>::Remove(const Key1& key) {
   if (Optional<HashKeyVal<const Key, Val>> removed_kv = kv_set_.Remove(key);
       !removed_kv.is_valid()) {
     return Optional<HashKeyVal<Key, Val>>::None();
@@ -208,14 +214,16 @@ Optional<HashKeyVal<Key, Val>> HashMap<Key, Val>::Remove(const Key& key) {
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
+template <HashSearchable<Key> Key1>
 typename HashMap<Key, Val>::ConstIterator HashMap<Key, Val>::TryFind(
-    const Key& key) const {
+    const Key1& key) const {
   return ConstIterator(kv_set_.TryFind(key));
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
+template <HashSearchable<Key> Key1>
 typename HashMap<Key, Val>::Iterator HashMap<Key, Val>::TryFind(
-    const Key& key) {
+    const Key1& key) {
   return Iterator(kv_set_.TryFind(key));
 }
 

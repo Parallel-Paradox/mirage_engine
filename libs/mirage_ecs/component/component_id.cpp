@@ -43,6 +43,10 @@ std::strong_ordering ComponentId::operator<=>(const ComponentId &other) const {
   return *component_meta_ <=> *other.component_meta_;
 }
 
+bool ComponentId::operator==(const TypeId &other) const {
+  return component_meta_->type_id() == other;
+}
+
 TypeId ComponentId::type_id() const { return component_meta_->type_id(); }
 
 ComponentMeta::DestructFunc ComponentId::destruct_func() const {

@@ -15,6 +15,14 @@ namespace mirage::base {
 template <typename T>
 concept HashSetValType = std::move_constructible<T> && IsHashable<T>;
 
+template <typename Search, typename T>
+concept HashSearchable =
+    HashSetValType<T> &&
+    requires(const Search& search, const T& val, const Hash<T>& hasher) {
+      { val == search } -> std::convertible_to<bool>;
+      { hasher(search) } -> std::same_as<size_t>;
+    };
+
 // TODO: SwissTable maybe?
 // TODO: fmt HashSet
 
@@ -40,26 +48,14 @@ class HashSet {
 
   Optional<T> Insert(T val);
 
-  template <typename T1>
-  Optional<T> Remove(const T1& val)
-    requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
-      { val == val1 } -> std::convertible_to<bool>;
-      { hasher(val1) } -> std::same_as<size_t>;
-    };
+  template <HashSearchable<T> T1>
+  Optional<T> Remove(const T1& val);
 
-  template <typename T1>
-  ConstIterator TryFind(const T1& val) const
-    requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
-      { val == val1 } -> std::convertible_to<bool>;
-      { hasher(val1) } -> std::same_as<size_t>;
-    };
+  template <HashSearchable<T> T1>
+  ConstIterator TryFind(const T1& val) const;
 
-  template <typename T1>
-  Iterator TryFind(const T1& val)
-    requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
-      { val == val1 } -> std::convertible_to<bool>;
-      { hasher(val1) } -> std::same_as<size_t>;
-    };
+  template <HashSearchable<T> T1>
+  Iterator TryFind(const T1& val);
 
   void Clear();
   [[nodiscard]] bool empty() const;
@@ -239,13 +235,8 @@ Optional<T> HashSet<T>::Insert(T val) {
 }
 
 template <HashSetValType T>
-template <typename T1>
-Optional<T> HashSet<T>::Remove(const T1& val)
-  requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
-    { val == val1 } -> std::convertible_to<bool>;
-    { hasher(val1) } -> std::same_as<size_t>;
-  }
-{
+template <HashSearchable<T> T1>
+Optional<T> HashSet<T>::Remove(const T1& val) {
   if (size_ == 0) {
     return Optional<T>::None();
   }
@@ -274,13 +265,8 @@ Optional<T> HashSet<T>::Remove(const T1& val)
 }
 
 template <HashSetValType T>
-template <typename T1>
-typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T1& val) const
-  requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
-    { val == val1 } -> std::convertible_to<bool>;
-    { hasher(val1) } -> std::same_as<size_t>;
-  }
-{
+template <HashSearchable<T> T1>
+typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T1& val) const {
   if (size_ == 0) {
     return end();
   }
@@ -297,13 +283,8 @@ typename HashSet<T>::ConstIterator HashSet<T>::TryFind(const T1& val) const
 }
 
 template <HashSetValType T>
-template <typename T1>
-typename HashSet<T>::Iterator HashSet<T>::TryFind(const T1& val)
-  requires requires(const T1& val1, const T& val, const Hash<T>& hasher) {
-    { val == val1 } -> std::convertible_to<bool>;
-    { hasher(val1) } -> std::same_as<size_t>;
-  }
-{
+template <HashSearchable<T> T1>
+typename HashSet<T>::Iterator HashSet<T>::TryFind(const T1& val) {
   if (size_ == 0) {
     return end();
   }
