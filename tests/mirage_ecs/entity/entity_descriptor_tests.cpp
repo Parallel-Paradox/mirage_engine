@@ -18,15 +18,25 @@ struct Int64 : Component {
   int64_t value{0};
 };
 
-TEST(EntityDescriptorTests, OffsetAndAlignment) {
-  const auto layout = EntityDescriptor::New<Bool, Int64, Int32>();
-  EXPECT_EQ(layout.align(), 8);
-  EXPECT_EQ(layout.size(), 16);
+TEST(EntityDescriptorTests, LayoutCheck) {
+  const auto desc = EntityDescriptor::New<Bool, Int64, Int32>();
+  EXPECT_EQ(desc.align(), 8);
+  EXPECT_EQ(desc.size(), 16);
+  EXPECT_EQ(desc.type_set(), (TypeSet::New<Bool, Int64, Int32>()));
 
-  const auto& type_set = layout.type_set();
-  EXPECT_TRUE(type_set.With(TypeSet::New<Bool, Int64, Int32>()));
+  const auto& offset_map = desc.offset_map();
+  EXPECT_EQ(offset_map[ComponentId::Of<Int64>()], 0);
+  EXPECT_EQ(offset_map[ComponentId::Of<Int32>()], 8);
+  EXPECT_EQ(offset_map[ComponentId::Of<Bool>()], 12);
+}
 
-  const auto& offset_map = layout.offset_map();
+TEST(EntityDescriptorTests, DuplicateInit) {
+  const auto desc = EntityDescriptor::New<Bool, Int64, Int32, Int64>();
+  EXPECT_EQ(desc.align(), 8);
+  EXPECT_EQ(desc.size(), 16);
+  EXPECT_EQ(desc.type_set(), (TypeSet::New<Bool, Int64, Int32>()));
+
+  const auto& offset_map = desc.offset_map();
   EXPECT_EQ(offset_map[ComponentId::Of<Int64>()], 0);
   EXPECT_EQ(offset_map[ComponentId::Of<Int32>()], 8);
   EXPECT_EQ(offset_map[ComponentId::Of<Bool>()], 12);

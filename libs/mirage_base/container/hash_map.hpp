@@ -82,8 +82,11 @@ class HashMap {
   template <HashSearchable<Key> Key1>
   Iterator TryFind(const Key1& key);
 
-  const Val& operator[](const Key& key) const;
-  Val& operator[](const Key& key);
+  template <HashSearchable<Key> Key1>
+  const Val& operator[](const Key1& key) const;
+
+  template <HashSearchable<Key> Key1>
+  Val& operator[](const Key1& key);
 
   [[nodiscard]] bool empty() const;
   [[nodiscard]] size_t size() const;
@@ -228,16 +231,18 @@ typename HashMap<Key, Val>::Iterator HashMap<Key, Val>::TryFind(
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
-const Val& HashMap<Key, Val>::operator[](const Key& key) const {
+template <HashSearchable<Key> Key1>
+const Val& HashMap<Key, Val>::operator[](const Key1& key) const {
   return TryFind(key)->val();
 }
 
 template <HashMapKeyType Key, std::move_constructible Val>
-Val& HashMap<Key, Val>::operator[](const Key& key) {
+template <HashSearchable<Key> Key1>
+Val& HashMap<Key, Val>::operator[](const Key1& key) {
   Iterator iter = TryFind(key);
   if (iter != end()) return iter->val();
 
-  if constexpr (std::copy_constructible<Key> &&
+  if constexpr (std::same_as<Key, Key1> && std::copy_constructible<Key> &&
                 std::default_initializable<Val>) {
     Insert(key, Val());
     return TryFind(key)->val();

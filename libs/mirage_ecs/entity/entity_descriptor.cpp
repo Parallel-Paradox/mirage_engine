@@ -26,11 +26,10 @@ EntityDescriptor::EntityDescriptor(
 
   // Set the least common multiple of all component alignments as the entity
   // alignment.
-  size_t entity_align = type_set_.type_array()[0].type_align();
+  align_ = type_set_.type_array()[0].type_align();
   for (const TypeId& type_id : type_set_.type_array()) {
-    entity_align = std::lcm(entity_align, type_id.type_align());
+    align_ = std::lcm(align_, type_id.type_align());
   }
-  align_ = entity_align;
 
   // Layout components in descending order of alignment and size. Set offsets.
   auto cmp = [](const ComponentId& lhs, const ComponentId& rhs) {
@@ -53,8 +52,8 @@ EntityDescriptor::EntityDescriptor(
   }
 
   // Align the end of the entity.
-  if (offset % entity_align != 0) {
-    offset += entity_align - (offset % entity_align);
+  if (offset % align_ != 0) {
+    offset += align_ - (offset % align_);
   }
   size_ = offset;
 }
