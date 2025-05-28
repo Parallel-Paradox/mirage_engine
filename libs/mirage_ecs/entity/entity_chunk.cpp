@@ -6,6 +6,7 @@
 
 #include "mirage_base/auto_ptr/shared.hpp"
 #include "mirage_base/define/check.hpp"
+#include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/entity/entity_descriptor.hpp"
 #include "mirage_ecs/util/marker.hpp"
 
@@ -49,8 +50,9 @@ EntityChunk::EntityChunk(
   MIRAGE_DCHECK(capacity_ > 0);
 }
 
-bool EntityChunk::Push(ComponentPackage &component_package) {
-  MIRAGE_DCHECK(entity_descriptor_->type_set() == component_package.type_set());
+bool EntityChunk::Push(ComponentBundle &component_bundle) {
+  MIRAGE_DCHECK(entity_descriptor_->type_set() ==
+                component_bundle.MakeTypeSet());
   if (size_ < capacity_) {
     return false;
   }
@@ -60,7 +62,7 @@ bool EntityChunk::Push(ComponentPackage &component_package) {
     size_t offset = kv.val();
 
     auto component_data =
-        component_package.Remove(component_id.type_id()).Unwrap();
+        component_bundle.Remove(component_id.type_id()).Unwrap();
     std::byte *type_ptr = entity_ptr + offset;
     component_id.move_func()(std::move(component_data).raw_ptr(),
                              static_cast<void *>(type_ptr));

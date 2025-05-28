@@ -2,11 +2,11 @@
 
 #include <cstddef>
 
-#include "mirage_ecs/entity/component_package.hpp"
+#include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/util/marker.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
-using namespace mirage;
+using namespace mirage::base;
 using namespace mirage::ecs;
 
 struct DestructCounter : Component {
@@ -26,18 +26,18 @@ struct DestructCounter : Component {
   }
 };
 
-TEST(ComponentPackageTests, AddComponent) {
-  ComponentPackage package;
-  EXPECT_EQ(package.size(), 0);
+TEST(ComponentBundleTests, AddComponent) {
+  ComponentBundle bundle;
+  EXPECT_EQ(bundle.size(), 0);
 
   size_t counter1 = 0;
-  auto rv1 = package.Add(DestructCounter(&counter1));
+  auto rv1 = bundle.Add(DestructCounter(&counter1));
 
   size_t counter2 = 0;
-  auto rv2 = package.Add(DestructCounter(&counter2));
+  auto rv2 = bundle.Add(DestructCounter(&counter2));
 
-  EXPECT_EQ(package.size(), 1);
-  EXPECT_TRUE(package.type_set().With(base::TypeId::Of<DestructCounter>()));
+  EXPECT_EQ(bundle.size(), 1);
+  EXPECT_TRUE(bundle.MakeTypeSet().With(TypeId::Of<DestructCounter>()));
   EXPECT_FALSE(rv1.is_valid());
   EXPECT_TRUE(rv2.is_valid());
   EXPECT_EQ(counter1, 0);
@@ -48,20 +48,20 @@ TEST(ComponentPackageTests, AddComponent) {
   EXPECT_EQ(counter1, 1);
 }
 
-TEST(ComponentPackageTests, RemoveComponent) {
-  ComponentPackage package;
+TEST(ComponentBundleTests, RemoveComponent) {
+  ComponentBundle bundle;
 
-  auto empty_ev = package.Remove<DestructCounter>();
+  auto empty_ev = bundle.Remove<DestructCounter>();
   EXPECT_FALSE(empty_ev.is_valid());
 
   size_t counter = 0;
-  package.Add(DestructCounter(&counter));
+  bundle.Add(DestructCounter(&counter));
 
-  auto rv = package.Remove<DestructCounter>();
+  auto rv = bundle.Remove<DestructCounter>();
   EXPECT_TRUE(rv.is_valid());
   EXPECT_EQ(counter, 0);
-  EXPECT_EQ(package.size(), 0);
-  EXPECT_TRUE(package.type_set().Without(base::TypeId::Of<DestructCounter>()));
+  EXPECT_EQ(bundle.size(), 0);
+  EXPECT_TRUE(bundle.MakeTypeSet().Without(TypeId::Of<DestructCounter>()));
 
   size_t* counter_ptr = rv.Unwrap().counter_ptr;
   EXPECT_EQ(counter, 1);
