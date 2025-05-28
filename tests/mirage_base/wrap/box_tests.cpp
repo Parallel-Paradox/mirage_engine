@@ -11,7 +11,8 @@ struct UnMovable {
 
 struct alignas(alignof(void*) << 1) BigAlign {};
 
-struct DestructCnt {
+struct Base {};
+struct DestructCnt : public Base {
   int32_t* destruct_cnt{nullptr};
 
   explicit DestructCnt(int32_t* destruct_cnt) : destruct_cnt(destruct_cnt) {}
@@ -27,7 +28,7 @@ struct DestructCnt {
   }
 };
 
-struct Vec4 {
+struct Vec4 : public Base {
   size_t x, y, z, w;
   DestructCnt destruct_cnt;
 
@@ -53,8 +54,8 @@ TEST(BoxTests, SooCondition) {
 
 TEST(BoxTests, MoveSmall) {
   int32_t destruct_cnt = 0;
-  auto box = BoxAny::New(DestructCnt{&destruct_cnt});
-  auto box_move = std::move(box);
+  BoxAny box = DestructCnt{&destruct_cnt};
+  BoxAny box_move = std::move(box);
   EXPECT_FALSE(box.is_valid());
   EXPECT_TRUE(box_move.is_valid());
   EXPECT_EQ(box_move.type_id(), TypeId::Of<DestructCnt>());
@@ -63,8 +64,8 @@ TEST(BoxTests, MoveSmall) {
 
 TEST(BoxTests, MoveLarge) {
   int32_t destruct_cnt = 0;
-  auto box = BoxAny::New(Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}});
-  auto box_move = std::move(box);
+  BoxAny box = Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}};
+  BoxAny box_move = std::move(box);
   EXPECT_FALSE(box.is_valid());
   EXPECT_TRUE(box_move.is_valid());
   EXPECT_EQ(box_move.type_id(), TypeId::Of<Vec4>());
@@ -97,7 +98,7 @@ TEST(BoxTests, AssignValue) {
 
 TEST(BoxTests, ResetSmall) {
   int32_t destruct_cnt = 0;
-  auto box = BoxAny::New(DestructCnt{&destruct_cnt});
+  BoxAny box = DestructCnt{&destruct_cnt};
   EXPECT_TRUE(box.is_valid());
   EXPECT_EQ(destruct_cnt, 0);
   box.Reset();
@@ -107,7 +108,7 @@ TEST(BoxTests, ResetSmall) {
 
 TEST(BoxTests, ResetLarge) {
   int32_t destruct_cnt = 0;
-  auto box = BoxAny::New(Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}});
+  BoxAny box = Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}};
   EXPECT_TRUE(box.is_valid());
   EXPECT_EQ(destruct_cnt, 0);
   box.Reset();
@@ -117,7 +118,7 @@ TEST(BoxTests, ResetLarge) {
 
 TEST(BoxTests, Unwrap) {
   int32_t destruct_cnt = 0;
-  auto box = BoxAny::New(Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}});
+  BoxAny box = Vec4{1, 2, 3, 4, DestructCnt{&destruct_cnt}};
   EXPECT_TRUE(box.is_valid());
 
   auto vec = box.Unwrap<Vec4>();
@@ -128,5 +129,11 @@ TEST(BoxTests, Unwrap) {
 }
 
 TEST(BoxTests, BoxBase) {
-  // TODO
+  int32_t destruct_cnt = 0;
+  Box<Base> box = DestructCnt{&destruct_cnt};
+  Box<Base> box_move = std::move(box);
+  EXPECT_FALSE(box.is_valid());
+  EXPECT_TRUE(box_move.is_valid());
+  EXPECT_EQ(box_move.type_id(), TypeId::Of<DestructCnt>());
+  EXPECT_EQ(destruct_cnt, 0);
 }

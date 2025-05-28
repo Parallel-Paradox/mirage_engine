@@ -2,6 +2,7 @@
 #define MIRAGE_BASE_WRAP_BOX
 
 #include <concepts>
+#include <type_traits>
 
 #include "mirage_base/define/check.hpp"
 #include "mirage_base/util/type_id.hpp"
@@ -33,32 +34,30 @@ class Box {
   }
 
   template <typename T>
-    requires std::move_constructible<T> &&
-             (std::same_as<Base, void> || std::derived_from<T, Base>)
-  static Box New(T val) {
-    Box box;
+    requires std::same_as<Base, void> || (!std::is_reference_v<T>) ||
+             (std::move_constructible<T> && std::derived_from<T, Base>)
+  Box(T val) {
     if constexpr (AllowSmallObjectOptimize<T>()) {
-      box.handle_func_ = SmallHandler<T>;
-      new (&box.obj_.buffer) T(std::move(val));
+      handle_func_ = SmallHandler<T>;
+      new (&obj_.buffer) T(std::move(val));
     } else {
-      box.handle_func_ = LargeHandler<T>;
-      box.obj_.ptr = new T(std::move(val));
+      handle_func_ = LargeHandler<T>;
+      obj_.ptr = new T(std::move(val));
     }
-    return box;
   }
 
   template <typename T>
-    requires std::move_constructible<T> &&
-             (std::same_as<Base, void> || std::derived_from<T, Base>)
+    requires std::same_as<Base, void> || (!std::is_reference_v<T>) ||
+             (std::move_constructible<T> && std::derived_from<T, Base>)
   Box& operator=(T val) {
     this->~Box();
-    new (this) Box(New<T>(std::move(val)));
+    new (this) Box(std::move(val));
     return *this;
   }
 
   template <typename T>
-    requires std::move_constructible<T> &&
-             (std::same_as<Base, void> || std::derived_from<T, Base>)
+    requires std::same_as<Base, void> ||
+             (std::move_constructible<T> && std::derived_from<T, Base>)
   T Unwrap() {
     MIRAGE_DCHECK(is_valid());
 
