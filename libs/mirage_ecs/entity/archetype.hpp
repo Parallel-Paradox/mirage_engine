@@ -13,6 +13,8 @@ namespace mirage::ecs {
 
 class Archetype {
  public:
+  class Iterator;
+
   MIRAGE_ECS Archetype() = delete;
   MIRAGE_ECS ~Archetype() = default;
 
