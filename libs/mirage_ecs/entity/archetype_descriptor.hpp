@@ -1,5 +1,5 @@
-#ifndef MIRAGE_ECS_ENTITY_ENTITY_DESCRIPTOR
-#define MIRAGE_ECS_ENTITY_ENTITY_DESCRIPTOR
+#ifndef MIRAGE_ECS_ENTITY_ARCHETYPE_DESCRIPTOR
+#define MIRAGE_ECS_ENTITY_ARCHETYPE_DESCRIPTOR
 
 #include <concepts>
 
@@ -10,23 +10,23 @@
 
 namespace mirage::ecs {
 
-class EntityDescriptor {
+class ArchetypeDescriptor {
   using TypeId = base::TypeId;
 
  public:
   using OffsetMap = base::HashMap<ComponentId, size_t>;
 
-  MIRAGE_ECS EntityDescriptor(base::Array<ComponentId> component_id_array);
-  MIRAGE_ECS ~EntityDescriptor() = default;
+  MIRAGE_ECS ArchetypeDescriptor(base::Array<ComponentId> component_id_array);
+  MIRAGE_ECS ~ArchetypeDescriptor() = default;
 
-  EntityDescriptor(const EntityDescriptor &) = delete;
-  EntityDescriptor &operator=(const EntityDescriptor &) = delete;
+  ArchetypeDescriptor(const ArchetypeDescriptor &) = delete;
+  ArchetypeDescriptor &operator=(const ArchetypeDescriptor &) = delete;
 
-  MIRAGE_ECS EntityDescriptor(EntityDescriptor &&) = default;
-  MIRAGE_ECS EntityDescriptor &operator=(EntityDescriptor &&) = default;
+  MIRAGE_ECS ArchetypeDescriptor(ArchetypeDescriptor &&) = default;
+  MIRAGE_ECS ArchetypeDescriptor &operator=(ArchetypeDescriptor &&) = default;
 
   template <IsComponent... Ts>
-  static EntityDescriptor New();
+  static ArchetypeDescriptor New();
 
   [[nodiscard]] MIRAGE_ECS size_t align() const;
   [[nodiscard]] MIRAGE_ECS size_t size() const;
@@ -41,13 +41,13 @@ class EntityDescriptor {
 };
 
 template <IsComponent... Ts>
-EntityDescriptor EntityDescriptor::New() {
+ArchetypeDescriptor ArchetypeDescriptor::New() {
   base::Array<ComponentId> component_id_array;
   component_id_array.Reserve(sizeof...(Ts));
   (component_id_array.Push(ComponentId::Of<Ts>()), ...);
-  return EntityDescriptor(std::move(component_id_array));
+  return ArchetypeDescriptor(std::move(component_id_array));
 }
 
 }  // namespace mirage::ecs
 
-#endif  // MIRAGE_ECS_ENTITY_ENTITY_DESCRIPTOR
+#endif  // MIRAGE_ECS_ENTITY_ARCHETYPE_DESCRIPTOR

@@ -1,14 +1,13 @@
-#include "mirage_ecs/entity/entity_descriptor.hpp"
-
 #include <numeric>
 
 #include "mirage_base/container/array.hpp"
 #include "mirage_ecs/component/component_id.hpp"
+#include "mirage_ecs/entity/archetype_descriptor.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
 using namespace mirage::ecs;
 
-EntityDescriptor::EntityDescriptor(
+ArchetypeDescriptor::ArchetypeDescriptor(
     base::Array<ComponentId> component_id_array) {
   // Build type set and remove duplicates.
   type_set_.Reserve(component_id_array.size());
@@ -58,12 +57,12 @@ EntityDescriptor::EntityDescriptor(
   size_ = offset;
 }
 
-size_t EntityDescriptor::align() const { return align_; }
+size_t ArchetypeDescriptor::align() const { return align_; }
 
-size_t EntityDescriptor::size() const { return size_; }
+size_t ArchetypeDescriptor::size() const { return size_; }
 
-const EntityDescriptor::OffsetMap& EntityDescriptor::offset_map() const {
+const ArchetypeDescriptor::OffsetMap& ArchetypeDescriptor::offset_map() const {
   return offset_map_;
 }
 
-const TypeSet& EntityDescriptor::type_set() const { return type_set_; }
+const TypeSet& ArchetypeDescriptor::type_set() const { return type_set_; }

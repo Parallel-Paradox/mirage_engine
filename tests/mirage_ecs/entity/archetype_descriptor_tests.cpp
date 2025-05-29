@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "mirage_ecs/entity/entity_descriptor.hpp"
+#include "mirage_ecs/entity/archetype_descriptor.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
 using namespace mirage;
@@ -18,8 +18,8 @@ struct Int64 : Component {
   int64_t value{0};
 };
 
-TEST(EntityDescriptorTests, LayoutCheck) {
-  const auto desc = EntityDescriptor::New<Bool, Int64, Int32>();
+TEST(ArchetypeDescriptorTests, LayoutCheck) {
+  const auto desc = ArchetypeDescriptor::New<Bool, Int64, Int32>();
   EXPECT_EQ(desc.align(), 8);
   EXPECT_EQ(desc.size(), 16);
   EXPECT_EQ(desc.type_set(), (TypeSet::New<Bool, Int64, Int32>()));
@@ -30,8 +30,8 @@ TEST(EntityDescriptorTests, LayoutCheck) {
   EXPECT_EQ(offset_map[ComponentId::Of<Bool>()], 12);
 }
 
-TEST(EntityDescriptorTests, DuplicateInit) {
-  const auto desc = EntityDescriptor::New<Bool, Int64, Int32, Int64>();
+TEST(ArchetypeDescriptorTests, DuplicateInit) {
+  const auto desc = ArchetypeDescriptor::New<Bool, Int64, Int32, Int64>();
   EXPECT_EQ(desc.align(), 8);
   EXPECT_EQ(desc.size(), 16);
   EXPECT_EQ(desc.type_set(), (TypeSet::New<Bool, Int64, Int32>()));

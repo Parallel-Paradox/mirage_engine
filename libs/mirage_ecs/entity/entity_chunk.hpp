@@ -6,7 +6,7 @@
 #include "mirage_base/auto_ptr/shared.hpp"
 #include "mirage_base/util/type_id.hpp"
 #include "mirage_ecs/component/component_bundle.hpp"
-#include "mirage_ecs/entity/entity_descriptor.hpp"
+#include "mirage_ecs/entity/archetype_descriptor.hpp"
 #include "mirage_ecs/util/marker.hpp"
 
 namespace mirage::ecs {
@@ -28,7 +28,8 @@ class EntityChunk {
   MIRAGE_ECS EntityChunk &operator=(EntityChunk &&other) noexcept;
 
   MIRAGE_ECS EntityChunk(
-      base::SharedLocal<EntityDescriptor> &&entity_descriptor, size_t capacity);
+      base::SharedLocal<ArchetypeDescriptor> &&archetype_descriptor,
+      size_t capacity);
 
   bool Push(ComponentBundle &component_bundle);
   bool SwapRemove(size_t index);
@@ -43,7 +44,8 @@ class EntityChunk {
   // ConstIterator begin() const;
   // ConstIterator end() const;
 
-  [[nodiscard]] MIRAGE_ECS const EntityDescriptor &entity_descriptor() const;
+  [[nodiscard]] MIRAGE_ECS const ArchetypeDescriptor &archetype_descriptor()
+      const;
 
   [[nodiscard]] MIRAGE_ECS size_t byte_size() const;
   [[nodiscard]] MIRAGE_ECS std::byte *raw_ptr() const;
@@ -52,7 +54,7 @@ class EntityChunk {
   [[nodiscard]] MIRAGE_ECS size_t size() const;
 
  private:
-  base::SharedLocal<EntityDescriptor> entity_descriptor_{nullptr};
+  base::SharedLocal<ArchetypeDescriptor> archetype_descriptor_{nullptr};
 
   size_t byte_size_{0};
   std::byte *raw_ptr_{nullptr};
@@ -86,13 +88,13 @@ class EntityView {
 
  private:
   friend class EntityChunk;
-  MIRAGE_ECS EntityView(EntityDescriptor *entity_descriptor,
+  MIRAGE_ECS EntityView(ArchetypeDescriptor *archetype_descriptor,
                         std::byte *raw_ptr);
 
   template <IsComponent T>
   T *TryGetImpl() const;
 
-  EntityDescriptor *entity_descriptor_{nullptr};
+  ArchetypeDescriptor *archetype_descriptor_{nullptr};
   std::byte *raw_ptr_{nullptr};
 };
 
@@ -118,8 +120,8 @@ T &EntityView::Get() {
 
 template <IsComponent T>
 T *EntityView::TryGetImpl() const {
-  const auto &offset_map = entity_descriptor_->offset_map();
-  EntityDescriptor::OffsetMap::ConstIterator iter =
+  const auto &offset_map = archetype_descriptor_->offset_map();
+  ArchetypeDescriptor::OffsetMap::ConstIterator iter =
       offset_map.TryFind(base::TypeId::Of<T>());
   if (iter == offset_map.end()) {
     return nullptr;
