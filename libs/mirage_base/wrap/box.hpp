@@ -34,8 +34,9 @@ class Box {
   }
 
   template <typename T>
-    requires std::same_as<Base, void> || (!std::is_reference_v<T>) ||
-             (std::move_constructible<T> && std::derived_from<T, Base>)
+    requires /* conflict with move */ (!std::is_reference_v<T>) ||
+             (std::move_constructible<T> &&
+              (std::same_as<Base, void> || std::derived_from<T, Base>))
   Box(T val) {
     if constexpr (AllowSmallObjectOptimize<T>()) {
       handle_func_ = SmallHandler<T>;
@@ -47,8 +48,9 @@ class Box {
   }
 
   template <typename T>
-    requires std::same_as<Base, void> || (!std::is_reference_v<T>) ||
-             (std::move_constructible<T> && std::derived_from<T, Base>)
+    requires /* conflict with move */ (!std::is_reference_v<T>) ||
+             (std::move_constructible<T> &&
+              (std::same_as<Base, void> || std::derived_from<T, Base>))
   Box& operator=(T val) {
     this->~Box();
     new (this) Box(std::move(val));
@@ -56,8 +58,9 @@ class Box {
   }
 
   template <typename T>
-    requires std::same_as<Base, void> ||
-             (std::move_constructible<T> && std::derived_from<T, Base>)
+    requires /* conflict with move */ (!std::is_reference_v<T>) ||
+             (std::move_constructible<T> &&
+              (std::same_as<Base, void> || std::derived_from<T, Base>))
   T Unwrap() {
     MIRAGE_DCHECK(is_valid());
 
