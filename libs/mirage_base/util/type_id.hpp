@@ -11,11 +11,11 @@ namespace mirage::base {
 
 class TypeMeta {
  public:
-  MIRAGE_BASE TypeMeta() = delete;
+  TypeMeta() = delete;
   MIRAGE_BASE ~TypeMeta() = default;
 
-  MIRAGE_BASE TypeMeta(const TypeMeta &) = delete;
-  MIRAGE_BASE TypeMeta(TypeMeta &&) = delete;
+  TypeMeta(const TypeMeta &) = delete;
+  TypeMeta(TypeMeta &&) = delete;
 
   template <typename T>
   static const TypeMeta &Of() {

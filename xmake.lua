@@ -17,8 +17,10 @@ end
 
 rule("check_msvc")
   on_config(function (target)
-    -- print(target:tool("cxx"))
-    -- TODO add msvc checker and defines
+    local program, tool, desc = target:tool("cxx")
+    if desc.name == "msvc" then
+      target:add("defines", "MIRAGE_BUILD_MSVC")
+    end
   end)
 rule_end()
 add_rules("check_msvc")

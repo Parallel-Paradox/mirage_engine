@@ -16,11 +16,11 @@ class ComponentMeta {
   using DestructFunc = void (*)(void *ptr);
   using MoveFunc = void (*)(void *target, void *destination);
 
-  MIRAGE_ECS ComponentMeta() = delete;
+  ComponentMeta() = delete;
   MIRAGE_ECS ~ComponentMeta() = default;
 
-  MIRAGE_ECS ComponentMeta(const ComponentMeta &) = delete;
-  MIRAGE_ECS ComponentMeta(ComponentMeta &&) = delete;
+  ComponentMeta(const ComponentMeta &) = delete;
+  ComponentMeta(ComponentMeta &&) = delete;
 
   template <IsComponent T>
   static const ComponentMeta &Of() {

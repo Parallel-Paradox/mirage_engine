@@ -1,8 +1,10 @@
+#include "mirage_ecs/entity/archetype_descriptor.hpp"
+
+#include <algorithm>
 #include <numeric>
 
 #include "mirage_base/container/array.hpp"
 #include "mirage_ecs/component/component_id.hpp"
-#include "mirage_ecs/entity/archetype_descriptor.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
 using namespace mirage::ecs;

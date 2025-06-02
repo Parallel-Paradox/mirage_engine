@@ -15,16 +15,16 @@ class TypeSet {
   MIRAGE_ECS TypeSet() = default;
   MIRAGE_ECS ~TypeSet() = default;
 
-  MIRAGE_ECS TypeSet(const TypeSet &) = delete;
-  MIRAGE_ECS TypeSet &operator=(const TypeSet &) = delete;
+  TypeSet(const TypeSet &) = delete;
+  TypeSet &operator=(const TypeSet &) = delete;
 
   MIRAGE_ECS TypeSet(TypeSet &&other) noexcept;
   MIRAGE_ECS TypeSet &operator=(TypeSet &&other) noexcept;
 
   [[nodiscard]] MIRAGE_ECS TypeSet Clone() const;
 
-  void Reserve(size_t capacity);
-  void ShrinkToFit();
+  MIRAGE_ECS void Reserve(size_t capacity);
+  MIRAGE_ECS void ShrinkToFit();
 
   template <typename... Ts>
   static TypeSet New();

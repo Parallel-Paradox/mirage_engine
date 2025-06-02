@@ -1,7 +1,5 @@
 #include "mirage_ecs/component/component_bundle.hpp"
 
-#include "mirage_ecs/component/component_id.hpp"
-
 using namespace mirage::base;
 using namespace mirage::ecs;
 

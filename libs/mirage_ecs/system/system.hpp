@@ -36,11 +36,11 @@ class System {
   using SystemFunc =
       std::function<void(World&, base::Owned<SystemContext>& context)>;
 
-  MIRAGE_ECS System() = delete;
+  System() = delete;
   MIRAGE_ECS ~System() = default;
 
-  MIRAGE_ECS System(const System&) = delete;
-  MIRAGE_ECS System& operator=(const System&) = delete;
+  System(const System&) = delete;
+  System& operator=(const System&) = delete;
 
   MIRAGE_ECS System(System&&) = default;
   MIRAGE_ECS System& operator=(System&&) = default;

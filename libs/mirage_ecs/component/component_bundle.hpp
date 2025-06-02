@@ -23,8 +23,8 @@ class ComponentBundle {
   MIRAGE_ECS ComponentBundle() = default;
   MIRAGE_ECS ~ComponentBundle() = default;
 
-  MIRAGE_ECS ComponentBundle(const ComponentBundle &) = delete;
-  MIRAGE_ECS ComponentBundle &operator=(const ComponentBundle &) = delete;
+  ComponentBundle(const ComponentBundle &) = delete;
+  ComponentBundle &operator=(const ComponentBundle &) = delete;
 
   MIRAGE_ECS ComponentBundle(ComponentBundle &&) = default;
   MIRAGE_ECS ComponentBundle &operator=(ComponentBundle &&) = default;

@@ -8,7 +8,6 @@
 #include "mirage_base/define/check.hpp"
 #include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/entity/archetype_descriptor.hpp"
-#include "mirage_ecs/util/marker.hpp"
 
 using namespace mirage;
 using namespace mirage::ecs;

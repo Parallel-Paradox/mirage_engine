@@ -3,8 +3,6 @@
 
 #include <concepts>
 
-#include "mirage_base/util/type_list.hpp"
-
 namespace mirage::ecs {
 
 struct Component {};
