@@ -39,6 +39,8 @@ class ArchetypeDataPage {
   MIRAGE_ECS View operator[](size_t index);
   MIRAGE_ECS const View operator[](size_t index) const;
 
+  [[nodiscard]] MIRAGE_ECS bool is_valid() const;
+
   [[nodiscard]] MIRAGE_ECS const SharedLocalDescriptor& descriptor() const;
   [[nodiscard]] MIRAGE_ECS size_t capacity() const;
   [[nodiscard]] MIRAGE_ECS size_t size() const;

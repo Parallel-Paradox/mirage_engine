@@ -18,11 +18,11 @@ struct Counter : Component {
 
   Counter(Counter &&other) noexcept
       : move_cnt_(other.move_cnt_), destruct_cnt_(other.destruct_cnt_) {
-    other.move_cnt_ = nullptr;
-    other.destruct_cnt_ = nullptr;
     if (move_cnt_) {
       *move_cnt_ += 1;
     }
+    other.move_cnt_ = nullptr;
+    other.destruct_cnt_ = nullptr;
   }
 
   ~Counter() {
