@@ -12,7 +12,7 @@ class MIRAGE_BASE RefCount {
  public:
   virtual ~RefCount() = default;
   [[nodiscard]] virtual size_t cnt() const = 0;
-  virtual void set_cnt(size_t cnt) = 0;
+  virtual void Increase() = 0;
   virtual bool TryIncrease() = 0;
   virtual bool TryRelease() = 0;
 };
@@ -22,7 +22,7 @@ class MIRAGE_BASE RefCountLocal : public RefCount {
   explicit RefCountLocal(size_t cnt);
   ~RefCountLocal() override = default;
   [[nodiscard]] size_t cnt() const override;
-  void set_cnt(size_t cnt) override;
+  void Increase() override;
   bool TryIncrease() override;
   bool TryRelease() override;
 
@@ -35,7 +35,7 @@ class MIRAGE_BASE RefCountAsync final : public RefCountLocal {
   explicit RefCountAsync(size_t cnt);
   ~RefCountAsync() override = default;
   [[nodiscard]] size_t cnt() const override;
-  void set_cnt(size_t cnt) override;
+  void Increase() override;
   bool TryIncrease() override;
   bool TryRelease() override;
 

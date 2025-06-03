@@ -21,7 +21,7 @@ struct Derive final : Base {
   ~Derive() override { *derive_destructed += 1; }
 };
 
-TEST(OwnedPtrTests, Construct) {
+TEST(OwnedTests, Construct) {
   int32_t is_destructed = 0;
 
   // Default Construct
@@ -53,7 +53,7 @@ TEST(OwnedPtrTests, Construct) {
   EXPECT_EQ(is_destructed, 2);
 }
 
-TEST(OwnedPtrTests, PtrOps) {
+TEST(OwnedTests, PtrOps) {
   int32_t cnt = 0;
   const auto ptr = Owned<Base>::New(&cnt);
   EXPECT_EQ(*ptr->base_destructed, 0);
@@ -62,7 +62,7 @@ TEST(OwnedPtrTests, PtrOps) {
   EXPECT_EQ(*ptr->base_destructed, 1);
 }
 
-TEST(OwnedPtrTests, ConvertDeriveToBase) {
+TEST(OwnedTests, ConvertDeriveToBase) {
   int32_t base_destructed = 0;
   int32_t derive_destructed = 0;
 
@@ -78,7 +78,7 @@ TEST(OwnedPtrTests, ConvertDeriveToBase) {
   EXPECT_EQ(derive_destructed, 1);
 }
 
-TEST(OwnedPtrTests, ConvertBaseToDerive) {
+TEST(OwnedTests, ConvertBaseToDerive) {
   // Can't convert from base to derive when base is the origin type.
   int32_t base_destructed = 0;
   auto base = Owned<Base>::New(&base_destructed);

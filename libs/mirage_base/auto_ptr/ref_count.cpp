@@ -6,7 +6,7 @@ RefCountLocal::RefCountLocal(const size_t cnt) : cnt_(cnt) {}
 
 size_t RefCountLocal::cnt() const { return cnt_; }
 
-void RefCountLocal::set_cnt(const size_t cnt) { cnt_ = cnt; }
+void RefCountLocal::Increase() { cnt_ += 1; }
 
 bool RefCountLocal::TryIncrease() {
   if (cnt_ == 0) {
@@ -31,9 +31,9 @@ size_t RefCountAsync::cnt() const {
   return RefCountLocal::cnt();
 }
 
-void RefCountAsync::set_cnt(const size_t cnt) {
+void RefCountAsync::Increase() {
   LockGuard lock(lock_);
-  RefCountLocal::set_cnt(cnt);
+  RefCountLocal::Increase();
 }
 
 bool RefCountAsync::TryIncrease() {

@@ -55,6 +55,27 @@ TEST(RefCountTests, ResetBehaviour) {
   checker(&count_async);
 }
 
+TEST(RefCountTests, Increase) {
+  auto checker = [](RefCount* count) {
+    bool rv = count->TryIncrease();
+    EXPECT_FALSE(rv);
+    EXPECT_EQ(count->cnt(), 0);
+
+    count->Increase();
+    EXPECT_EQ(count->cnt(), 1);
+
+    rv = count->TryIncrease();
+    EXPECT_TRUE(rv);
+    EXPECT_EQ(count->cnt(), 2);
+  };
+
+  RefCountLocal count_local(0);
+  checker(&count_local);
+
+  RefCountAsync count_async(0);
+  checker(&count_async);
+}
+
 TEST(RefCountTests, Async) {
   RefCountAsync count(1);
   auto async_operation = [&count] {

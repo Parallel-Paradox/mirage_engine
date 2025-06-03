@@ -24,6 +24,7 @@ concept HashSearchable =
     };
 
 // TODO: SwissTable maybe?
+// TODO: SIMD
 // TODO: fmt HashSet
 
 template <HashSetValType T>

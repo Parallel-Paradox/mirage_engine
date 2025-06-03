@@ -24,7 +24,7 @@ struct Derive final : Base {
   ~Derive() override { *derive_destructed += 1; }
 };
 
-TEST(SharedPtrTests, Construct) {
+TEST(SharedTests, Construct) {
   int32_t is_destructed = 0;
 
   // Default construct
@@ -63,7 +63,7 @@ TEST(SharedPtrTests, Construct) {
   EXPECT_EQ(is_destructed, 2);  // Destructor is called.
 }
 
-TEST(SharedPtrTests, PtrOps) {
+TEST(SharedTests, PtrOps) {
   int32_t cnt = 0;
   const auto ptr = SharedLocal<Base>::New(&cnt);
   EXPECT_EQ(*ptr->base_destructed, 0);
@@ -72,7 +72,7 @@ TEST(SharedPtrTests, PtrOps) {
   EXPECT_EQ(*ptr->base_destructed, 1);
 }
 
-TEST(SharedPtrTests, CloneAsync) {
+TEST(SharedTests, CloneAsync) {
   int32_t cnt = 0;
   const auto ptr = SharedAsync<Base>::New(&cnt);
 
@@ -89,7 +89,7 @@ TEST(SharedPtrTests, CloneAsync) {
   EXPECT_EQ(ptr.ref_cnt(), 1);
 }
 
-TEST(SharedPtrTests, ConvertBaseToDerive) {
+TEST(SharedTests, ConvertBaseToDerive) {
   int32_t base_destructed = 0;
   int32_t derive_destructed = 0;
 
@@ -105,7 +105,7 @@ TEST(SharedPtrTests, ConvertBaseToDerive) {
   EXPECT_EQ(derive_destructed, 1);
 }
 
-TEST(SharedPtrTests, ConvertDeriveToBase) {
+TEST(SharedTests, ConvertDeriveToBase) {
   // Can't convert from base to derive when base is the origin type.
   int32_t base_destructed = 0;
   auto base = SharedLocal<Base>::New(&base_destructed);

@@ -17,8 +17,8 @@ class Shared {
   Shared() = default;
   ~Shared();
 
-  Shared(const Shared& other) = delete;
-  Shared& operator=(const Shared& other) = delete;
+  Shared(const Shared&) = delete;
+  Shared& operator=(const Shared&) = delete;
 
   Shared(Shared&& other) noexcept;
   Shared& operator=(Shared&& other) noexcept;
@@ -57,7 +57,7 @@ class Shared {
  private:
   friend class Weak<T, R>;
 
-  Shared(T* raw_ptr, RefCount* ref_ct, RefCount* weak_ref_cnt);
+  Shared(T* raw_ptr, RefCount* ref_cnt_ptr, RefCount* weak_ref_cnt_ptr);
   void ResetPtr();
 
   T* raw_ptr_{nullptr};
@@ -131,7 +131,7 @@ Shared<T, R> Shared<T, R>::Clone() const {
   if (ref_cnt_ptr_ && ref_cnt_ptr_->TryIncrease()) {
     return Shared(raw_ptr_, ref_cnt_ptr_, weak_ref_cnt_ptr_);
   }
-  return Shared();
+  return nullptr;
 }
 
 template <typename T, IsRefCount R>
@@ -194,10 +194,11 @@ size_t Shared<T, R>::weak_ref_cnt() const {
 }
 
 template <typename T, IsRefCount R>
-Shared<T, R>::Shared(T* raw_ptr, RefCount* ref_ct, RefCount* weak_ref_cnt)
+Shared<T, R>::Shared(T* raw_ptr, RefCount* ref_cnt_ptr,
+                     RefCount* weak_ref_cnt_ptr)
     : raw_ptr_(raw_ptr),
-      ref_cnt_ptr_(ref_ct),
-      weak_ref_cnt_ptr_(weak_ref_cnt) {}
+      ref_cnt_ptr_(ref_cnt_ptr),
+      weak_ref_cnt_ptr_(weak_ref_cnt_ptr) {}
 
 template <typename T, IsRefCount R>
 void Shared<T, R>::ResetPtr() {
