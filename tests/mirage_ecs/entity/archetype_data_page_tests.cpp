@@ -1,9 +1,13 @@
 #include <gtest/gtest.h>
 
 #include "mirage_ecs/entity/archetype_data_page.hpp"
+#include "mirage_ecs/entity/archetype_descriptor.hpp"
 #include "mirage_ecs/util/marker.hpp"
 
+using namespace mirage::base;
 using namespace mirage::ecs;
+
+using SharedDescriptor = ArchetypeDataPage::SharedDescriptor;
 
 struct Counter : Component {
   int32_t *move_cnt_{nullptr};
@@ -32,13 +36,16 @@ struct Counter : Component {
 };
 
 TEST(ArchetypeDataPageTests, Initialize) {
-  auto page = ArchetypeDataPage(1024);
-  EXPECT_FALSE(page.is_valid());
+  auto desc = SharedDescriptor::New(ArchetypeDescriptor::New<Counter>());
+
+  auto page = ArchetypeDataPage(1024, desc->align());
+  EXPECT_FALSE(page.is_initialized());
   EXPECT_EQ(page.capacity(), 0);
   EXPECT_EQ(page.size(), 0);
-  EXPECT_NE(page.buffer_ptr(), nullptr);
-  EXPECT_EQ(page.align_padding(), 0);
-  EXPECT_EQ(page.byte_size(), 1024);
+  EXPECT_NE(page.buffer().ptr(), nullptr);
+  EXPECT_EQ(page.buffer().size(), 1024);
+  size_t buffer_address = (size_t)page.buffer().ptr();  // NOLINT: Check align
+  EXPECT_EQ(buffer_address % page.buffer().align(), 0);
 }
 
 TEST(ArchetypeDataPageTests, Push) {

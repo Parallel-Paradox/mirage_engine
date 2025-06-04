@@ -42,7 +42,7 @@ AlignedBuffer& AlignedBuffer::operator=(AlignedBuffer&& other) noexcept {
   return *this;
 }
 
-std::byte* AlignedBuffer::buffer_ptr() const { return buffer_ptr_; }
+std::byte* AlignedBuffer::ptr() const { return buffer_ptr_; }
 
 size_t AlignedBuffer::size() const { return size_; }
 

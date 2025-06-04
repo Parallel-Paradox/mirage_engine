@@ -2,20 +2,25 @@
 #define MIRAGE_ECS_ENTITY_ARCHETYPE_DATA_PAGE
 
 #include "mirage_base/auto_ptr/shared.hpp"
+#include "mirage_base/buffer/aligned_buffer.hpp"
 #include "mirage_ecs/component/component_bundle.hpp"
+#include "mirage_ecs/component/component_id.hpp"
 #include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/entity/archetype_descriptor.hpp"
 
 namespace mirage::ecs {
 
 class ArchetypeDataPage {
-  using SharedLocalDescriptor = base::SharedLocal<ArchetypeDescriptor>;
-
  public:
+  using SharedDescriptor = base::SharedLocal<ArchetypeDescriptor>;
+  using Buffer = base::AlignedBuffer;
+
   class View;
   class Slice;
 
   ArchetypeDataPage() = delete;
+  MIRAGE_ECS ArchetypeDataPage(size_t buffer_size, size_t align);
+
   MIRAGE_ECS ~ArchetypeDataPage();
 
   ArchetypeDataPage(const ArchetypeDataPage&) = delete;
@@ -24,9 +29,7 @@ class ArchetypeDataPage {
   MIRAGE_ECS ArchetypeDataPage(ArchetypeDataPage&&);
   MIRAGE_ECS ArchetypeDataPage& operator=(ArchetypeDataPage&&);
 
-  MIRAGE_ECS ArchetypeDataPage(size_t byte_size);
-
-  MIRAGE_ECS void Initialize(SharedLocalDescriptor descriptor);
+  MIRAGE_ECS void Initialize(SharedDescriptor descriptor);
   MIRAGE_ECS void Reset();
 
   [[nodiscard]] MIRAGE_ECS bool Push(ComponentBundle& bundle);
@@ -39,24 +42,20 @@ class ArchetypeDataPage {
   MIRAGE_ECS View operator[](size_t index);
   MIRAGE_ECS const View operator[](size_t index) const;
 
-  [[nodiscard]] MIRAGE_ECS bool is_valid() const;
+  [[nodiscard]] MIRAGE_ECS bool is_initialized() const;
 
-  [[nodiscard]] MIRAGE_ECS const SharedLocalDescriptor& descriptor() const;
+  [[nodiscard]] MIRAGE_ECS const SharedDescriptor& descriptor() const;
   [[nodiscard]] MIRAGE_ECS size_t capacity() const;
   [[nodiscard]] MIRAGE_ECS size_t size() const;
 
-  [[nodiscard]] MIRAGE_ECS std::byte* buffer_ptr() const;
-  [[nodiscard]] MIRAGE_ECS size_t align_padding() const;
-  [[nodiscard]] MIRAGE_ECS size_t byte_size() const;
+  [[nodiscard]] MIRAGE_ECS const Buffer& buffer() const;
 
  private:
-  SharedLocalDescriptor descriptor_{nullptr};
+  SharedDescriptor descriptor_{nullptr};
   size_t capacity_{0};
   size_t size_{0};
 
-  std::byte* buffer_ptr_{nullptr};
-  size_t align_padding_{0};
-  size_t byte_size_{0};
+  Buffer buffer_;
 };
 
 class MIRAGE_ECS ArchetypeDataPage::View {
@@ -86,8 +85,7 @@ class MIRAGE_ECS ArchetypeDataPage::View {
  private:
   View(ArchetypeDescriptor* descriptor, std::byte* view_ptr);
 
-  template <IsComponent T>
-  T* TryGetImpl() const;
+  void* TryGetImpl(ComponentId id) const;
 
   ArchetypeDescriptor* descriptor_{nullptr};
   std::byte* view_ptr_{nullptr};
@@ -111,15 +109,15 @@ class ArchetypeDataPage::Slice {
   MIRAGE_ECS const View view() const;
 
  private:
-  Slice(SharedLocalDescriptor descriptor, std::byte* slice_ptr);
+  Slice(SharedDescriptor descriptor, std::byte* slice_ptr);
 
-  SharedLocalDescriptor descriptor_{nullptr};
+  SharedDescriptor descriptor_{nullptr};
   std::byte* slice_ptr_{nullptr};
 };
 
 template <IsComponent T>
 const T* ArchetypeDataPage::View::TryGet() const {
-  return TryGetImpl<T>();
+  return TryGetImpl(ComponentId::Of<T>());
 }
 
 template <IsComponent T>
@@ -129,23 +127,12 @@ const T& ArchetypeDataPage::View::Get() const {
 
 template <IsComponent T>
 T* ArchetypeDataPage::View::TryGet() {
-  return TryGetImpl<T>();
+  return TryGetImpl(ComponentId::Of<T>());
 }
 
 template <IsComponent T>
 T& ArchetypeDataPage::View::Get() {
   return *TryGet<T>();
-}
-
-template <IsComponent T>
-T* ArchetypeDataPage::View::TryGetImpl() const {
-  const auto& offset_map = descriptor_->offset_map();
-  ArchetypeDescriptor::OffsetMap::ConstIterator iter =
-      offset_map.TryFind(base::TypeId::Of<T>());
-  if (iter == offset_map.end()) {
-    return nullptr;
-  }
-  return static_cast<T*>(view_ptr_ + iter->val());
 }
 
 }  // namespace mirage::ecs

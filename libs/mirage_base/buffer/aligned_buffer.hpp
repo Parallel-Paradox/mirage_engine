@@ -20,7 +20,7 @@ class MIRAGE_BASE AlignedBuffer {
   AlignedBuffer(AlignedBuffer&&) noexcept;
   AlignedBuffer& operator=(AlignedBuffer&&) noexcept;
 
-  [[nodiscard]] std::byte* buffer_ptr() const;
+  [[nodiscard]] std::byte* ptr() const;
   [[nodiscard]] size_t size() const;
   [[nodiscard]] size_t align() const;
 
