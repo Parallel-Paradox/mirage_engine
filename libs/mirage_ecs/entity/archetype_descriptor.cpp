@@ -1,7 +1,6 @@
 #include "mirage_ecs/entity/archetype_descriptor.hpp"
 
 #include <algorithm>
-#include <numeric>
 
 #include "mirage_base/container/array.hpp"
 #include "mirage_ecs/component/component_id.hpp"
@@ -25,11 +24,15 @@ ArchetypeDescriptor::ArchetypeDescriptor(
   }
   type_set_.ShrinkToFit();
 
-  // Set the least common multiple of all component alignments as the entity
-  // alignment.
+  // Set the least common multiple (LCM) of all component alignments as the
+  // entity alignment.
+  // Because all alignments are powers of 2, the LCM is the largest alignment.
   align_ = type_set_.type_array()[0].type_align();
   for (const TypeId& type_id : type_set_.type_array()) {
-    align_ = std::lcm(align_, type_id.type_align());
+    const size_t align = type_id.type_align();
+    // Check if the alignment is a power of 2.
+    MIRAGE_DCHECK((align != 0 && (align & (align - 1)) == 0));
+    align_ = std::max(align_, align);
   }
 
   // Layout components in descending order of alignment and size. Set offsets.
