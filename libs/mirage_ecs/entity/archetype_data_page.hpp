@@ -39,8 +39,7 @@ class ArchetypeDataPage {
 
   MIRAGE_ECS void Clear();
 
-  MIRAGE_ECS View operator[](size_t index);
-  MIRAGE_ECS const View operator[](size_t index) const;
+  MIRAGE_ECS View operator[](size_t index) const;
 
   [[nodiscard]] MIRAGE_ECS bool is_initialized() const;
 
@@ -62,7 +61,7 @@ class MIRAGE_ECS ArchetypeDataPage::View {
  public:
   View() = default;
   View(const ArchetypeDataPage& page, size_t index);
-  View(const Slice& slice);
+  explicit View(const Slice& slice);
   ~View() = default;
 
   View(const View&) = default;
@@ -72,7 +71,7 @@ class MIRAGE_ECS ArchetypeDataPage::View {
   View& operator=(View&&) noexcept = default;
 
   explicit operator bool() const;
-  bool is_null() const;
+  [[nodiscard]] bool is_null() const;
 
   template <IsComponent T>
   const T* TryGet() const;
@@ -84,9 +83,9 @@ class MIRAGE_ECS ArchetypeDataPage::View {
   template <IsComponent T>
   T& Get();
 
- private:
-  void* TryGetImpl(ComponentId id) const;
+  [[nodiscard]] void* TryGet(ComponentId id) const;
 
+ private:
   const ArchetypeDescriptor* descriptor_{nullptr};
   std::byte* view_ptr_{nullptr};
 };
@@ -104,22 +103,21 @@ class ArchetypeDataPage::Slice {
   MIRAGE_ECS Slice& operator=(Slice&& other) noexcept;
 
   explicit operator bool() const;
-  bool is_null() const;
+  [[nodiscard]] bool is_null() const;
 
-  MIRAGE_ECS View view();
-  MIRAGE_ECS const View view() const;
+  [[nodiscard]] MIRAGE_ECS View view() const;
 
   [[nodiscard]] MIRAGE_ECS const SharedDescriptor& descriptor() const;
   [[nodiscard]] MIRAGE_ECS std::byte* slice_ptr() const;
 
  private:
   SharedDescriptor descriptor_{nullptr};
-  std::byte* slice_ptr_;
+  std::byte* slice_ptr_{nullptr};
 };
 
 template <IsComponent T>
 const T* ArchetypeDataPage::View::TryGet() const {
-  return TryGetImpl(ComponentId::Of<T>());
+  return TryGet(ComponentId::Of<T>());
 }
 
 template <IsComponent T>
@@ -129,7 +127,7 @@ const T& ArchetypeDataPage::View::Get() const {
 
 template <IsComponent T>
 T* ArchetypeDataPage::View::TryGet() {
-  return TryGetImpl(ComponentId::Of<T>());
+  return TryGet(ComponentId::Of<T>());
 }
 
 template <IsComponent T>
