@@ -26,8 +26,8 @@ class ArchetypeDataPage {
   ArchetypeDataPage(const ArchetypeDataPage&) = delete;
   ArchetypeDataPage& operator=(const ArchetypeDataPage&) = delete;
 
-  MIRAGE_ECS ArchetypeDataPage(ArchetypeDataPage&&);
-  MIRAGE_ECS ArchetypeDataPage& operator=(ArchetypeDataPage&&);
+  MIRAGE_ECS ArchetypeDataPage(ArchetypeDataPage&&) noexcept;
+  MIRAGE_ECS ArchetypeDataPage& operator=(ArchetypeDataPage&&) noexcept;
 
   MIRAGE_ECS void Initialize(SharedDescriptor descriptor);
   MIRAGE_ECS void Reset();

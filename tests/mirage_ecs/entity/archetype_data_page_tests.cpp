@@ -46,6 +46,11 @@ TEST(ArchetypeDataPageTests, Initialize) {
   EXPECT_EQ(page.buffer().size(), 1024);
   size_t buffer_address = (size_t)page.buffer().ptr();  // NOLINT: Check align
   EXPECT_EQ(buffer_address % page.buffer().align(), 0);
+
+  page.Initialize(std::move(desc));
+  EXPECT_TRUE(page.is_initialized());
+  EXPECT_EQ(page.capacity(), 1024 / page.descriptor()->size());
+  EXPECT_EQ(page.size(), 0);
 }
 
 TEST(ArchetypeDataPageTests, Push) {
