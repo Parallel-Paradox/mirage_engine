@@ -61,6 +61,8 @@ class ArchetypeDataPage {
 class MIRAGE_ECS ArchetypeDataPage::View {
  public:
   View() = default;
+  View(const ArchetypeDataPage& page, size_t index);
+  View(const Slice& slice);
   ~View() = default;
 
   View(const View&) = default;
@@ -83,17 +85,16 @@ class MIRAGE_ECS ArchetypeDataPage::View {
   T& Get();
 
  private:
-  View(ArchetypeDescriptor* descriptor, std::byte* view_ptr);
-
   void* TryGetImpl(ComponentId id) const;
 
-  ArchetypeDescriptor* descriptor_{nullptr};
+  const ArchetypeDescriptor* descriptor_{nullptr};
   std::byte* view_ptr_{nullptr};
 };
 
 class ArchetypeDataPage::Slice {
  public:
   MIRAGE_ECS Slice() = default;
+  MIRAGE_ECS Slice(ArchetypeDataPage& page, size_t index);
   MIRAGE_ECS ~Slice();
 
   Slice(const Slice&) = delete;
@@ -108,11 +109,12 @@ class ArchetypeDataPage::Slice {
   MIRAGE_ECS View view();
   MIRAGE_ECS const View view() const;
 
- private:
-  Slice(SharedDescriptor descriptor, std::byte* slice_ptr);
+  [[nodiscard]] MIRAGE_ECS const SharedDescriptor& descriptor() const;
+  [[nodiscard]] MIRAGE_ECS std::byte* slice_ptr() const;
 
+ private:
   SharedDescriptor descriptor_{nullptr};
-  std::byte* slice_ptr_{nullptr};
+  std::byte* slice_ptr_;
 };
 
 template <IsComponent T>
