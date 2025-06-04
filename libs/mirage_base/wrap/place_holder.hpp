@@ -1,5 +1,5 @@
-#ifndef MIRAGE_BASE_WRAP_ALIGNED_MEMORY
-#define MIRAGE_BASE_WRAP_ALIGNED_MEMORY
+#ifndef MIRAGE_BASE_WRAP_PLACE_HOLDER
+#define MIRAGE_BASE_WRAP_PLACE_HOLDER
 
 #include <concepts>
 #include <cstddef>
@@ -7,13 +7,13 @@
 namespace mirage::base {
 
 template <std::move_constructible T>
-class alignas(T) AlignedMemory {
+class alignas(T) PlaceHolder {
  public:
-  AlignedMemory() = default;
-  ~AlignedMemory() = default;
+  PlaceHolder() = default;
+  ~PlaceHolder() = default;
 
-  AlignedMemory(const AlignedMemory&) = delete;
-  AlignedMemory(AlignedMemory&&) = delete;
+  PlaceHolder(const PlaceHolder&) = delete;
+  PlaceHolder(PlaceHolder&&) = delete;
 
   T* ptr() { return (T*)mem_; }  // NOLINT: std::byte* to T*
   T* operator->() { return ptr(); }
@@ -33,4 +33,4 @@ class alignas(T) AlignedMemory {
 
 }  // namespace mirage::base
 
-#endif  // MIRAGE_BASE_WRAP_ALIGNED_MEMORY
+#endif  // MIRAGE_BASE_WRAP_PLACE_HOLDER

@@ -2,7 +2,7 @@
 #define MIRAGE_BASE_WRAP_OPTIONAL
 
 #include "mirage_base/define/check.hpp"
-#include "mirage_base/wrap/aligned_memory.hpp"
+#include "mirage_base/wrap/place_holder.hpp"
 
 namespace mirage::base {
 
@@ -55,7 +55,7 @@ class Optional {
  private:
   Optional() = default;
 
-  AlignedMemory<T> obj_;
+  PlaceHolder<T> obj_;
   bool is_valid_{false};
 };
 

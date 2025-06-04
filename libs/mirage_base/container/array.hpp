@@ -6,7 +6,7 @@
 #include <iterator>
 
 #include "mirage_base/define/check.hpp"
-#include "mirage_base/wrap/aligned_memory.hpp"
+#include "mirage_base/wrap/place_holder.hpp"
 
 namespace mirage::base {
 
@@ -79,7 +79,7 @@ class Array {
  private:
   void EnsureNotFull();
 
-  AlignedMemory<T>* data_{nullptr};
+  PlaceHolder<T>* data_{nullptr};
   size_t size_{0};
   size_t capacity_{0};
 };
@@ -412,7 +412,7 @@ void Array<T>::set_capacity(const size_t capacity) {
     return;
   }
 
-  auto* data = new AlignedMemory<T>[capacity]();
+  auto* data = new PlaceHolder<T>[capacity]();
   const size_t size = capacity < size_ ? capacity : size_;
   for (size_t i = 0; i < size; ++i) {
     T* ptr = data_[i].ptr();
@@ -455,7 +455,7 @@ template <std::move_constructible T>
 void Array<T>::EnsureNotFull() {
   if (capacity_ == 0) {
     capacity_ = 1;
-    data_ = new AlignedMemory<T>[1]();
+    data_ = new PlaceHolder<T>[1]();
   } else if (size_ == capacity_) {
     set_capacity(2 * capacity_);
   }
