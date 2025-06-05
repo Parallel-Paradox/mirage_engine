@@ -15,6 +15,7 @@ class ArchetypeDataPage {
   using SharedDescriptor = base::SharedLocal<ArchetypeDescriptor>;
   using Buffer = base::AlignedBuffer;
 
+  class ConstView;
   class View;
   class Slice;
 
@@ -39,7 +40,8 @@ class ArchetypeDataPage {
 
   MIRAGE_ECS void Clear();
 
-  MIRAGE_ECS View operator[](size_t index) const;
+  MIRAGE_ECS ConstView operator[](size_t index) const;
+  MIRAGE_ECS View operator[](size_t index);
 
   [[nodiscard]] MIRAGE_ECS bool is_initialized() const;
 
@@ -48,6 +50,7 @@ class ArchetypeDataPage {
   [[nodiscard]] MIRAGE_ECS size_t size() const;
 
   [[nodiscard]] MIRAGE_ECS const Buffer& buffer() const;
+  [[nodiscard]] MIRAGE_ECS Buffer& buffer();
 
  private:
   SharedDescriptor descriptor_{nullptr};
@@ -57,11 +60,44 @@ class ArchetypeDataPage {
   Buffer buffer_;
 };
 
+class MIRAGE_ECS ArchetypeDataPage::ConstView {
+ public:
+  ConstView() = default;
+  ConstView(const ArchetypeDataPage& page, size_t index);
+  explicit ConstView(const Slice& slice);
+  ~ConstView() = default;
+
+  ConstView(const ConstView&) = default;
+  ConstView& operator=(const ConstView&) = default;
+
+  ConstView(ConstView&&) noexcept = default;
+  ConstView& operator=(ConstView&&) noexcept = default;
+
+  explicit operator bool() const;
+  [[nodiscard]] bool is_null() const;
+
+  [[nodiscard]] const void* TryGet(ComponentId id) const;
+
+  template <IsComponent T>
+  const T* TryGet() const {
+    return TryGet(ComponentId::Of<T>());
+  }
+
+  template <IsComponent T>
+  const T& Get() const {
+    return *TryGet<T>();
+  }
+
+ private:
+  const ArchetypeDescriptor* descriptor_{nullptr};
+  const std::byte* view_ptr_{nullptr};
+};
+
 class MIRAGE_ECS ArchetypeDataPage::View {
  public:
   View() = default;
-  View(const ArchetypeDataPage& page, size_t index);
-  explicit View(const Slice& slice);
+  View(ArchetypeDataPage& page, size_t index);
+  explicit View(Slice& slice);
   ~View() = default;
 
   View(const View&) = default;
@@ -73,17 +109,28 @@ class MIRAGE_ECS ArchetypeDataPage::View {
   explicit operator bool() const;
   [[nodiscard]] bool is_null() const;
 
-  template <IsComponent T>
-  const T* TryGet() const;
-  template <IsComponent T>
-  const T& Get() const;
+  [[nodiscard]] const void* TryGet(ComponentId id) const;
+  [[nodiscard]] void* TryGet(ComponentId id);
 
   template <IsComponent T>
-  T* TryGet();
-  template <IsComponent T>
-  T& Get();
+  const T* TryGet() const {
+    return TryGet(ComponentId::Of<T>());
+  }
 
-  [[nodiscard]] void* TryGet(ComponentId id) const;
+  template <IsComponent T>
+  const T& Get() const {
+    return *TryGet<T>();
+  }
+
+  template <IsComponent T>
+  T* TryGet() {
+    return TryGet(ComponentId::Of<T>());
+  }
+
+  template <IsComponent T>
+  T& Get() {
+    return *TryGet<T>();
+  }
 
  private:
   const ArchetypeDescriptor* descriptor_{nullptr};
@@ -105,35 +152,17 @@ class ArchetypeDataPage::Slice {
   explicit operator bool() const;
   [[nodiscard]] bool is_null() const;
 
-  [[nodiscard]] MIRAGE_ECS View view() const;
+  [[nodiscard]] MIRAGE_ECS ConstView view() const;
+  [[nodiscard]] MIRAGE_ECS View view();
 
   [[nodiscard]] MIRAGE_ECS const SharedDescriptor& descriptor() const;
-  [[nodiscard]] MIRAGE_ECS std::byte* slice_ptr() const;
+  [[nodiscard]] MIRAGE_ECS const std::byte* slice_ptr() const;
+  [[nodiscard]] MIRAGE_ECS std::byte* slice_ptr();
 
  private:
   SharedDescriptor descriptor_{nullptr};
   std::byte* slice_ptr_{nullptr};
 };
-
-template <IsComponent T>
-const T* ArchetypeDataPage::View::TryGet() const {
-  return TryGet(ComponentId::Of<T>());
-}
-
-template <IsComponent T>
-const T& ArchetypeDataPage::View::Get() const {
-  return *TryGet<T>();
-}
-
-template <IsComponent T>
-T* ArchetypeDataPage::View::TryGet() {
-  return TryGet(ComponentId::Of<T>());
-}
-
-template <IsComponent T>
-T& ArchetypeDataPage::View::Get() {
-  return *TryGet<T>();
-}
 
 }  // namespace mirage::ecs
 
