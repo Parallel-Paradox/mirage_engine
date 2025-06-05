@@ -157,7 +157,7 @@ class MIRAGE_ECS ArchetypeDataPage::Iterator {
   Iterator(std::nullptr_t);  // NOLINT: Convert from nullptr
   Iterator& operator=(std::nullptr_t);
 
-  reference operator*() const;
+  reference operator*() const;  // FIXME
   pointer operator->() const;
   reference operator[](difference_type diff) const;
   iterator_type& operator++();
@@ -227,6 +227,8 @@ class ArchetypeDataPage::Courier {
 
   [[nodiscard]] MIRAGE_ECS const Buffer& buffer() const;
   MIRAGE_ECS Buffer& buffer();
+
+  MIRAGE_ECS size_t size() const;
 
  private:
   friend class ArchetypeDataPage;

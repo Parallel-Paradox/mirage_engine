@@ -1,10 +1,9 @@
 #include "mirage_ecs/entity/archetype_data_page.hpp"
 
 #include <cstddef>
-#include <new>
+#include <iterator>
 #include <utility>
 
-#include "mirage_base/buffer/aligned_buffer.hpp"
 #include "mirage_base/define/check.hpp"
 #include "mirage_base/wrap/box.hpp"
 #include "mirage_ecs/component/component_bundle.hpp"
@@ -210,6 +209,15 @@ Iterator::Iterator(Courier& courier)
     : descriptor_(courier.descriptor().raw_ptr()),
       view_ptr_(courier.buffer().ptr()) {}
 
+Iterator::Iterator(std::nullptr_t) {}
+
+Iterator& Iterator::operator=(std::nullptr_t) {
+  // constexpr bool x = std::contiguous_iterator<Iterator>;
+  descriptor_ = nullptr;
+  view_ptr_ = nullptr;
+  return *this;
+}
+
 Iterator::operator bool() const { return !is_null(); }
 
 bool Iterator::is_null() const {
@@ -238,7 +246,7 @@ Courier::~Courier() {
   if (is_null()) {
     return;
   }
-  size_t size = buffer_.size() / descriptor_->size();
+  size_t size = this->size();
   std::byte* dest = buffer_.ptr();
   for (size_t i = 0; i < size; ++i) {
     for (const auto& entry : descriptor_->offset_map()) {
@@ -256,9 +264,19 @@ bool Courier::is_null() const { return descriptor_ == nullptr; }
 
 ConstIterator Courier::begin() const { return ConstIterator(*this); }
 
+ConstIterator Courier::end() const { return begin() + size(); }
+
 Iterator Courier::begin() { return Iterator(*this); }
 
+Iterator Courier::end() { return begin() + size(); }
+
 const SharedDescriptor& Courier::descriptor() const { return descriptor_; }
+
+const Buffer& Courier::buffer() const { return buffer_; }
+
+Buffer& Courier::buffer() { return buffer_; }
+
+size_t Courier::size() const { return buffer_.size() / descriptor_->size(); }
 
 Courier::Courier(ArchetypeDataPage& page,
                  std::initializer_list<size_t> index_list)
