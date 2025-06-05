@@ -15,9 +15,9 @@ using namespace mirage::ecs;
 
 using SharedDescriptor = ArchetypeDataPage::SharedDescriptor;
 using Buffer = ArchetypeDataPage::Buffer;
-using ConstView = ArchetypeDataPage::ConstView;
-using View = ArchetypeDataPage::View;
-using Slice = ArchetypeDataPage::Slice;
+using ConstIterator = ArchetypeDataPage::ConstIterator;
+using Iterator = ArchetypeDataPage::Iterator;
+using Courier = ArchetypeDataPage::Courier;
 
 ArchetypeDataPage::ArchetypeDataPage(const size_t buffer_size,
                                      const size_t align)
@@ -76,54 +76,60 @@ bool ArchetypeDataPage::Push(ComponentBundle& bundle) {
   return true;
 }
 
-bool ArchetypeDataPage::Push(Slice&& slice) {
+bool ArchetypeDataPage::Push(Courier&& slice) {
   MIRAGE_DCHECK(is_initialized());
   if (size_ >= capacity_) {
     return false;
   }
-  std::byte* dest = buffer_.ptr() + size_ * descriptor_->size();
-  for (const auto& entry : descriptor_->offset_map()) {
-    const auto component_id = entry.key();
-    const auto offset = entry.val();
+  for (auto& iter : slice) {
+    std::byte* dest = buffer_.ptr() + size_ * descriptor_->size();
+    size_ += 1;
+    for (const auto& entry : descriptor_->offset_map()) {
+      const auto component_id = entry.key();
+      const auto offset = entry.val();
 
-    void* component = slice.view().TryGet(component_id);
-    MIRAGE_DCHECK(component != nullptr);
-    component_id.move_func()(component, dest + offset);
+      void* component = iter.TryGet(component_id);
+      MIRAGE_DCHECK(component != nullptr);
+      component_id.move_func()(component, dest + offset);
+    }
   }
-  size_ += 1;
   return true;
 }
 
-Slice ArchetypeDataPage::SwapPop(const size_t index) {
-  MIRAGE_DCHECK(is_initialized());
-  MIRAGE_DCHECK(index < size_);
-  auto rv = Slice(*this, index);
-  size_ -= 1;
-  std::byte* last = buffer_.ptr() + size_ * descriptor_->size();
-  std::byte* dest = buffer_.ptr() + index * descriptor_->size();
-  for (const auto& entry : descriptor_->offset_map()) {
-    const auto component_id = entry.key();
-    const auto offset = entry.val();
+Courier ArchetypeDataPage::SwapPop(const size_t index) {
+  return SwapPopMany({index});
+}
 
-    component_id.move_func()(last + offset, dest + offset);
-    component_id.destruct_func()(last + offset);
-  }
+Courier ArchetypeDataPage::SwapPopMany(
+    const std::initializer_list<size_t> index_list) {
+  MIRAGE_DCHECK(is_initialized());
+  MIRAGE_DCHECK(index_list.size() > 0);
+  auto rv = Courier(*this, index_list);
+  SwapRemoveMany(index_list);
   return rv;
 }
 
 void ArchetypeDataPage::SwapRemove(const size_t index) {
-  MIRAGE_DCHECK(is_initialized());
-  MIRAGE_DCHECK(index < size_);
-  size_ -= 1;
-  std::byte* last = buffer_.ptr() + size_ * descriptor_->size();
-  std::byte* dest = buffer_.ptr() + index * descriptor_->size();
-  for (const auto& entry : descriptor_->offset_map()) {
-    const auto component_id = entry.key();
-    const auto offset = entry.val();
+  return SwapRemoveMany({index});
+}
 
-    component_id.destruct_func()(dest + offset);
-    component_id.move_func()(last + offset, dest + offset);
-    component_id.destruct_func()(last + offset);
+void ArchetypeDataPage::SwapRemoveMany(
+    const std::initializer_list<size_t> index_list) {
+  MIRAGE_DCHECK(is_initialized());
+  MIRAGE_DCHECK(index_list.size() > 0);
+  for (const size_t index : index_list) {
+    MIRAGE_DCHECK(index < size_);
+    size_ -= 1;
+    std::byte* last = buffer_.ptr() + size_ * descriptor_->size();
+    std::byte* dest = buffer_.ptr() + index * descriptor_->size();
+    for (const auto& entry : descriptor_->offset_map()) {
+      const auto component_id = entry.key();
+      const auto offset = entry.val();
+
+      component_id.destruct_func()(dest + offset);
+      component_id.move_func()(last + offset, dest + offset);
+      component_id.destruct_func()(last + offset);
+    }
   }
 }
 
@@ -141,13 +147,13 @@ void ArchetypeDataPage::Clear() {
   }
 }
 
-ConstView ArchetypeDataPage::operator[](size_t index) const {
+ConstIterator ArchetypeDataPage::operator[](size_t index) const {
   MIRAGE_DCHECK(is_initialized());
   MIRAGE_DCHECK(index < size_);
   return {*this, index};
 }
 
-View ArchetypeDataPage::operator[](size_t index) {
+Iterator ArchetypeDataPage::operator[](size_t index) {
   MIRAGE_DCHECK(is_initialized());
   MIRAGE_DCHECK(index < size_);
   return {*this, index};
@@ -169,46 +175,48 @@ const Buffer& ArchetypeDataPage::buffer() const { return buffer_; }
 
 Buffer& ArchetypeDataPage::buffer() { return buffer_; }
 
-ConstView::ConstView(const ArchetypeDataPage& page, const size_t index)
+ConstIterator::ConstIterator(const ArchetypeDataPage& page, const size_t index)
     : descriptor_(page.descriptor().raw_ptr()),
       view_ptr_(page.buffer().ptr() + index * page.descriptor_->size()) {
   MIRAGE_DCHECK(index < page.size());
 }
 
-ConstView::ConstView(const Slice& slice)
-    : descriptor_(slice.descriptor().raw_ptr()), view_ptr_(slice.slice_ptr()) {}
+ConstIterator::ConstIterator(const Courier& courier)
+    : descriptor_(courier.descriptor().raw_ptr()),
+      view_ptr_(courier.buffer().ptr()) {}
 
-ConstView::operator bool() const { return !is_null(); }
+ConstIterator::operator bool() const { return !is_null(); }
 
-bool ConstView::is_null() const {
+bool ConstIterator::is_null() const {
   return descriptor_ == nullptr || view_ptr_ == nullptr;
 }
 
-const void* ConstView::TryGet(ComponentId id) const {
+const void* ConstIterator::TryGet(ComponentId id) const {
   const auto& offset_map = descriptor_->offset_map();
-  auto iter = offset_map.TryFind(id);
+  const auto iter = offset_map.TryFind(id);
   if (iter == offset_map.end()) {
     return nullptr;
   }
   return view_ptr_ + iter->val();
 }
 
-View::View(ArchetypeDataPage& page, const size_t index)
+Iterator::Iterator(ArchetypeDataPage& page, const size_t index)
     : descriptor_(page.descriptor().raw_ptr()),
       view_ptr_(page.buffer().ptr() + index * page.descriptor_->size()) {
   MIRAGE_DCHECK(index < page.size());
 }
 
-View::View(Slice& slice)
-    : descriptor_(slice.descriptor().raw_ptr()), view_ptr_(slice.slice_ptr()) {}
+Iterator::Iterator(Courier& courier)
+    : descriptor_(courier.descriptor().raw_ptr()),
+      view_ptr_(courier.buffer().ptr()) {}
 
-View::operator bool() const { return !is_null(); }
+Iterator::operator bool() const { return !is_null(); }
 
-bool View::is_null() const {
+bool Iterator::is_null() const {
   return descriptor_ == nullptr || view_ptr_ == nullptr;
 }
 
-const void* View::TryGet(ComponentId id) const {
+const void* Iterator::TryGet(ComponentId id) const {
   const auto& offset_map = descriptor_->offset_map();
   auto iter = offset_map.TryFind(id);
   if (iter == offset_map.end()) {
@@ -217,7 +225,7 @@ const void* View::TryGet(ComponentId id) const {
   return view_ptr_ + iter->val();
 }
 
-void* View::TryGet(ComponentId id) {
+void* Iterator::TryGet(ComponentId id) {
   const auto& offset_map = descriptor_->offset_map();
   auto iter = offset_map.TryFind(id);
   if (iter == offset_map.end()) {
@@ -226,59 +234,45 @@ void* View::TryGet(ComponentId id) {
   return view_ptr_ + iter->val();
 }
 
-Slice::Slice(ArchetypeDataPage& page, size_t index)
-    : descriptor_(page.descriptor_.Clone()),
-      slice_ptr_(static_cast<std::byte*>(::operator new[](
-          descriptor_->size(), std::align_val_t{descriptor_->align()}))) {
-  std::byte* target = page.buffer().ptr() + index * descriptor_->size();
-  for (const auto& entry : descriptor_->offset_map()) {
-    const auto component_id = entry.key();
-    const auto offset = entry.val();
-    component_id.move_func()(target + offset, slice_ptr_ + offset);
-  }
-}
-
-Slice::~Slice() {
+Courier::~Courier() {
   if (is_null()) {
     return;
   }
-  for (const auto& entry : descriptor_->offset_map()) {
-    const auto component_id = entry.key();
-    const auto offset = entry.val();
-    component_id.destruct_func()(slice_ptr_ + offset);  // NOLINT
+  size_t size = buffer_.size() / descriptor_->size();
+  std::byte* dest = buffer_.ptr();
+  for (size_t i = 0; i < size; ++i) {
+    for (const auto& entry : descriptor_->offset_map()) {
+      const auto component_id = entry.key();
+      const auto offset = entry.val();
+      component_id.destruct_func()(dest + offset);
+    }
+    dest += i * descriptor_->size();
   }
-  ::operator delete[](slice_ptr_, std::align_val_t{descriptor_->align()});
-  descriptor_ = nullptr;
-  slice_ptr_ = nullptr;
 }
 
-Slice::Slice(Slice&& other) noexcept
-    : descriptor_(std::move(other.descriptor_)), slice_ptr_(other.slice_ptr_) {
-  other.descriptor_ = nullptr;
-  other.slice_ptr_ = nullptr;
-}
+Courier::operator bool() const { return !is_null(); }
 
-Slice& Slice::operator=(Slice&& other) noexcept {
-  if (this == &other) {
-    return *this;
+bool Courier::is_null() const { return descriptor_ == nullptr; }
+
+ConstIterator Courier::begin() const { return ConstIterator(*this); }
+
+Iterator Courier::begin() { return Iterator(*this); }
+
+const SharedDescriptor& Courier::descriptor() const { return descriptor_; }
+
+Courier::Courier(ArchetypeDataPage& page,
+                 std::initializer_list<size_t> index_list)
+    : descriptor_(page.descriptor_.Clone()),
+      buffer_(Buffer(descriptor_->size() * index_list.size(),
+                     descriptor_->align())) {
+  std::byte* dest = buffer_.ptr();
+  for (size_t index : index_list) {
+    std::byte* target = page.buffer().ptr() + index * descriptor_->size();
+    for (const auto& entry : descriptor_->offset_map()) {
+      const auto component_id = entry.key();
+      const auto offset = entry.val();
+      component_id.move_func()(target + offset, dest + offset);
+    }
+    dest += descriptor_->size();
   }
-  this->~Slice();
-  new (this) Slice(std::move(other));
-  return *this;
 }
-
-Slice::operator bool() const { return !is_null(); }
-
-bool Slice::is_null() const {
-  return descriptor_ == nullptr || slice_ptr_ == nullptr;
-}
-
-ConstView Slice::view() const { return ConstView(*this); }
-
-View Slice::view() { return View(*this); }
-
-const SharedDescriptor& Slice::descriptor() const { return descriptor_; }
-
-const std::byte* Slice::slice_ptr() const { return slice_ptr_; }
-
-std::byte* Slice::slice_ptr() { return slice_ptr_; }

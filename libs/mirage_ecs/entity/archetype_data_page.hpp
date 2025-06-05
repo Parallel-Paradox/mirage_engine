@@ -1,6 +1,10 @@
 #ifndef MIRAGE_ECS_ENTITY_ARCHETYPE_DATA_PAGE
 #define MIRAGE_ECS_ENTITY_ARCHETYPE_DATA_PAGE
 
+#include <compare>
+#include <initializer_list>
+#include <iterator>
+
 #include "mirage_base/auto_ptr/shared.hpp"
 #include "mirage_base/buffer/aligned_buffer.hpp"
 #include "mirage_ecs/component/component_bundle.hpp"
@@ -15,9 +19,9 @@ class ArchetypeDataPage {
   using SharedDescriptor = base::SharedLocal<ArchetypeDescriptor>;
   using Buffer = base::AlignedBuffer;
 
-  class ConstView;
-  class View;
-  class Slice;
+  class ConstIterator;
+  class Iterator;
+  class Courier;
 
   ArchetypeDataPage() = delete;
   MIRAGE_ECS ArchetypeDataPage(size_t buffer_size, size_t align);
@@ -34,14 +38,21 @@ class ArchetypeDataPage {
   MIRAGE_ECS void Reset();
 
   [[nodiscard]] MIRAGE_ECS bool Push(ComponentBundle& bundle);
-  [[nodiscard]] MIRAGE_ECS bool Push(Slice&& slice);
-  MIRAGE_ECS Slice SwapPop(size_t index);
+  [[nodiscard]] MIRAGE_ECS bool Push(Courier&& slice);
+  MIRAGE_ECS Courier SwapPop(size_t index);
+  MIRAGE_ECS Courier SwapPopMany(std::initializer_list<size_t> index_list);
   MIRAGE_ECS void SwapRemove(size_t index);
+  MIRAGE_ECS void SwapRemoveMany(std::initializer_list<size_t> index_list);
 
   MIRAGE_ECS void Clear();
 
-  MIRAGE_ECS ConstView operator[](size_t index) const;
-  MIRAGE_ECS View operator[](size_t index);
+  MIRAGE_ECS ConstIterator operator[](size_t index) const;
+  MIRAGE_ECS Iterator operator[](size_t index);
+
+  [[nodiscard]] MIRAGE_ECS ConstIterator begin() const;
+  [[nodiscard]] MIRAGE_ECS ConstIterator end() const;
+  MIRAGE_ECS Iterator begin();
+  MIRAGE_ECS Iterator end();
 
   [[nodiscard]] MIRAGE_ECS bool is_initialized() const;
 
@@ -50,7 +61,7 @@ class ArchetypeDataPage {
   [[nodiscard]] MIRAGE_ECS size_t size() const;
 
   [[nodiscard]] MIRAGE_ECS const Buffer& buffer() const;
-  [[nodiscard]] MIRAGE_ECS Buffer& buffer();
+  MIRAGE_ECS Buffer& buffer();
 
  private:
   SharedDescriptor descriptor_{nullptr};
@@ -60,18 +71,46 @@ class ArchetypeDataPage {
   Buffer buffer_;
 };
 
-class MIRAGE_ECS ArchetypeDataPage::ConstView {
+class MIRAGE_ECS ArchetypeDataPage::ConstIterator {
  public:
-  ConstView() = default;
-  ConstView(const ArchetypeDataPage& page, size_t index);
-  explicit ConstView(const Slice& slice);
-  ~ConstView() = default;
+  using iterator_concept = std::contiguous_iterator_tag;
+  using iterator_category = std::random_access_iterator_tag;
+  using iterator_type = ConstIterator;
+  using difference_type = ptrdiff_t;
+  using value_type = ConstIterator;
+  using element_type = ConstIterator;
+  using pointer = ConstIterator*;
+  using reference = ConstIterator&;
 
-  ConstView(const ConstView&) = default;
-  ConstView& operator=(const ConstView&) = default;
+  ConstIterator() = default;
+  ConstIterator(const ArchetypeDataPage& page, size_t index);
+  explicit ConstIterator(const Courier& courier);
+  ~ConstIterator() = default;
 
-  ConstView(ConstView&&) noexcept = default;
-  ConstView& operator=(ConstView&&) noexcept = default;
+  ConstIterator(const ConstIterator&) = default;
+  ConstIterator& operator=(const ConstIterator&) = default;
+
+  ConstIterator(ConstIterator&&) noexcept = default;
+  ConstIterator& operator=(ConstIterator&&) noexcept = default;
+
+  ConstIterator(std::nullptr_t);  // NOLINT: Convert from nullptr
+  ConstIterator& operator=(std::nullptr_t);
+
+  reference operator*() const;
+  pointer operator->() const;
+  reference operator[](difference_type diff) const;
+  iterator_type& operator++();
+  iterator_type operator++(int);
+  iterator_type& operator--();
+  iterator_type operator--(int);
+  iterator_type& operator+=(difference_type diff);
+  iterator_type operator+(difference_type diff) const;
+  friend iterator_type operator+(ptrdiff_t diff, const iterator_type& iter);
+  iterator_type& operator-=(difference_type diff);
+  iterator_type operator-(difference_type diff) const;
+  difference_type operator-(const iterator_type& other) const;
+  std::partial_ordering operator<=>(const iterator_type& other) const;
+  bool operator==(const iterator_type& other) const;
 
   explicit operator bool() const;
   [[nodiscard]] bool is_null() const;
@@ -93,18 +132,46 @@ class MIRAGE_ECS ArchetypeDataPage::ConstView {
   const std::byte* view_ptr_{nullptr};
 };
 
-class MIRAGE_ECS ArchetypeDataPage::View {
+class MIRAGE_ECS ArchetypeDataPage::Iterator {
  public:
-  View() = default;
-  View(ArchetypeDataPage& page, size_t index);
-  explicit View(Slice& slice);
-  ~View() = default;
+  using iterator_concept = std::contiguous_iterator_tag;
+  using iterator_category = std::random_access_iterator_tag;
+  using iterator_type = Iterator;
+  using difference_type = ptrdiff_t;
+  using value_type = Iterator;
+  using element_type = Iterator;
+  using pointer = Iterator*;
+  using reference = Iterator&;
 
-  View(const View&) = default;
-  View& operator=(const View&) = default;
+  Iterator() = default;
+  Iterator(ArchetypeDataPage& page, size_t index);
+  explicit Iterator(Courier& courier);
+  ~Iterator() = default;
 
-  View(View&&) noexcept = default;
-  View& operator=(View&&) noexcept = default;
+  Iterator(const Iterator&) = default;
+  Iterator& operator=(const Iterator&) = default;
+
+  Iterator(Iterator&&) noexcept = default;
+  Iterator& operator=(Iterator&&) noexcept = default;
+
+  Iterator(std::nullptr_t);  // NOLINT: Convert from nullptr
+  Iterator& operator=(std::nullptr_t);
+
+  reference operator*() const;
+  pointer operator->() const;
+  reference operator[](difference_type diff) const;
+  iterator_type& operator++();
+  iterator_type operator++(int);
+  iterator_type& operator--();
+  iterator_type operator--(int);
+  iterator_type& operator+=(difference_type diff);
+  iterator_type operator+(difference_type diff) const;
+  friend iterator_type operator+(ptrdiff_t diff, const iterator_type& iter);
+  iterator_type& operator-=(difference_type diff);
+  iterator_type operator-(difference_type diff) const;
+  difference_type operator-(const iterator_type& other) const;
+  std::partial_ordering operator<=>(const iterator_type& other) const;
+  bool operator==(const iterator_type& other) const;
 
   explicit operator bool() const;
   [[nodiscard]] bool is_null() const;
@@ -137,31 +204,37 @@ class MIRAGE_ECS ArchetypeDataPage::View {
   std::byte* view_ptr_{nullptr};
 };
 
-class ArchetypeDataPage::Slice {
+class ArchetypeDataPage::Courier {
  public:
-  MIRAGE_ECS Slice() = default;
-  MIRAGE_ECS Slice(ArchetypeDataPage& page, size_t index);
-  MIRAGE_ECS ~Slice();
+  Courier() = delete;
+  MIRAGE_ECS ~Courier();
 
-  Slice(const Slice&) = delete;
-  Slice& operator=(const Slice&) = delete;
+  Courier(const Courier&) = delete;
+  Courier& operator=(const Courier&) = delete;
 
-  MIRAGE_ECS Slice(Slice&& other) noexcept;
-  MIRAGE_ECS Slice& operator=(Slice&& other) noexcept;
+  MIRAGE_ECS Courier(Courier&& other) noexcept = default;
+  MIRAGE_ECS Courier& operator=(Courier&& other) noexcept = default;
 
   explicit operator bool() const;
   [[nodiscard]] bool is_null() const;
 
-  [[nodiscard]] MIRAGE_ECS ConstView view() const;
-  [[nodiscard]] MIRAGE_ECS View view();
+  [[nodiscard]] MIRAGE_ECS ConstIterator begin() const;
+  [[nodiscard]] MIRAGE_ECS ConstIterator end() const;
+  MIRAGE_ECS Iterator begin();
+  MIRAGE_ECS Iterator end();
 
   [[nodiscard]] MIRAGE_ECS const SharedDescriptor& descriptor() const;
-  [[nodiscard]] MIRAGE_ECS const std::byte* slice_ptr() const;
-  [[nodiscard]] MIRAGE_ECS std::byte* slice_ptr();
+
+  [[nodiscard]] MIRAGE_ECS const Buffer& buffer() const;
+  MIRAGE_ECS Buffer& buffer();
 
  private:
+  friend class ArchetypeDataPage;
+  MIRAGE_ECS Courier(ArchetypeDataPage& page,
+                     std::initializer_list<size_t> index_list);
+
   SharedDescriptor descriptor_{nullptr};
-  std::byte* slice_ptr_{nullptr};
+  Buffer buffer_;
 };
 
 }  // namespace mirage::ecs
