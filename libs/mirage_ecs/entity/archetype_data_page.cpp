@@ -14,7 +14,9 @@ using namespace mirage::ecs;
 
 using SharedDescriptor = ArchetypeDataPage::SharedDescriptor;
 using Buffer = ArchetypeDataPage::Buffer;
+using ConstView = ArchetypeDataPage::ConstView;
 using ConstIterator = ArchetypeDataPage::ConstIterator;
+using View = ArchetypeDataPage::View;
 using Iterator = ArchetypeDataPage::Iterator;
 using Courier = ArchetypeDataPage::Courier;
 
@@ -146,16 +148,16 @@ void ArchetypeDataPage::Clear() {
   }
 }
 
-ConstIterator ArchetypeDataPage::operator[](size_t index) const {
+ConstView ArchetypeDataPage::operator[](size_t index) const {
   MIRAGE_DCHECK(is_initialized());
   MIRAGE_DCHECK(index < size_);
-  return {*this, index};
+  return {descriptor_.raw_ptr(), buffer_.ptr() + index * descriptor_->size()};
 }
 
-Iterator ArchetypeDataPage::operator[](size_t index) {
+View ArchetypeDataPage::operator[](size_t index) {
   MIRAGE_DCHECK(is_initialized());
   MIRAGE_DCHECK(index < size_);
-  return {*this, index};
+  return {descriptor_.raw_ptr(), buffer_.ptr() + index * descriptor_->size()};
 }
 
 bool ArchetypeDataPage::is_initialized() const {
@@ -174,23 +176,7 @@ const Buffer& ArchetypeDataPage::buffer() const { return buffer_; }
 
 Buffer& ArchetypeDataPage::buffer() { return buffer_; }
 
-ConstIterator::ConstIterator(const ArchetypeDataPage& page, const size_t index)
-    : descriptor_(page.descriptor().raw_ptr()),
-      view_ptr_(page.buffer().ptr() + index * page.descriptor_->size()) {
-  MIRAGE_DCHECK(index < page.size());
-}
-
-ConstIterator::ConstIterator(const Courier& courier)
-    : descriptor_(courier.descriptor().raw_ptr()),
-      view_ptr_(courier.buffer().ptr()) {}
-
-ConstIterator::operator bool() const { return !is_null(); }
-
-bool ConstIterator::is_null() const {
-  return descriptor_ == nullptr || view_ptr_ == nullptr;
-}
-
-const void* ConstIterator::TryGet(ComponentId id) const {
+const void* ConstView::TryGet(ComponentId id) const {
   const auto& offset_map = descriptor_->offset_map();
   const auto iter = offset_map.TryFind(id);
   if (iter == offset_map.end()) {
@@ -199,47 +185,54 @@ const void* ConstIterator::TryGet(ComponentId id) const {
   return view_ptr_ + iter->val();
 }
 
-Iterator::Iterator(ArchetypeDataPage& page, const size_t index)
-    : descriptor_(page.descriptor().raw_ptr()),
-      view_ptr_(page.buffer().ptr() + index * page.descriptor_->size()) {
-  MIRAGE_DCHECK(index < page.size());
+ConstIterator::ConstIterator(const ArchetypeDataPage& page)
+    : view_(page.descriptor().raw_ptr(), page.buffer().ptr()) {}
+
+ConstIterator::ConstIterator(const Courier& courier)
+    : view_(courier.descriptor().raw_ptr(), courier.buffer().ptr()) {}
+
+ConstIterator::operator bool() const { return !is_null(); }
+
+bool ConstIterator::is_null() const {
+  return view_.descriptor_ == nullptr || view_.view_ptr_ == nullptr;
 }
 
+const void* View::TryGet(ComponentId id) const {
+  const auto& offset_map = descriptor_->offset_map();
+  auto iter = offset_map.TryFind(id);
+  if (iter == offset_map.end()) {
+    return nullptr;
+  }
+  return view_ptr_ + iter->val();
+}
+
+void* View::TryGet(ComponentId id) {
+  const auto& offset_map = descriptor_->offset_map();
+  auto iter = offset_map.TryFind(id);
+  if (iter == offset_map.end()) {
+    return nullptr;
+  }
+  return view_ptr_ + iter->val();
+}
+
+Iterator::Iterator(ArchetypeDataPage& page)
+    : view_(page.descriptor().raw_ptr(), page.buffer().ptr()) {}
+
 Iterator::Iterator(Courier& courier)
-    : descriptor_(courier.descriptor().raw_ptr()),
-      view_ptr_(courier.buffer().ptr()) {}
+    : view_(courier.descriptor().raw_ptr(), courier.buffer().ptr()) {}
 
 Iterator::Iterator(std::nullptr_t) {}
 
 Iterator& Iterator::operator=(std::nullptr_t) {
-  // constexpr bool x = std::contiguous_iterator<Iterator>;
-  descriptor_ = nullptr;
-  view_ptr_ = nullptr;
+  view_.descriptor_ = nullptr;
+  view_.view_ptr_ = nullptr;
   return *this;
 }
 
 Iterator::operator bool() const { return !is_null(); }
 
 bool Iterator::is_null() const {
-  return descriptor_ == nullptr || view_ptr_ == nullptr;
-}
-
-const void* Iterator::TryGet(ComponentId id) const {
-  const auto& offset_map = descriptor_->offset_map();
-  auto iter = offset_map.TryFind(id);
-  if (iter == offset_map.end()) {
-    return nullptr;
-  }
-  return view_ptr_ + iter->val();
-}
-
-void* Iterator::TryGet(ComponentId id) {
-  const auto& offset_map = descriptor_->offset_map();
-  auto iter = offset_map.TryFind(id);
-  if (iter == offset_map.end()) {
-    return nullptr;
-  }
-  return view_ptr_ + iter->val();
+  return view_.descriptor_ == nullptr || view_.view_ptr_ == nullptr;
 }
 
 Courier::~Courier() {
