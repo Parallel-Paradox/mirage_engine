@@ -13,8 +13,8 @@ AlignedBuffer::AlignedBuffer(size_t size, size_t align)
           ::operator new[](size, std::align_val_t{align}))),
       size_(size),
       align_(align) {
-  // Check if the alignment is a power of 2.
   MIRAGE_DCHECK(size > 0);
+  // Check if the alignment is a power of 2.
   MIRAGE_DCHECK((align != 0 && (align & (align - 1)) == 0));
 }
 

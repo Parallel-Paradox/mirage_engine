@@ -2,7 +2,6 @@
 
 #include <cstddef>
 #include <iterator>
-#include <utility>
 
 #include "mirage_base/define/check.hpp"
 #include "mirage_base/wrap/box.hpp"
@@ -82,14 +81,14 @@ bool ArchetypeDataPage::Push(Courier&& slice) {
   if (size_ >= capacity_) {
     return false;
   }
-  for (auto& iter : slice) {
+  for (auto view : slice) {
     std::byte* dest = buffer_.ptr() + size_ * descriptor_->size();
     size_ += 1;
     for (const auto& entry : descriptor_->offset_map()) {
       const auto component_id = entry.key();
       const auto offset = entry.val();
 
-      void* component = iter.TryGet(component_id);
+      void* component = view.TryGet(component_id);
       MIRAGE_DCHECK(component != nullptr);
       component_id.move_func()(component, dest + offset);
     }
@@ -148,13 +147,13 @@ void ArchetypeDataPage::Clear() {
   }
 }
 
-ConstView ArchetypeDataPage::operator[](size_t index) const {
+ConstView ArchetypeDataPage::operator[](const size_t index) const {
   MIRAGE_DCHECK(is_initialized());
   MIRAGE_DCHECK(index < size_);
   return {descriptor_.raw_ptr(), buffer_.ptr() + index * descriptor_->size()};
 }
 
-View ArchetypeDataPage::operator[](size_t index) {
+View ArchetypeDataPage::operator[](const size_t index) {
   MIRAGE_DCHECK(is_initialized());
   MIRAGE_DCHECK(index < size_);
   return {descriptor_.raw_ptr(), buffer_.ptr() + index * descriptor_->size()};
@@ -176,7 +175,7 @@ const Buffer& ArchetypeDataPage::buffer() const { return buffer_; }
 
 Buffer& ArchetypeDataPage::buffer() { return buffer_; }
 
-const void* ConstView::TryGet(ComponentId id) const {
+const void* ConstView::TryGet(const ComponentId id) const {
   const auto& offset_map = descriptor_->offset_map();
   const auto iter = offset_map.TryFind(id);
   if (iter == offset_map.end()) {
@@ -191,6 +190,95 @@ ConstIterator::ConstIterator(const ArchetypeDataPage& page)
 ConstIterator::ConstIterator(const Courier& courier)
     : view_(courier.descriptor().raw_ptr(), courier.buffer().ptr()) {}
 
+ConstIterator::ConstIterator(std::nullptr_t) {}
+
+ConstIterator& ConstIterator::operator=(std::nullptr_t) {
+  view_.descriptor_ = nullptr;
+  view_.view_ptr_ = nullptr;
+  return *this;
+}
+
+ConstIterator::reference ConstIterator::operator*() const { return view_; }
+
+ConstIterator::pointer ConstIterator::operator->() const { return view_; }
+
+ConstIterator::reference ConstIterator::operator[](
+    const difference_type diff) const {
+  ConstView rv = view_;
+  rv.view_ptr_ += diff * rv.descriptor_->size();
+  return rv;
+}
+
+ConstIterator::iterator_type& ConstIterator::operator++() {
+  view_.view_ptr_ += view_.descriptor_->size();
+  return *this;
+}
+
+ConstIterator::iterator_type ConstIterator::operator++(int) {
+  const iterator_type rv = *this;
+  ++(*this);
+  return rv;
+}
+
+ConstIterator::iterator_type& ConstIterator::operator--() {
+  view_.view_ptr_ -= view_.descriptor_->size();
+  return *this;
+}
+
+ConstIterator::iterator_type ConstIterator::operator--(int) {
+  const iterator_type rv = *this;
+  --(*this);
+  return rv;
+}
+
+ConstIterator::iterator_type& ConstIterator::operator+=(
+    const difference_type diff) {
+  view_.view_ptr_ += diff * view_.descriptor_->size();
+  return *this;
+}
+
+ConstIterator::iterator_type ConstIterator::operator+(
+    const difference_type diff) const {
+  iterator_type rv = *this;
+  rv += diff;
+  return rv;
+}
+
+ConstIterator::iterator_type operator+(const ptrdiff_t diff,
+                                       const ConstIterator& iter) {
+  return iter + diff;
+}
+
+ConstIterator::iterator_type& ConstIterator::operator-=(
+    const difference_type diff) {
+  view_.view_ptr_ -= diff * view_.descriptor_->size();
+  return *this;
+}
+
+ConstIterator::iterator_type ConstIterator::operator-(
+    difference_type diff) const {
+  iterator_type rv = *this;
+  rv -= diff;
+  return rv;
+}
+
+ConstIterator::difference_type ConstIterator::operator-(
+    const iterator_type& other) const {
+  MIRAGE_DCHECK(view_.descriptor_ == other.view_.descriptor_);
+  return (view_.view_ptr_ - other.view_.view_ptr_) / view_.descriptor_->size();
+}
+
+std::strong_ordering ConstIterator::operator<=>(
+    const iterator_type& other) const {
+  MIRAGE_DCHECK(view_.descriptor_ == other.view_.descriptor_);
+  return view_.view_ptr_ <=> other.view_.view_ptr_;
+}
+
+bool ConstIterator::operator==(const iterator_type& other) const {
+  return view_.descriptor_ == other.view_.descriptor_ &&
+         view_.view_ptr_ == other.view_.view_ptr_;
+}
+
 ConstIterator::operator bool() const { return !is_null(); }
 
 bool ConstIterator::is_null() const {
@@ -199,16 +287,16 @@ bool ConstIterator::is_null() const {
 
 const void* View::TryGet(ComponentId id) const {
   const auto& offset_map = descriptor_->offset_map();
-  auto iter = offset_map.TryFind(id);
+  const auto iter = offset_map.TryFind(id);
   if (iter == offset_map.end()) {
     return nullptr;
   }
   return view_ptr_ + iter->val();
 }
 
-void* View::TryGet(ComponentId id) {
+void* View::TryGet(const ComponentId id) {
   const auto& offset_map = descriptor_->offset_map();
-  auto iter = offset_map.TryFind(id);
+  const auto iter = offset_map.TryFind(id);
   if (iter == offset_map.end()) {
     return nullptr;
   }
@@ -227,6 +315,80 @@ Iterator& Iterator::operator=(std::nullptr_t) {
   view_.descriptor_ = nullptr;
   view_.view_ptr_ = nullptr;
   return *this;
+}
+
+Iterator::reference Iterator::operator*() const { return view_; }
+
+Iterator::pointer Iterator::operator->() const { return view_; }
+
+Iterator::reference Iterator::operator[](difference_type diff) const {
+  View rv = view_;
+  rv.view_ptr_ += diff * rv.descriptor_->size();
+  return rv;
+}
+
+Iterator::iterator_type& Iterator::operator++() {
+  view_.view_ptr_ += view_.descriptor_->size();
+  return *this;
+}
+
+Iterator::iterator_type Iterator::operator++(int) {
+  iterator_type rv = *this;
+  ++(*this);
+  return rv;
+}
+
+Iterator::iterator_type& Iterator::operator--() {
+  view_.view_ptr_ -= view_.descriptor_->size();
+  return *this;
+}
+
+Iterator::iterator_type Iterator::operator--(int) {
+  iterator_type rv = *this;
+  --(*this);
+  return rv;
+}
+
+Iterator::iterator_type& Iterator::operator+=(difference_type diff) {
+  view_.view_ptr_ += diff * view_.descriptor_->size();
+  return *this;
+}
+
+Iterator::iterator_type Iterator::operator+(difference_type diff) const {
+  iterator_type rv = *this;
+  rv += diff;
+  return rv;
+}
+
+Iterator::iterator_type operator+(ptrdiff_t diff, const Iterator& iter) {
+  return iter + diff;
+}
+
+Iterator::iterator_type& Iterator::operator-=(difference_type diff) {
+  view_.view_ptr_ -= diff * view_.descriptor_->size();
+  return *this;
+}
+
+Iterator::iterator_type Iterator::operator-(difference_type diff) const {
+  iterator_type rv = *this;
+  rv -= diff;
+  return rv;
+}
+
+Iterator::difference_type Iterator::operator-(
+    const iterator_type& other) const {
+  MIRAGE_DCHECK(view_.descriptor_ == other.view_.descriptor_);
+  return (view_.view_ptr_ - other.view_.view_ptr_) / view_.descriptor_->size();
+}
+
+std::strong_ordering Iterator::operator<=>(const iterator_type& other) const {
+  MIRAGE_DCHECK(view_.descriptor_ == other.view_.descriptor_);
+  return view_.view_ptr_ <=> other.view_.view_ptr_;
+}
+
+bool Iterator::operator==(const iterator_type& other) const {
+  return view_.descriptor_ == other.view_.descriptor_ &&
+         view_.view_ptr_ == other.view_.view_ptr_;
 }
 
 Iterator::operator bool() const { return !is_null(); }
@@ -272,12 +434,12 @@ Buffer& Courier::buffer() { return buffer_; }
 size_t Courier::size() const { return buffer_.size() / descriptor_->size(); }
 
 Courier::Courier(ArchetypeDataPage& page,
-                 std::initializer_list<size_t> index_list)
+                 const std::initializer_list<size_t> index_list)
     : descriptor_(page.descriptor_.Clone()),
       buffer_(Buffer(descriptor_->size() * index_list.size(),
                      descriptor_->align())) {
   std::byte* dest = buffer_.ptr();
-  for (size_t index : index_list) {
+  for (const size_t index : index_list) {
     std::byte* target = page.buffer().ptr() + index * descriptor_->size();
     for (const auto& entry : descriptor_->offset_map()) {
       const auto component_id = entry.key();

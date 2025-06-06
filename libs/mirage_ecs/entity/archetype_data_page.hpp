@@ -108,17 +108,15 @@ class MIRAGE_ECS ArchetypeDataPage::ConstView {
 
 class MIRAGE_ECS ArchetypeDataPage::ConstIterator {
  public:
-  using iterator_concept = std::contiguous_iterator_tag;
-  using iterator_category = std::random_access_iterator_tag;
+  using iterator_concept = std::random_access_iterator_tag;
   using iterator_type = ConstIterator;
   using difference_type = ptrdiff_t;
   using value_type = ConstView;
-  using element_type = ConstView;
-  using pointer = ConstView*;
-  using reference = ConstView&;
+  using pointer = ConstView;
+  using reference = ConstView;
 
   ConstIterator() = default;
-  ConstIterator(const ArchetypeDataPage& page);
+  explicit ConstIterator(const ArchetypeDataPage& page);
   explicit ConstIterator(const Courier& courier);
   ~ConstIterator() = default;
 
@@ -144,7 +142,7 @@ class MIRAGE_ECS ArchetypeDataPage::ConstIterator {
   iterator_type& operator-=(difference_type diff);
   iterator_type operator-(difference_type diff) const;
   difference_type operator-(const iterator_type& other) const;
-  std::partial_ordering operator<=>(const iterator_type& other) const;
+  std::strong_ordering operator<=>(const iterator_type& other) const;
   bool operator==(const iterator_type& other) const;
 
   explicit operator bool() const;
@@ -200,17 +198,15 @@ class MIRAGE_ECS ArchetypeDataPage::View {
 
 class MIRAGE_ECS ArchetypeDataPage::Iterator {
  public:
-  using iterator_concept = std::contiguous_iterator_tag;
-  using iterator_category = std::random_access_iterator_tag;
+  using iterator_concept = std::random_access_iterator_tag;
   using iterator_type = Iterator;
   using difference_type = ptrdiff_t;
   using value_type = View;
-  using element_type = View;
-  using pointer = View*;
-  using reference = View&;
+  using pointer = View;
+  using reference = View;
 
   Iterator() = default;
-  Iterator(ArchetypeDataPage& page);
+  explicit Iterator(ArchetypeDataPage& page);
   explicit Iterator(Courier& courier);
   ~Iterator() = default;
 
@@ -236,7 +232,7 @@ class MIRAGE_ECS ArchetypeDataPage::Iterator {
   iterator_type& operator-=(difference_type diff);
   iterator_type operator-(difference_type diff) const;
   difference_type operator-(const iterator_type& other) const;
-  std::partial_ordering operator<=>(const iterator_type& other) const;
+  std::strong_ordering operator<=>(const iterator_type& other) const;
   bool operator==(const iterator_type& other) const;
 
   explicit operator bool() const;
@@ -270,7 +266,7 @@ class ArchetypeDataPage::Courier {
   [[nodiscard]] MIRAGE_ECS const Buffer& buffer() const;
   MIRAGE_ECS Buffer& buffer();
 
-  MIRAGE_ECS size_t size() const;
+  [[nodiscard]] MIRAGE_ECS size_t size() const;
 
  private:
   friend class ArchetypeDataPage;
