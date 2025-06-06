@@ -6,8 +6,8 @@ using namespace mirage::ecs;
 Optional<Box<Component>> ComponentBundle::Add(Box<Component> component) {
   MIRAGE_DCHECK(component.is_valid());
 
-  auto kv_opt =
-      component_map_.Insert(component.type_id(), std::move(component));
+  TypeId type_id = component.type_id();
+  auto kv_opt = component_map_.Insert(type_id, std::move(component));
   if (!kv_opt.is_valid()) {
     return Optional<Box<Component>>::None();
   }
