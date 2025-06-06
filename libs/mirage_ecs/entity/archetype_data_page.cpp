@@ -1,12 +1,12 @@
 #include "mirage_ecs/entity/archetype_data_page.hpp"
 
 #include <cstddef>
-#include <iterator>
 
 #include "mirage_base/define/check.hpp"
 #include "mirage_base/wrap/box.hpp"
 #include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/component/component_id.hpp"
+#include "mirage_ecs/entity/archetype_descriptor.hpp"
 
 using namespace mirage::base;
 using namespace mirage::ecs;
@@ -184,6 +184,10 @@ const void* ConstView::TryGet(const ComponentId id) const {
   return view_ptr_ + iter->val();
 }
 
+ConstView::ConstView(const ArchetypeDescriptor* descriptor,
+                     const std::byte* view_ptr)
+    : descriptor_(descriptor), view_ptr_(view_ptr) {}
+
 ConstIterator::ConstIterator(const ArchetypeDataPage& page)
     : view_(page.descriptor().raw_ptr(), page.buffer().ptr()) {}
 
@@ -302,6 +306,9 @@ void* View::TryGet(const ComponentId id) {
   }
   return view_ptr_ + iter->val();
 }
+
+View::View(const ArchetypeDescriptor* descriptor, std::byte* view_ptr)
+    : descriptor_(descriptor), view_ptr_(view_ptr) {}
 
 Iterator::Iterator(ArchetypeDataPage& page)
     : view_(page.descriptor().raw_ptr(), page.buffer().ptr()) {}
