@@ -105,7 +105,6 @@ template <HashMapKeyType Key, std::move_constructible Val>
 class HashMap<Key, Val>::ConstIterator {
  public:
   using iterator_concept = std::forward_iterator_tag;
-  using iterator_category = std::forward_iterator_tag;
   using iterator_type = ConstIterator;
   using difference_type = int64_t;
   using value_type = const HashKeyVal<const Key, Val>;
@@ -145,7 +144,6 @@ template <HashMapKeyType Key, std::move_constructible Val>
 class HashMap<Key, Val>::Iterator {
  public:
   using iterator_concept = std::forward_iterator_tag;
-  using iterator_category = std::forward_iterator_tag;
   using iterator_type = Iterator;
   using difference_type = int64_t;
   using value_type = HashKeyVal<const Key, Val>;

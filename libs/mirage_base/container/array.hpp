@@ -88,11 +88,9 @@ template <std::move_constructible T>
 class Array<T>::Iterator {
  public:
   using iterator_concept = std::contiguous_iterator_tag;
-  using iterator_category = std::random_access_iterator_tag;
   using iterator_type = Iterator;
   using difference_type = ptrdiff_t;
   using value_type = T;
-  using element_type = T;
   using pointer = value_type*;
   using reference = value_type&;
 
@@ -134,11 +132,9 @@ template <std::move_constructible T>
 class Array<T>::ConstIterator {
  public:
   using iterator_concept = std::contiguous_iterator_tag;
-  using iterator_category = std::random_access_iterator_tag;
   using iterator_type = ConstIterator;
   using difference_type = ptrdiff_t;
   using value_type = const T;
-  using element_type = const T;
   using pointer = value_type*;
   using reference = value_type&;
 

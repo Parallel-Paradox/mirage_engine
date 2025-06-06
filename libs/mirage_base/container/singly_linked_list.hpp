@@ -70,7 +70,6 @@ template <std::move_constructible T>
 class SinglyLinkedList<T>::Iterator {
  public:
   using iterator_concept = std::forward_iterator_tag;
-  using iterator_category = std::forward_iterator_tag;
   using iterator_type = Iterator;
   using difference_type = int64_t;
   using value_type = T;
@@ -113,7 +112,6 @@ template <std::move_constructible T>
 class SinglyLinkedList<T>::ConstIterator {
  public:
   using iterator_concept = std::forward_iterator_tag;
-  using iterator_category = std::forward_iterator_tag;
   using iterator_type = ConstIterator;
   using difference_type = int64_t;
   using value_type = const T;
