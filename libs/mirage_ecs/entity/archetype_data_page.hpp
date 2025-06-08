@@ -25,7 +25,7 @@ class ArchetypeDataPage {
   class Iterator;
   class Courier;
 
-  ArchetypeDataPage() = delete;
+  ArchetypeDataPage() = default;
   MIRAGE_ECS ArchetypeDataPage(size_t buffer_size, size_t align);
 
   MIRAGE_ECS ~ArchetypeDataPage();
@@ -88,7 +88,7 @@ class MIRAGE_ECS ArchetypeDataPage::ConstView {
 
   template <IsComponent T>
   const T* TryGet() const {
-    return TryGet(ComponentId::Of<T>());
+    return static_cast<T*>(TryGet(ComponentId::Of<T>()));
   }
 
   template <IsComponent T>
@@ -168,7 +168,7 @@ class MIRAGE_ECS ArchetypeDataPage::View {
 
   template <IsComponent T>
   const T* TryGet() const {
-    return TryGet(ComponentId::Of<T>());
+    return static_cast<T*>(TryGet(ComponentId::Of<T>()));
   }
 
   template <IsComponent T>
@@ -178,7 +178,7 @@ class MIRAGE_ECS ArchetypeDataPage::View {
 
   template <IsComponent T>
   T* TryGet() {
-    return TryGet(ComponentId::Of<T>());
+    return static_cast<T*>(TryGet(ComponentId::Of<T>()));
   }
 
   template <IsComponent T>

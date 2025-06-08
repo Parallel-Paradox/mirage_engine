@@ -5,6 +5,8 @@
 using namespace mirage;
 using namespace mirage::ecs;
 
+namespace {
+
 struct Position : Component {
   float x;
   float y;
@@ -18,6 +20,8 @@ struct Velocity : Component {
 struct WithTag : Component {};
 
 struct WithoutTag : Component {};
+
+}  // namespace
 
 TEST(QueryTests, ParamsConceptCheck) {
   bool is_component_ref = IsComponentRef<int32_t&>;

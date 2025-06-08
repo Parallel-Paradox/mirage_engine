@@ -9,6 +9,8 @@
 using namespace mirage::base;
 using namespace mirage::ecs;
 
+namespace {
+
 struct DestructCounter : Component {
   size_t* counter_ptr{nullptr};
 
@@ -25,6 +27,8 @@ struct DestructCounter : Component {
     other.counter_ptr = nullptr;
   }
 };
+
+}  // namespace
 
 TEST(ComponentBundleTests, AddComponent) {
   ComponentBundle bundle;

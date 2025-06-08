@@ -6,6 +6,8 @@
 using namespace mirage::base;
 using namespace mirage::ecs;
 
+namespace {
+
 struct TestComponent : Component {};
 
 struct Counter : Component {
@@ -33,6 +35,8 @@ struct Counter : Component {
     destruct_cnt_ = nullptr;
   }
 };
+
+}  // namespace
 
 TEST(ComponentIdTests, Consistent) {
   const ComponentId id = ComponentId::Of<TestComponent>();

@@ -9,7 +9,7 @@ namespace mirage::base {
 
 class MIRAGE_BASE AlignedBuffer {
  public:
-  AlignedBuffer() = delete;
+  AlignedBuffer() = default;
   AlignedBuffer(size_t size, size_t align);
 
   ~AlignedBuffer();

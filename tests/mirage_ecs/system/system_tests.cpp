@@ -6,7 +6,11 @@
 using namespace mirage;
 using namespace mirage::ecs;
 
+namespace {
+
 void EmptySystem() {}
+
+}  // namespace
 
 TEST(SystemTests, EmptyConstruct) {
   System empty_system = System::From(EmptySystem);

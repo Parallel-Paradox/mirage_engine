@@ -6,6 +6,8 @@
 using namespace mirage;
 using namespace mirage::ecs;
 
+namespace {
+
 struct Bool : Component {
   bool value{false};
 };
@@ -17,6 +19,8 @@ struct Int32 : Component {
 struct Int64 : Component {
   int64_t value{0};
 };
+
+};  // namespace
 
 TEST(ArchetypeDescriptorTests, LayoutCheck) {
   const auto desc = ArchetypeDescriptor::New<Bool, Int64, Int32>();
