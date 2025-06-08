@@ -4,6 +4,8 @@
 
 using namespace mirage::base;
 
+namespace {
+
 struct UnMovable {
   UnMovable() = default;
   UnMovable(UnMovable&&) = delete;
@@ -44,6 +46,8 @@ struct Vec4 : public Base {
     return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
   }
 };
+
+}  // namespace
 
 TEST(BoxTests, SooCondition) {
   EXPECT_TRUE(BoxAny::AllowSmallObjectOptimize<size_t>());

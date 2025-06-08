@@ -3,9 +3,10 @@
 #include <thread>
 
 #include "mirage_base/auto_ptr/weak.hpp"
-#include "mirage_base/container/array.hpp"
 
 using namespace mirage::base;
+
+namespace {
 
 struct Base {
   int32_t* base_destructed{nullptr};
@@ -23,6 +24,8 @@ struct Derive final : Base {
 
   ~Derive() override { *derive_destructed += 1; }
 };
+
+}  // namespace
 
 TEST(WeakTests, Construct) {
   int32_t is_destructed = 0;

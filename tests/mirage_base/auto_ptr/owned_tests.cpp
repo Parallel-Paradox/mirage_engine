@@ -4,6 +4,8 @@
 
 using namespace mirage::base;
 
+namespace {
+
 struct Base {
   int32_t* base_destructed{nullptr};
 
@@ -20,6 +22,8 @@ struct Derive final : Base {
 
   ~Derive() override { *derive_destructed += 1; }
 };
+
+}  // namespace
 
 TEST(OwnedTests, Construct) {
   int32_t is_destructed = 0;
