@@ -1,7 +1,9 @@
 #include "mirage_ecs/entity/archetype_data_page.hpp"
 
+#include <algorithm>
 #include <cstddef>
 
+#include "mirage_base/container/array.hpp"
 #include "mirage_base/define/check.hpp"
 #include "mirage_base/wrap/box.hpp"
 #include "mirage_ecs/component/component_bundle.hpp"
@@ -76,22 +78,20 @@ bool ArchetypeDataPage::Push(ComponentBundle& bundle) {
   return true;
 }
 
-bool ArchetypeDataPage::Push(Courier&& slice) {
+bool ArchetypeDataPage::Push(View& view) {
   MIRAGE_DCHECK(is_initialized());
   if (size_ >= capacity_) {
     return false;
   }
-  for (auto view : slice) {
-    std::byte* dest = buffer_.ptr() + size_ * descriptor_->size();
-    size_ += 1;
-    for (const auto& entry : descriptor_->offset_map()) {
-      const auto component_id = entry.key();
-      const auto offset = entry.val();
+  std::byte* dest = buffer_.ptr() + size_ * descriptor_->size();
+  size_ += 1;
+  for (const auto& entry : descriptor_->offset_map()) {
+    const auto component_id = entry.key();
+    const auto offset = entry.val();
 
-      void* component = view.TryGet(component_id);
-      MIRAGE_DCHECK(component != nullptr);
-      component_id.move_func()(component, dest + offset);
-    }
+    void* component = view.TryGet(component_id);
+    MIRAGE_DCHECK(component != nullptr);
+    component_id.move_func()(component, dest + offset);
   }
   return true;
 }
@@ -117,7 +117,11 @@ void ArchetypeDataPage::SwapRemoveMany(
     const std::initializer_list<size_t> index_list) {
   MIRAGE_DCHECK(is_initialized());
   MIRAGE_DCHECK(index_list.size() > 0);
-  for (const size_t index : index_list) {
+
+  base::Array<size_t> index_list_array(index_list);
+  std::ranges::sort(index_list_array, std::greater<size_t>());
+
+  for (const size_t index : index_list_array) {
     MIRAGE_DCHECK(index < size_);
     size_ -= 1;
     std::byte* last = buffer_.ptr() + size_ * descriptor_->size();
@@ -137,8 +141,9 @@ void ArchetypeDataPage::Clear() {
   if (!is_initialized()) {
     return;
   }
-  for (size_t i = 0; i < size_; ++i) {
-    std::byte* target = buffer_.ptr() + i * descriptor_->size();
+  while (size_ > 0) {
+    size_ -= 1;
+    std::byte* target = buffer_.ptr() + size_ * descriptor_->size();
     for (const auto& entry : descriptor_->offset_map()) {
       const auto component_id = entry.key();
       const auto offset = entry.val();
@@ -447,6 +452,7 @@ Courier::Courier(ArchetypeDataPage& page,
                      descriptor_->align())) {
   std::byte* dest = buffer_.ptr();
   for (const size_t index : index_list) {
+    MIRAGE_DCHECK(index < page.size());
     std::byte* target = page.buffer().ptr() + index * descriptor_->size();
     for (const auto& entry : descriptor_->offset_map()) {
       const auto component_id = entry.key();

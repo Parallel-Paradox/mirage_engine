@@ -53,8 +53,7 @@ class ArchetypeDataPageTests : public ::testing::Test {
 }  // namespace
 
 TEST_F(ArchetypeDataPageTests, Initialize) {
-  auto desc = SharedDescriptor::New(ArchetypeDescriptor::New<Counter>());
-  auto page = ArchetypeDataPage(16, desc->align());
+  auto page = ArchetypeDataPage(16, desc_->align());
   EXPECT_FALSE(page.is_initialized());
   EXPECT_EQ(page.capacity(), 0);
   EXPECT_EQ(page.size(), 0);
@@ -63,37 +62,57 @@ TEST_F(ArchetypeDataPageTests, Initialize) {
   size_t buffer_address = (size_t)page.buffer().ptr();  // NOLINT: Check align
   EXPECT_EQ(buffer_address % page.buffer().align(), 0);
 
-  page.Initialize(std::move(desc));
+  page.Initialize(desc_.Clone());
   EXPECT_TRUE(page.is_initialized());
   EXPECT_EQ(page.capacity(), page.buffer().size() / page.descriptor()->size());
   EXPECT_EQ(page.size(), 0);
 }
 
-TEST_F(ArchetypeDataPageTests, Push) {
+TEST_F(ArchetypeDataPageTests, Curd) {
   auto bundle = ComponentBundle();
 
+  // Push to empty page
   bundle.Add(Counter(0, &destruct_cnt_));
   bool rv = page_.Push(bundle);
   EXPECT_TRUE(rv);
   EXPECT_EQ(page_.size(), 1);
   EXPECT_EQ(destruct_cnt_, 0);
 
+  // Push to non-empty page
   bundle.Add(Counter(1, &destruct_cnt_));
   rv = page_.Push(bundle);
   EXPECT_TRUE(rv);
   EXPECT_EQ(page_.size(), 2);
   EXPECT_EQ(destruct_cnt_, 0);
 
+  // Push to full page
+  bundle.Add(Counter(2, &destruct_cnt_));
+  rv = page_.Push(bundle);
+  EXPECT_FALSE(rv);
+  EXPECT_EQ(page_.size(), 2);
+  EXPECT_EQ(destruct_cnt_, 0);
+  EXPECT_EQ(bundle.size(), 1);
+
+  // View page contents
   EXPECT_EQ(page_[0].Get<Counter>().id_, 0);
   EXPECT_EQ(page_[1].Get<Counter>().id_, 1);
-}
 
-TEST_F(ArchetypeDataPageTests, Pop) {}
+  // Pop many from page
+  auto courier = page_.SwapPopMany({0, 1});
+  EXPECT_EQ(courier.size(), 2);
+  EXPECT_EQ(page_.size(), 0);
+  EXPECT_EQ(destruct_cnt_, 0);
 
-TEST_F(ArchetypeDataPageTests, Remove) {
-  // TODO
-}
+  // Push many to page
+  for (auto view : courier) {
+    rv = page_.Push(view);
+    EXPECT_TRUE(rv);
+  }
+  EXPECT_EQ(page_.size(), 2);
+  EXPECT_EQ(destruct_cnt_, 0);
 
-TEST_F(ArchetypeDataPageTests, Slice) {
-  // TODO
+  // Clear page
+  page_.Clear();
+  EXPECT_EQ(page_.size(), 0);
+  EXPECT_EQ(destruct_cnt_, 2);
 }
