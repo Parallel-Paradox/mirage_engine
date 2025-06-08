@@ -254,8 +254,12 @@ void Array<T>::Emplace(Args&&... args) {
 template <std::move_constructible T>
 template <typename... Args>
 void Array<T>::Insert(const size_t index, Args&&... args) {
-  MIRAGE_DCHECK(!empty());
-  MIRAGE_DCHECK(index < size_);
+  MIRAGE_DCHECK(index <= size_);
+
+  if (index >= size_) {
+    Emplace(std::forward<Args>(args)...);
+    return;
+  }
 
   EnsureNotFull();
   new (data_[size_].ptr()) T(std::move(data_[size_ - 1].ref()));

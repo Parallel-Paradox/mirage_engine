@@ -1,5 +1,7 @@
 #include "mirage_ecs/util/type_set.hpp"
 
+#include <algorithm>
+
 #include "mirage_base/util/type_id.hpp"
 
 using namespace mirage;
@@ -30,20 +32,12 @@ void TypeSet::Reserve(size_t capacity) { type_array_.Reserve(capacity); }
 void TypeSet::ShrinkToFit() { type_array_.ShrinkToFit(); }
 
 void TypeSet::AddTypeId(const TypeId type_id) {
-  auto iter = type_array_.begin();
-  while (iter != type_array_.end()) {
-    if (*iter == type_id) {
-      return;
-    }
-    if (*iter > type_id) break;
-    ++iter;
+  auto iter = std::lower_bound(type_array_.begin(), type_array_.end(), type_id);
+  if (iter != type_array_.end() && *iter == type_id) {
+    return;
   }
   mask_ |= type_id.bit_flag();
-  if (iter != type_array_.end()) {
-    type_array_.Insert(iter - type_array_.begin(), type_id);
-  } else {
-    type_array_.Emplace(type_id);
-  }
+  type_array_.Insert(iter - type_array_.begin(), type_id);
 }
 
 void TypeSet::RemoveTypeId(const TypeId& type_id) {
@@ -84,9 +78,9 @@ bool TypeSet::With(const TypeSet& set) const {
 
 bool TypeSet::With(const TypeId& type_id) const {
   if ((type_id.bit_flag() & mask_) == 0) return false;
-  for (const auto& type : type_array_) {
-    if (type == type_id) return true;
-    if (type > type_id) return false;
+  auto iter = std::lower_bound(type_array_.begin(), type_array_.end(), type_id);
+  if (iter != type_array_.end() && *iter == type_id) {
+    return true;
   }
   return false;
 }

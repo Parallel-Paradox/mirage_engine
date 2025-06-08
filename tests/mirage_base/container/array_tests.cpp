@@ -110,6 +110,10 @@ TEST(ArrayTests, Insert) {
   array.Insert(0, 4);
   result = {4, 0, 3, 1, 2};
   EXPECT_EQ(array, result);
+
+  array.Insert(5, 5);
+  result = {4, 0, 3, 1, 2, 5};
+  EXPECT_EQ(array, result);
 }
 
 TEST(ArrayTests, Remove) {
