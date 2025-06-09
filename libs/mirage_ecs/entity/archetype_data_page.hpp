@@ -267,6 +267,7 @@ class ArchetypeDataPage::Courier {
   MIRAGE_ECS Buffer& buffer();
 
   [[nodiscard]] MIRAGE_ECS size_t size() const;
+  [[nodiscard]] MIRAGE_ECS ptrdiff_t ssize() const;
 
  private:
   friend class ArchetypeDataPage;

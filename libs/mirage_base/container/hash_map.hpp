@@ -108,6 +108,7 @@ class HashMap<Key, Val>::ConstIterator {
   using iterator_type = ConstIterator;
   using difference_type = int64_t;
   using value_type = const HashKeyVal<const Key, Val>;
+  using element_type = value_type;
   using pointer = value_type*;
   using reference = value_type&;
 

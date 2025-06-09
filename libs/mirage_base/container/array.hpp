@@ -91,6 +91,7 @@ class Array<T>::Iterator {
   using iterator_type = Iterator;
   using difference_type = ptrdiff_t;
   using value_type = T;
+  using element_type = value_type;
   using pointer = value_type*;
   using reference = value_type&;
 
@@ -135,6 +136,7 @@ class Array<T>::ConstIterator {
   using iterator_type = ConstIterator;
   using difference_type = ptrdiff_t;
   using value_type = const T;
+  using element_type = value_type;
   using pointer = value_type*;
   using reference = value_type&;
 

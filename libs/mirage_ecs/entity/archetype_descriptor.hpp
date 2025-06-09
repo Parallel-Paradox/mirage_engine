@@ -28,6 +28,7 @@ class ArchetypeDescriptor {
 
   [[nodiscard]] MIRAGE_ECS size_t align() const;
   [[nodiscard]] MIRAGE_ECS size_t size() const;
+  [[nodiscard]] MIRAGE_ECS ptrdiff_t ssize() const;
   [[nodiscard]] MIRAGE_ECS const OffsetMap &offset_map() const;
   [[nodiscard]] MIRAGE_ECS const TypeSet &type_set() const;
 

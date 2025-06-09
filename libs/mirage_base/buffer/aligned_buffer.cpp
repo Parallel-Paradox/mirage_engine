@@ -8,7 +8,7 @@
 
 using namespace mirage::base;
 
-AlignedBuffer::AlignedBuffer(size_t size, size_t align)
+AlignedBuffer::AlignedBuffer(const size_t size, size_t align)
     : buffer_ptr_(static_cast<std::byte*>(
           ::operator new[](size, std::align_val_t{align}))),
       size_(size),

@@ -1,8 +1,10 @@
 #include "mirage_ecs/entity/archetype_descriptor.hpp"
 
 #include <algorithm>
+#include <cstddef>
 
 #include "mirage_base/container/array.hpp"
+#include "mirage_base/define/check.hpp"
 #include "mirage_ecs/component/component_id.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
@@ -65,6 +67,12 @@ ArchetypeDescriptor::ArchetypeDescriptor(
 size_t ArchetypeDescriptor::align() const { return align_; }
 
 size_t ArchetypeDescriptor::size() const { return size_; }
+
+ptrdiff_t ArchetypeDescriptor::ssize() const {
+  const auto ssize = static_cast<ptrdiff_t>(size());
+  MIRAGE_DCHECK(ssize > 0);
+  return ssize;
+}
 
 const ArchetypeDescriptor::OffsetMap& ArchetypeDescriptor::offset_map() const {
   return offset_map_;
