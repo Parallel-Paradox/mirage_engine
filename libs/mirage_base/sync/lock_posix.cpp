@@ -13,13 +13,18 @@ Lock::Lock() {
 }
 
 Lock::~Lock() {
+  if (native_handle_ == nullptr) {
+    return;
+  }
   auto* handle = static_cast<pthread_mutex_t*>(native_handle_);
   [[maybe_unused]] int32_t rv = pthread_mutex_destroy(handle);
   MIRAGE_DCHECK(rv == 0);
   delete handle;
+  native_handle_ = nullptr;
 }
 
 bool Lock::TryAcquire() const {
+  MIRAGE_DCHECK(native_handle_ != nullptr);
   auto* handle = static_cast<pthread_mutex_t*>(native_handle_);
   return pthread_mutex_trylock(handle) == 0;
 }
@@ -35,12 +40,14 @@ void Lock::Acquire() const {
 }
 
 void Lock::Release() const {
+  MIRAGE_DCHECK(native_handle_ != nullptr);
   [[maybe_unused]] int32_t rv =
       pthread_mutex_unlock(static_cast<pthread_mutex_t*>(native_handle_));
   MIRAGE_DCHECK(rv == 0);
 }
 
 void Lock::AcquireInternal() const {
+  MIRAGE_DCHECK(native_handle_ != nullptr);
   [[maybe_unused]] int32_t rv =
       pthread_mutex_lock(static_cast<pthread_mutex_t*>(native_handle_));
   MIRAGE_DCHECK(rv == 0);

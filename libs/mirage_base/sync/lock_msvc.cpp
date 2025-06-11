@@ -1,5 +1,6 @@
 #include <windows.h>
 
+#include "mirage_base/define/check.hpp"
 #include "mirage_base/sync/lock.hpp"
 
 using namespace mirage::base;
@@ -9,9 +10,16 @@ Lock::Lock() {
   InitializeSRWLock(static_cast<SRWLOCK*>(native_handle_));
 }
 
-Lock::~Lock() { delete static_cast<SRWLOCK*>(native_handle_); }
+Lock::~Lock() {
+  if (native_handle_ == nullptr) {
+    return;
+  }
+  delete static_cast<SRWLOCK*>(native_handle_);
+  native_handle_ = nullptr;
+}
 
 bool Lock::TryAcquire() const {
+  MIRAGE_DCHECK(native_handle_ != nullptr);
   return TryAcquireSRWLockExclusive(static_cast<SRWLOCK*>(native_handle_));
 }
 
@@ -26,9 +34,11 @@ void Lock::Acquire() const {
 }
 
 void Lock::Release() const {
+  MIRAGE_DCHECK(native_handle_ != nullptr);
   ReleaseSRWLockExclusive(static_cast<SRWLOCK*>(native_handle_));
 }
 
 void Lock::AcquireInternal() const {
+  MIRAGE_DCHECK(native_handle_ != nullptr);
   AcquireSRWLockExclusive(static_cast<SRWLOCK*>(native_handle_));
 }
