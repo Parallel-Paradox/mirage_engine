@@ -28,11 +28,13 @@ class MIRAGE_BASE LockGuard {
   LockGuard() = delete;
   LockGuard(const LockGuard&) = delete;
 
-  explicit LockGuard(Lock& lock) : lock_(lock) { lock.Acquire(); }
-  ~LockGuard() { lock_.Release(); }
+  explicit LockGuard(const Lock& lock) : lock_(lock) { lock.Acquire(); }
+  ~LockGuard() { Reset(); }
+
+  void Reset() { lock_.Release(); }
 
  private:
-  Lock& lock_;
+  const Lock& lock_;
 };
 
 }  // namespace mirage::base
