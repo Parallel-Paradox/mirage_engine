@@ -56,7 +56,7 @@ class ObservedLocal {
   [[nodiscard]] size_t observer_cnt() const;
 
  private:
-  ObservedLocal(Owned<T> self, bool* is_null, RefCount* observer_cnt);
+  ObservedLocal(T* raw_ptr, bool* is_null, RefCount* observer_cnt);
   void ResetPtr();
 
   T* raw_ptr_{nullptr};
@@ -102,6 +102,11 @@ class LocalObserver {
   [[nodiscard]] size_t observer_cnt() const;
 
  private:
+  friend class ObservedLocal<T>;
+
+  LocalObserver(T* raw_ptr, bool* is_null, RefCount* observer_cnt);
+  void ResetPtr();
+
   T* raw_ptr_{nullptr};
   bool* is_null_{nullptr};
   RefCount* observer_cnt_{nullptr};
@@ -290,8 +295,7 @@ ObservedLocal<T>::ObservedLocal(T* raw_ptr)
 }
 
 template <typename T>
-ObservedLocal<T>::ObservedLocal(std::nullptr_t)
-    : raw_ptr_(nullptr), is_null_(nullptr), observer_cnt_(nullptr) {}
+ObservedLocal<T>::ObservedLocal(std::nullptr_t) {}
 
 template <typename T>
 ObservedLocal<T>& ObservedLocal<T>::operator=(std::nullptr_t) {
@@ -315,7 +319,7 @@ void ObservedLocal<T>::Reset() {
 template <typename T>
 template <typename... Args>
 ObservedLocal<T> ObservedLocal<T>::New(Args&&... args) {
-  return ObservedLocal<T>(new T(std::forward<Args>(args)...));
+  return ObservedLocal(new T(std::forward<Args>(args)...));
 }
 
 template <typename T>
@@ -331,9 +335,65 @@ ObservedLocal<T1> ObservedLocal<T>::TryConvert() && {
 template <typename T>
 template <typename T1>
 ObservedLocal<T1> ObservedLocal<T>::Convert() && {
-  auto rv = ObservedLocal<T1>(raw_ptr_, is_null_, observer_cnt_);
+  auto rv =
+      ObservedLocal<T1>(static_cast<T1*>(raw_ptr_), is_null_, observer_cnt_);
   ResetPtr();
   return rv;
+}
+
+template <typename T>
+LocalObserver<T> ObservedLocal<T>::NewObserver() const {
+  MIRAGE_DCHECK(raw_ptr_ != nullptr);
+  MIRAGE_DCHECK(observer_cnt_ != nullptr);
+  observer_cnt_->Increase();
+  return LocalObserver<T>(raw_ptr_, is_null_, observer_cnt_);
+}
+
+template <typename T>
+T* ObservedLocal<T>::operator->() const {
+  return raw_ptr_;
+}
+
+template <typename T>
+T& ObservedLocal<T>::operator*() const {
+  return *raw_ptr_;
+}
+
+template <typename T>
+T* ObservedLocal<T>::raw_ptr() const {
+  return raw_ptr_;
+}
+
+template <typename T>
+ObservedLocal<T>::operator bool() const {
+  return !is_null();
+}
+
+template <typename T>
+bool ObservedLocal<T>::operator==(std::nullptr_t) const {
+  return is_null();
+}
+
+template <typename T>
+bool ObservedLocal<T>::is_null() const {
+  return is_null_ == nullptr || *is_null_;
+}
+
+template <typename T>
+size_t ObservedLocal<T>::observer_cnt() const {
+  return observer_cnt_ ? observer_cnt_->cnt() : 0;
+}
+
+template <typename T>
+ObservedLocal<T>::ObservedLocal(T* raw_ptr, bool* is_null,
+                                RefCount* observer_cnt)
+    : raw_ptr_(raw_ptr), is_null_(is_null), observer_cnt_(observer_cnt) {}
+
+template <typename T>
+void ObservedLocal<T>::ResetPtr() {
+  raw_ptr_ = nullptr;
+  is_null_ = nullptr;
+  observer_cnt_ = nullptr;
 }
 
 template <typename T>
@@ -346,9 +406,7 @@ LocalObserver<T>::LocalObserver(LocalObserver&& other) noexcept
     : raw_ptr_(other.raw_ptr_),
       is_null_(other.is_null_),
       observer_cnt_(other.observer_cnt_) {
-  other.raw_ptr_ = nullptr;
-  other.is_null_ = nullptr;
-  other.observer_cnt_ = nullptr;
+  other.ResetPtr();
 }
 
 template <typename T>
@@ -362,6 +420,15 @@ LocalObserver<T>& LocalObserver<T>::operator=(LocalObserver&& other) noexcept {
 }
 
 template <typename T>
+LocalObserver<T>::LocalObserver(std::nullptr_t) {}
+
+template <typename T>
+LocalObserver<T>& LocalObserver<T>::operator=(std::nullptr_t) {
+  Reset();
+  return *this;
+}
+
+template <typename T>
 void LocalObserver<T>::Reset() {
   if (!observer_cnt_) {
     return;
@@ -370,6 +437,73 @@ void LocalObserver<T>::Reset() {
     delete is_null_;
     delete observer_cnt_;
   }
+  ResetPtr();
+}
+
+template <typename T>
+LocalObserver<T> LocalObserver<T>::Clone() const {
+  if (observer_cnt_ != nullptr) {
+    observer_cnt_->TryIncrease();
+  }
+  return LocalObserver(raw_ptr_, is_null_, observer_cnt_);
+}
+
+template <typename T>
+template <typename T1>
+LocalObserver<T1> LocalObserver<T>::TryConvert() && {
+  T1* raw_ptr = dynamic_cast<T1*>(raw_ptr_);
+  if (raw_ptr == nullptr) {
+    return nullptr;
+  }
+  return std::move(*this).template Convert<T1>();
+}
+
+template <typename T>
+template <typename T1>
+LocalObserver<T1> LocalObserver<T>::Convert() && {
+  auto rv =
+      LocalObserver<T1>(static_cast<T1*>(raw_ptr_), is_null_, observer_cnt_);
+  ResetPtr();
+  return rv;
+}
+
+template <typename T>
+T* LocalObserver<T>::operator->() const {
+  return raw_ptr_;
+}
+
+template <typename T>
+T& LocalObserver<T>::operator*() const {
+  return *raw_ptr_;
+}
+
+template <typename T>
+T* LocalObserver<T>::raw_ptr() const {
+  return raw_ptr_;
+}
+
+template <typename T>
+LocalObserver<T>::operator bool() const {
+  return !is_null();
+}
+
+template <typename T>
+bool LocalObserver<T>::operator==(std::nullptr_t) const {
+  return is_null();
+}
+
+template <typename T>
+bool LocalObserver<T>::is_null() const {
+  return is_null_ == nullptr || *is_null_;
+}
+
+template <typename T>
+size_t LocalObserver<T>::observer_cnt() const {
+  return observer_cnt_ ? observer_cnt_->cnt() : 0;
+}
+
+template <typename T>
+void LocalObserver<T>::ResetPtr() {
   raw_ptr_ = nullptr;
   is_null_ = nullptr;
   observer_cnt_ = nullptr;

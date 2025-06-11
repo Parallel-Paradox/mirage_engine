@@ -291,7 +291,7 @@ bool ConstIterator::operator==(const iterator_type& other) const {
 ConstIterator::operator bool() const { return !is_null(); }
 
 bool ConstIterator::is_null() const {
-  MIRAGE_DCHECK(!!(view_.descriptor_) == !!(view_.view_ptr_));
+  MIRAGE_DCHECK(!(view_.descriptor_) == !(view_.view_ptr_));
   return view_.view_ptr_ == nullptr;
 }
 
@@ -407,7 +407,7 @@ bool Iterator::operator==(const iterator_type& other) const {
 Iterator::operator bool() const { return !is_null(); }
 
 bool Iterator::is_null() const {
-  MIRAGE_DCHECK(!!(view_.descriptor_) == !!(view_.view_ptr_));
+  MIRAGE_DCHECK(!(view_.descriptor_) == !(view_.view_ptr_));
   return view_.view_ptr_ == nullptr;
 }
 
