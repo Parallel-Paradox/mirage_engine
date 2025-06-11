@@ -2,21 +2,25 @@
 #define MIRAGE_BASE_SYNCHRONIZE_LOCK
 
 #include "mirage_base/define/export.hpp"
-#include "mirage_base/sync/lock_impl.hpp"
 
 namespace mirage::base {
 
 class MIRAGE_BASE Lock {
  public:
-  Lock() = default;
-  ~Lock() = default;
+  using NativeHandle = void*;
+
+  Lock();
+  Lock(const Lock&) = delete;
+  ~Lock();
 
   [[nodiscard]] bool TryAcquire() const;
   void Acquire() const;
   void Release() const;
 
  private:
-  LockImpl lock_;
+  void AcquireInternal() const;
+
+  NativeHandle native_handle_;
 };
 
 class MIRAGE_BASE LockGuard {
@@ -24,8 +28,8 @@ class MIRAGE_BASE LockGuard {
   LockGuard() = delete;
   LockGuard(const LockGuard&) = delete;
 
-  explicit LockGuard(Lock& lock);
-  ~LockGuard();
+  explicit LockGuard(Lock& lock) : lock_(lock) { lock.Acquire(); }
+  ~LockGuard() { lock_.Release(); }
 
  private:
   Lock& lock_;
