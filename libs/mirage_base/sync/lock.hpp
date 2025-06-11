@@ -1,5 +1,5 @@
-#ifndef MIRAGE_BASE_SYNCHRONIZE_LOCK
-#define MIRAGE_BASE_SYNCHRONIZE_LOCK
+#ifndef MIRAGE_BASE_SYNC_LOCK
+#define MIRAGE_BASE_SYNC_LOCK
 
 #include "mirage_base/define/export.hpp"
 
@@ -37,4 +37,4 @@ class MIRAGE_BASE LockGuard {
 
 }  // namespace mirage::base
 
-#endif  // MIRAGE_BASE_SYNCHRONIZE_LOCK
+#endif  // MIRAGE_BASE_SYNC_LOCK
