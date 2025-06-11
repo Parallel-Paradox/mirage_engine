@@ -1,5 +1,5 @@
-#ifndef MIRAGE_BASE_AUTO_PTR_OBSERVE
-#define MIRAGE_BASE_AUTO_PTR_OBSERVE
+#ifndef MIRAGE_BASE_AUTO_PTR_OBSERVED
+#define MIRAGE_BASE_AUTO_PTR_OBSERVED
 
 #include <atomic>
 
@@ -377,4 +377,4 @@ void LocalObserver<T>::Reset() {
 
 }  // namespace mirage::base
 
-#endif  // MIRAGE_BASE_AUTO_PTR_OBSERVE
+#endif  // MIRAGE_BASE_AUTO_PTR_OBSERVED
