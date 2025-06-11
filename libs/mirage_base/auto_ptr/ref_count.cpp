@@ -27,21 +27,21 @@ bool RefCountLocal::TryRelease() {
 RefCountAsync::RefCountAsync(const size_t cnt) : RefCountLocal(cnt) {}
 
 size_t RefCountAsync::cnt() const {
-  LockGuard lock(lock_);
+  ScopedLockGuard lock(lock_);
   return RefCountLocal::cnt();
 }
 
 void RefCountAsync::Increase() {
-  LockGuard lock(lock_);
+  ScopedLockGuard lock(lock_);
   RefCountLocal::Increase();
 }
 
 bool RefCountAsync::TryIncrease() {
-  LockGuard lock(lock_);
+  ScopedLockGuard lock(lock_);
   return RefCountLocal::TryIncrease();
 }
 
 bool RefCountAsync::TryRelease() {
-  LockGuard lock(lock_);
+  ScopedLockGuard lock(lock_);
   return RefCountLocal::TryRelease();
 }

@@ -10,8 +10,13 @@ class MIRAGE_BASE Lock {
   using NativeHandle = void*;
 
   Lock();
-  Lock(const Lock&) = delete;
   ~Lock();
+
+  Lock(const Lock&) = delete;
+  Lock& operator=(const Lock&) = delete;
+
+  Lock(Lock&& other) noexcept;
+  Lock& operator=(Lock&& other) noexcept;
 
   [[nodiscard]] bool TryAcquire() const;
   void Acquire() const;
@@ -25,13 +30,32 @@ class MIRAGE_BASE Lock {
 
 class MIRAGE_BASE LockGuard {
  public:
-  LockGuard() = delete;
+  LockGuard() = default;
+  explicit LockGuard(const Lock& lock);
+  ~LockGuard();
+
   LockGuard(const LockGuard&) = delete;
+  LockGuard& operator=(const LockGuard&) = delete;
 
-  explicit LockGuard(const Lock& lock) : lock_(lock) { lock.Acquire(); }
-  ~LockGuard() { Reset(); }
+  LockGuard(LockGuard&& other) noexcept;
+  LockGuard& operator=(LockGuard&& other) noexcept;
 
-  void Reset() { lock_.Release(); }
+  void Reset();
+
+ private:
+  const Lock* lock_{nullptr};
+};
+
+class MIRAGE_BASE ScopedLockGuard {
+ public:
+  ScopedLockGuard() = delete;
+  explicit ScopedLockGuard(const Lock& lock);
+  ~ScopedLockGuard();
+
+  ScopedLockGuard(const ScopedLockGuard&) = delete;
+  ScopedLockGuard(ScopedLockGuard&& other) noexcept = delete;
+
+  void Reset();
 
  private:
   const Lock& lock_;

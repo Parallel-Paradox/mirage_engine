@@ -445,7 +445,7 @@ Buffer& Courier::buffer() { return buffer_; }
 
 size_t Courier::size() const { return buffer_.size() / descriptor_->size(); }
 
-ptrdiff_t ArchetypeDescriptor::ssize() const {
+ptrdiff_t Courier::ssize() const {
   const auto ssize = static_cast<ptrdiff_t>(size());
   MIRAGE_DCHECK(ssize > 0);
   return ssize;
