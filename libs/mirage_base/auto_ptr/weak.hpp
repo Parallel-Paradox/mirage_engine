@@ -139,10 +139,10 @@ Weak<T1, R> Weak<T, R>::TryConvert() && {
 template <typename T, IsRefCount R>
 template <typename T1>
 Weak<T1, R> Weak<T, R>::Convert() && {
-  Weak<T1, R> new_weak =
+  auto rv =
       Weak<T1, R>(static_cast<T1*>(raw_ptr_), ref_cnt_ptr_, weak_ref_cnt_ptr_);
   ResetPtr();
-  return new_weak;
+  return rv;
 }
 
 template <typename T, IsRefCount R>

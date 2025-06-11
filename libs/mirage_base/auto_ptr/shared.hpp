@@ -147,10 +147,10 @@ Shared<T1, R> Shared<T, R>::TryConvert() && {
 template <typename T, IsRefCount R>
 template <typename T1>
 Shared<T1, R> Shared<T, R>::Convert() && {
-  Shared<T1, R> new_shared = Shared<T1, R>(static_cast<T1*>(raw_ptr_),
-                                           ref_cnt_ptr_, weak_ref_cnt_ptr_);
+  auto rv = Shared<T1, R>(static_cast<T1*>(raw_ptr_), ref_cnt_ptr_,
+                          weak_ref_cnt_ptr_);
   ResetPtr();
-  return new_shared;
+  return rv;
 }
 
 template <typename T, IsRefCount R>

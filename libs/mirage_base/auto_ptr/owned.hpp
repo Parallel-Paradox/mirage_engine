@@ -101,9 +101,9 @@ Owned<T1> Owned<T>::TryConvert() && {
 template <typename T>
 template <typename T1>
 Owned<T1> Owned<T>::Convert() && {
-  Owned<T1> new_owned = Owned<T1>(static_cast<T1*>(raw_ptr_));
+  auto rv = Owned<T1>(static_cast<T1*>(raw_ptr_));
   raw_ptr_ = nullptr;
-  return new_owned;
+  return rv;
 }
 
 template <typename T>
