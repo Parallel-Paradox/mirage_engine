@@ -67,6 +67,10 @@ TEST(ObservedTests, LocalConstruct) {
   EXPECT_EQ(is_destructed, 2);  // Observed is freed.
 }
 
+TEST(ObservedTests, AsyncConstruct) {
+  // TODO
+}
+
 TEST(ObservedTests, LocalPtrOps) {
   int32_t cnt = 0;
   const auto ptr = ObservedLocal<Base>::New(&cnt);
@@ -80,6 +84,10 @@ TEST(ObservedTests, LocalPtrOps) {
 
   *(*observer).base_destructed = 2;  // NOLINT: Test deref.
   EXPECT_EQ(*ptr->base_destructed, 2);
+}
+
+TEST(ObservedTests, AsyncPtrOps) {
+  // TODO
 }
 
 TEST(ObservedTests, LocalCloneObserver) {
@@ -105,6 +113,10 @@ TEST(ObservedTests, LocalCloneObserver) {
   EXPECT_TRUE(observer3.is_null());
 }
 
+TEST(ObservedTests, AsyncCloneObserver) {
+  // TODO
+}
+
 TEST(ObservedTests, LocalConvertDeriveToBase) {
   int32_t base_destructed = 0;
   int32_t derive_destructed = 0;
@@ -128,6 +140,10 @@ TEST(ObservedTests, LocalConvertDeriveToBase) {
   EXPECT_EQ(base_destructed, 1);
   EXPECT_EQ(derive_destructed, 1);
   EXPECT_TRUE(base_obs.is_null());
+}
+
+TEST(ObservedTests, AsyncConvertDeriveToBase) {
+  // TODO
 }
 
 TEST(ObservedTests, LocalConvertBaseToDerive) {
@@ -160,4 +176,8 @@ TEST(ObservedTests, LocalConvertBaseToDerive) {
   EXPECT_TRUE(base_obs.is_null());
   EXPECT_EQ(base_destructed, 0);
   EXPECT_EQ(derive_destructed, 0);
+}
+
+TEST(ObservedTests, AsyncConvertBaseToDerive) {
+  // TODO
 }
