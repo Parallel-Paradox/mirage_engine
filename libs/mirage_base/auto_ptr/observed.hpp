@@ -39,7 +39,7 @@ class ObservedLocal {
   friend class ObservedLocal;
 
   template <typename T1>
-  ObservedLocal<T1> TryConvert() &&;
+  ObservedLocal<T1> TryConvert();
 
   template <typename T1>
   ObservedLocal<T1> Convert() &&;
@@ -87,7 +87,7 @@ class LocalObserver {
   friend class LocalObserver;
 
   template <typename T1>
-  LocalObserver<T1> TryConvert() &&;
+  LocalObserver<T1> TryConvert();
 
   template <typename T1>
   LocalObserver<T1> Convert() &&;
@@ -144,7 +144,7 @@ class ObservedAsync {
   friend class ObservedAsync;
 
   template <typename T1>
-  ObservedAsync<T1> TryConvert() &&;
+  ObservedAsync<T1> TryConvert();
 
   template <typename T1>
   ObservedAsync<T1> Convert() &&;
@@ -198,7 +198,7 @@ class AsyncObserver {
   friend class AsyncObserver;
 
   template <typename T1>
-  AsyncObserver<T1> TryConvert() &&;
+  AsyncObserver<T1> TryConvert();
 
   template <typename T1>
   AsyncObserver<T1> Convert() &&;
@@ -230,7 +230,7 @@ template <typename T>
 class ObservedAsync<T>::ReadGuard {
  public:
   ReadGuard() = delete;
-  ~ReadGuard();
+  ~ReadGuard() = default;
 
   ReadGuard(const ReadGuard&) = delete;
   ReadGuard& operator=(const ReadGuard&) = delete;
@@ -255,7 +255,7 @@ template <typename T>
 class ObservedAsync<T>::WriteGuard {
  public:
   WriteGuard() = delete;
-  ~WriteGuard();
+  ~WriteGuard() = default;
 
   WriteGuard(const WriteGuard&) = delete;
   WriteGuard& operator=(const WriteGuard&) = delete;
@@ -340,7 +340,7 @@ ObservedLocal<T> ObservedLocal<T>::New(Args&&... args) {
 
 template <typename T>
 template <typename T1>
-ObservedLocal<T1> ObservedLocal<T>::TryConvert() && {
+ObservedLocal<T1> ObservedLocal<T>::TryConvert() {
   T1* raw_ptr = dynamic_cast<T1*>(raw_ptr_);
   if (raw_ptr == nullptr) {
     return nullptr;
@@ -449,7 +449,7 @@ void LocalObserver<T>::Reset() {
   if (!observer_cnt_) {
     return;
   }
-  if (observer_cnt_->TryRelease()) {
+  if (observer_cnt_->TryRelease() && is_null()) {
     delete is_null_;
     delete observer_cnt_;
   }
@@ -466,7 +466,7 @@ LocalObserver<T> LocalObserver<T>::Clone() const {
 
 template <typename T>
 template <typename T1>
-LocalObserver<T1> LocalObserver<T>::TryConvert() && {
+LocalObserver<T1> LocalObserver<T>::TryConvert() {
   T1* raw_ptr = dynamic_cast<T1*>(raw_ptr_);
   if (raw_ptr == nullptr) {
     return nullptr;
@@ -598,7 +598,7 @@ ObservedAsync<T> ObservedAsync<T>::New(Args&&... args) {
 
 template <typename T>
 template <typename T1>
-ObservedAsync<T1> ObservedAsync<T>::TryConvert() && {
+ObservedAsync<T1> ObservedAsync<T>::TryConvert() {
   T1* raw_ptr = dynamic_cast<T1*>(raw_ptr_);
   if (raw_ptr == nullptr) {
     return nullptr;
@@ -714,7 +714,7 @@ void AsyncObserver<T>::Reset() {
   if (!observer_cnt_) {
     return;
   }
-  if (observer_cnt_->TryRelease()) {
+  if (observer_cnt_->TryRelease() && is_null()) {
     delete rw_lock_;
     delete is_null_;
     delete observer_cnt_;
@@ -732,7 +732,7 @@ AsyncObserver<T> AsyncObserver<T>::Clone() const {
 
 template <typename T>
 template <typename T1>
-AsyncObserver<T1> AsyncObserver<T>::TryConvert() && {
+AsyncObserver<T1> AsyncObserver<T>::TryConvert() {
   T1* raw_ptr = dynamic_cast<T1*>(raw_ptr_);
   if (raw_ptr == nullptr) {
     return nullptr;
@@ -751,6 +751,9 @@ AsyncObserver<T1> AsyncObserver<T>::Convert() && {
 
 template <typename T>
 Optional<typename AsyncObserver<T>::ReadGuard> AsyncObserver<T>::Read() const {
+  if (rw_lock_ == nullptr) {
+    return Optional<ReadGuard>::None();
+  }
   auto guard = base::ReadGuard(*rw_lock_);
   if (is_null_ == nullptr || *is_null_) {
     return Optional<ReadGuard>::None();
@@ -762,6 +765,9 @@ Optional<typename AsyncObserver<T>::ReadGuard> AsyncObserver<T>::Read() const {
 template <typename T>
 Optional<typename AsyncObserver<T>::WriteGuard> AsyncObserver<T>::Write()
     const {
+  if (rw_lock_ == nullptr) {
+    return Optional<ReadGuard>::None();
+  }
   auto guard = base::WriteGuard(*rw_lock_);
   if (is_null_ == nullptr || *is_null_) {
     return Optional<WriteGuard>::None();
@@ -810,6 +816,73 @@ void AsyncObserver<T>::ResetPtr() {
   rw_lock_ = nullptr;
   is_null_ = nullptr;
   observer_cnt_ = nullptr;
+}
+
+template <typename T>
+ObservedAsync<T>::ReadGuard::ReadGuard(ReadGuard&& other) noexcept
+    : raw_ptr_(other.raw_ptr_), read_guard_(std::move(other.read_guard_)) {
+  other.raw_ptr_ = nullptr;
+}
+
+template <typename T>
+typename ObservedAsync<T>::ReadGuard& ObservedAsync<T>::ReadGuard::operator=(
+    ReadGuard&& other) noexcept {
+  if (this == &other) {
+    return *this;
+  }
+  this->~ReadGuard();
+  new (this) ReadGuard(std::move(other));
+  return *this;
+}
+
+template <typename T>
+const T* ObservedAsync<T>::ReadGuard::operator->() const {
+  return raw_ptr_;
+}
+
+template <typename T>
+const T& ObservedAsync<T>::ReadGuard::operator*() const {
+  return *raw_ptr_;
+}
+
+template <typename T>
+ObservedAsync<T>::ReadGuard::ReadGuard(const T* raw_ptr,
+                                       base::ReadGuard&& rw_lock)
+    : raw_ptr_(raw_ptr), read_guard_(std::move(rw_lock)) {
+  MIRAGE_DCHECK(raw_ptr_ != nullptr);
+}
+
+template <typename T>
+ObservedAsync<T>::WriteGuard::WriteGuard(WriteGuard&& other) noexcept
+    : raw_ptr_(other.raw_ptr_), write_guard_(std::move(other.write_guard_)) {
+  other.raw_ptr_ = nullptr;
+}
+
+template <typename T>
+typename ObservedAsync<T>::WriteGuard& ObservedAsync<T>::WriteGuard::operator=(
+    WriteGuard&& other) noexcept {
+  if (this == &other) {
+    return *this;
+  }
+  this->~WriteGuard();
+  new (this) WriteGuard(std::move(other));
+  return *this;
+}
+
+template <typename T>
+T* ObservedAsync<T>::WriteGuard::operator->() const {
+  return raw_ptr_;
+}
+
+template <typename T>
+T& ObservedAsync<T>::WriteGuard::operator*() const {
+  return *raw_ptr_;
+}
+
+template <typename T>
+ObservedAsync<T>::WriteGuard::WriteGuard(T* raw_ptr, base::WriteGuard&& rw_lock)
+    : raw_ptr_(raw_ptr), write_guard_(std::move(rw_lock)) {
+  MIRAGE_DCHECK(raw_ptr_ != nullptr);
 }
 
 }  // namespace mirage::base
