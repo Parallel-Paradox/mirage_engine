@@ -28,7 +28,7 @@ class Owned {
   static Owned New(Args&&... args);
 
   template <typename T1>
-  Owned<T1> TryConvert() &&;
+  Owned<T1> TryConvert();
 
   template <typename T1>
   Owned<T1> Convert() &&;
@@ -90,7 +90,7 @@ Owned<T> Owned<T>::New(Args&&... args) {
 
 template <typename T>
 template <typename T1>
-Owned<T1> Owned<T>::TryConvert() && {
+Owned<T1> Owned<T>::TryConvert() {
   T1* raw_ptr = dynamic_cast<T1*>(raw_ptr_);
   if (raw_ptr == nullptr) {
     return nullptr;

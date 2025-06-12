@@ -99,7 +99,7 @@ TEST(WeakTests, CloneAsync) {
   async_thread.join();
 }
 
-TEST(WeakTests, ConvertBaseToDerive) {
+TEST(WeakTests, ConvertDeriveToBase) {
   int32_t base_destructed = 0;
   int32_t derive_destructed = 0;
 
@@ -112,7 +112,7 @@ TEST(WeakTests, ConvertBaseToDerive) {
   EXPECT_FALSE(base.is_null());
 }
 
-TEST(WeakTests, ConvertDeriveToBase) {
+TEST(WeakTests, ConvertBaseToDerive) {
   // Can't convert from base to derive when base is the origin type.
   int32_t base_destructed = 0;
   auto base_shared = SharedLocal<Base>::New(&base_destructed);

@@ -72,7 +72,7 @@ TEST(SharedTests, PtrOps) {
   const auto ptr = SharedLocal<Base>::New(&cnt);
   EXPECT_EQ(*ptr->base_destructed, 0);
 
-  *ptr->base_destructed = true;
+  *((*ptr).base_destructed) = 1;  // NOLINT: Test deref.
   EXPECT_EQ(*ptr->base_destructed, 1);
 }
 
@@ -93,7 +93,7 @@ TEST(SharedTests, CloneAsync) {
   EXPECT_EQ(ptr.ref_cnt(), 1);
 }
 
-TEST(SharedTests, ConvertBaseToDerive) {
+TEST(SharedTests, ConvertDeriveToBase) {
   int32_t base_destructed = 0;
   int32_t derive_destructed = 0;
 
@@ -109,23 +109,22 @@ TEST(SharedTests, ConvertBaseToDerive) {
   EXPECT_EQ(derive_destructed, 1);
 }
 
-TEST(SharedTests, ConvertDeriveToBase) {
+TEST(SharedTests, ConvertBaseToDerive) {
   // Can't convert from base to derive when base is the origin type.
   int32_t base_destructed = 0;
   auto base = SharedLocal<Base>::New(&base_destructed);
-  const SharedLocal<Derive> derive_from_base =
-      std::move(base).TryConvert<Derive>();
+  const SharedLocal<Derive> derive_from_base = base.TryConvert<Derive>();
   EXPECT_TRUE(derive_from_base.is_null());
-  EXPECT_FALSE(base.is_null());  // NOLINT: Use after move.
+  EXPECT_FALSE(base.is_null());
   EXPECT_EQ(base_destructed, 0);
 
   // Convert from base to derive when derive is the origin type.
   int32_t derive_destructed = 0;
   auto derive = SharedLocal<Derive>::New(&base_destructed, &derive_destructed);
-  SharedLocal<Base> base_from_derive = std::move(derive).TryConvert<Base>();
-  derive = std::move(base_from_derive).TryConvert<Derive>();
+  SharedLocal<Base> base_from_derive = derive.TryConvert<Base>();
+  derive = base_from_derive.TryConvert<Derive>();
   EXPECT_FALSE(derive.is_null());
-  EXPECT_TRUE(base_from_derive.is_null());  // NOLINT: Use after move.
+  EXPECT_TRUE(base_from_derive.is_null());
   EXPECT_EQ(base_destructed, 0);
   EXPECT_EQ(derive_destructed, 0);
 }

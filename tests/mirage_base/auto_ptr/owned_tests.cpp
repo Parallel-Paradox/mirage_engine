@@ -62,11 +62,11 @@ TEST(OwnedTests, PtrOps) {
   const auto ptr = Owned<Base>::New(&cnt);
   EXPECT_EQ(*ptr->base_destructed, 0);
 
-  *ptr->base_destructed = true;
+  *((*ptr).base_destructed) = 1;  // NOLINT: Test deref.
   EXPECT_EQ(*ptr->base_destructed, 1);
 }
 
-TEST(OwnedTests, ConvertDeriveToBase) {
+TEST(OwnedTests, ConvertBaseToDerive) {
   int32_t base_destructed = 0;
   int32_t derive_destructed = 0;
 
@@ -82,22 +82,22 @@ TEST(OwnedTests, ConvertDeriveToBase) {
   EXPECT_EQ(derive_destructed, 1);
 }
 
-TEST(OwnedTests, ConvertBaseToDerive) {
+TEST(OwnedTests, ConvertDeriveToBase) {
   // Can't convert from base to derive when base is the origin type.
   int32_t base_destructed = 0;
   auto base = Owned<Base>::New(&base_destructed);
-  const Owned<Derive> derive_from_base = std::move(base).TryConvert<Derive>();
+  const Owned<Derive> derive_from_base = base.TryConvert<Derive>();
   EXPECT_TRUE(derive_from_base.is_null());
-  EXPECT_FALSE(base.is_null());  // NOLINT: Use after move.
+  EXPECT_FALSE(base.is_null());
   EXPECT_EQ(base_destructed, 0);
 
   // Convert from base to derive when derive is the origin type.
   int32_t derive_destructed = 0;
   auto derive = Owned<Derive>::New(&base_destructed, &derive_destructed);
-  Owned<Base> base_from_derive = std::move(derive).TryConvert<Base>();
-  derive = std::move(base_from_derive).TryConvert<Derive>();
+  Owned<Base> base_from_derive = derive.TryConvert<Base>();
+  derive = base_from_derive.TryConvert<Derive>();
   EXPECT_FALSE(derive.is_null());
-  EXPECT_TRUE(base_from_derive.is_null());  // NOLINT: Use after move.
+  EXPECT_TRUE(base_from_derive.is_null());
   EXPECT_EQ(base_destructed, 0);
   EXPECT_EQ(derive_destructed, 0);
 }

@@ -32,7 +32,7 @@ class Weak {
   friend class Weak;
 
   template <typename T1>
-  Weak<T1, R> TryConvert() &&;
+  Weak<T1, R> TryConvert();
 
   template <typename T1>
   Weak<T1, R> Convert() &&;
@@ -128,7 +128,7 @@ Weak<T, R> Weak<T, R>::Clone() const {
 
 template <typename T, IsRefCount R>
 template <typename T1>
-Weak<T1, R> Weak<T, R>::TryConvert() && {
+Weak<T1, R> Weak<T, R>::TryConvert() {
   T1* raw_ptr = dynamic_cast<T1*>(raw_ptr_);
   if (raw_ptr == nullptr) {
     return nullptr;
