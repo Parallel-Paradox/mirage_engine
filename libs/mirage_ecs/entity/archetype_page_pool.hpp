@@ -16,17 +16,17 @@ class ArchetypePagePool {
  public:
   static constexpr size_t kPageSizeKB = 16;
 
-  ArchetypePagePool() = default;
-  ~ArchetypePagePool() = default;
+  MIRAGE_ECS ArchetypePagePool() = default;
+  MIRAGE_ECS ~ArchetypePagePool() = default;
 
   ArchetypePagePool(const ArchetypePagePool&) = delete;
   ArchetypePagePool& operator=(const ArchetypePagePool&) = delete;
 
-  ArchetypePagePool(ArchetypePagePool&&) = default;
-  ArchetypePagePool& operator=(ArchetypePagePool&&) = default;
+  MIRAGE_ECS ArchetypePagePool(ArchetypePagePool&&) = default;
+  MIRAGE_ECS ArchetypePagePool& operator=(ArchetypePagePool&&) = default;
 
-  ArchetypeDataPage Allocate(size_t alignment);
-  void Release(ArchetypeDataPage&& page);
+  MIRAGE_ECS ArchetypeDataPage Allocate(size_t alignment);
+  MIRAGE_ECS void Release(ArchetypeDataPage&& page);
 
  private:
   enum PoolIndex {
@@ -38,7 +38,7 @@ class ArchetypePagePool {
     kMaxIndex,
   };
 
-  PoolIndex GetPoolIndex(size_t alignment) const;
+  MIRAGE_ECS PoolIndex GetPoolIndex(size_t alignment) const;
 
   Array<ArchetypeDataPage> pool_[PoolIndex::kMaxIndex];
 };

@@ -6,28 +6,9 @@
 #include "mirage_base/container/array.hpp"
 #include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/entity/archetype.hpp"
+#include "mirage_ecs/entity/entity_id.hpp"
 
 namespace mirage::ecs {
-
-class MIRAGE_ECS EntityId {
- public:
-  EntityId() = default;
-  ~EntityId() = default;
-
-  EntityId(const EntityId &) = default;
-  EntityId &operator=(const EntityId &) = default;
-
-  EntityId(size_t index, size_t generation);
-
-  bool operator==(const EntityId &other) const;
-
-  size_t index() const;
-  size_t generation() const;
-
- private:
-  size_t index_{0};
-  size_t generation_{0};
-};
 
 class EntityManager {
   template <typename T>
