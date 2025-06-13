@@ -59,8 +59,6 @@ class MIRAGE_BASE ScopedReadGuard {
   ScopedReadGuard(const ScopedReadGuard&) = delete;
   ScopedReadGuard(ScopedReadGuard&& other) noexcept = delete;
 
-  void Reset();
-
  private:
   const RWLock& rw_lock_;
 };
@@ -91,8 +89,6 @@ class MIRAGE_BASE ScopedWriteGuard {
 
   ScopedWriteGuard(const ScopedWriteGuard&) = delete;
   ScopedWriteGuard(ScopedWriteGuard&& other) noexcept = delete;
-
-  void Reset();
 
  private:
   const RWLock& rw_lock_;

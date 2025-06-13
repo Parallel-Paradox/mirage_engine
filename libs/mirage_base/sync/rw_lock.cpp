@@ -49,9 +49,7 @@ ScopedReadGuard::ScopedReadGuard(const RWLock& rw_lock) : rw_lock_(rw_lock) {
   rw_lock.Read();
 }
 
-ScopedReadGuard::~ScopedReadGuard() { Reset(); }
-
-void ScopedReadGuard::Reset() { rw_lock_.UnlockRead(); }
+ScopedReadGuard::~ScopedReadGuard() { rw_lock_.UnlockRead(); }
 
 WriteGuard::WriteGuard(const RWLock& rw_lock) : rw_lock_(&rw_lock) {
   rw_lock.Write();
@@ -84,6 +82,4 @@ ScopedWriteGuard::ScopedWriteGuard(const RWLock& rw_lock) : rw_lock_(rw_lock) {
   rw_lock.Write();
 }
 
-ScopedWriteGuard::~ScopedWriteGuard() { Reset(); }
-
-void ScopedWriteGuard::Reset() { rw_lock_.UnlockWrite(); }
+ScopedWriteGuard::~ScopedWriteGuard() { rw_lock_.UnlockWrite(); }

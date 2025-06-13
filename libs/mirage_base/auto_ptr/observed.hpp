@@ -229,6 +229,7 @@ template <typename T>
 class ObservedAsync<T>::ReadGuard {
  public:
   ReadGuard() = delete;
+  ReadGuard(const T* raw_ptr, base::ReadGuard&& rw_lock);
   ~ReadGuard() = default;
 
   ReadGuard(const ReadGuard&) = delete;
@@ -241,11 +242,6 @@ class ObservedAsync<T>::ReadGuard {
   const T& operator*() const;
 
  private:
-  friend class ObservedAsync<T>;
-  friend class AsyncObserver<T>;
-
-  ReadGuard(const T* raw_ptr, base::ReadGuard&& rw_lock);
-
   const T* raw_ptr_;
   base::ReadGuard read_guard_;
 };
@@ -254,6 +250,7 @@ template <typename T>
 class ObservedAsync<T>::WriteGuard {
  public:
   WriteGuard() = delete;
+  WriteGuard(T* raw_ptr, base::WriteGuard&& rw_lock);
   ~WriteGuard() = default;
 
   WriteGuard(const WriteGuard&) = delete;
@@ -266,11 +263,6 @@ class ObservedAsync<T>::WriteGuard {
   T& operator*() const;
 
  private:
-  friend class ObservedAsync<T>;
-  friend class AsyncObserver<T>;
-
-  WriteGuard(T* raw_ptr, base::WriteGuard&& rw_lock);
-
   T* raw_ptr_;
   base::WriteGuard write_guard_;
 };
@@ -573,13 +565,18 @@ ObservedAsync<T>& ObservedAsync<T>::operator=(std::nullptr_t) {
 
 template <typename T>
 void ObservedAsync<T>::Reset() {
-  if (is_null()) {
+  if (rw_lock_ == nullptr) {
     return;
   }
-  auto guard = base::ScopedWriteGuard(*rw_lock_);
-  *is_null_ = true;
-  delete raw_ptr_;
-  guard.Reset();
+  {
+    auto guard = base::ScopedWriteGuard(*rw_lock_);
+    MIRAGE_DCHECK(is_null_ != nullptr);
+    if (*is_null_) {
+      return;
+    }
+    *is_null_ = true;
+    delete raw_ptr_;
+  }
 
   if (observer_cnt_->cnt() == 0) {
     delete rw_lock_;
@@ -650,8 +647,12 @@ bool ObservedAsync<T>::operator==(std::nullptr_t) const {
 
 template <typename T>
 bool ObservedAsync<T>::is_null() const {
+  if (rw_lock_ == nullptr) {
+    return true;
+  }
   auto guard = base::ScopedReadGuard(*rw_lock_);
-  return is_null_ == nullptr || *is_null_;
+  MIRAGE_DCHECK(is_null_ != nullptr);
+  return *is_null_;
 }
 
 template <typename T>
@@ -765,7 +766,7 @@ template <typename T>
 Optional<typename AsyncObserver<T>::WriteGuard> AsyncObserver<T>::Write()
     const {
   if (rw_lock_ == nullptr) {
-    return Optional<ReadGuard>::None();
+    return Optional<WriteGuard>::None();
   }
   auto guard = base::WriteGuard(*rw_lock_);
   if (is_null_ == nullptr || *is_null_) {
@@ -792,8 +793,12 @@ bool AsyncObserver<T>::operator==(std::nullptr_t) const {
 
 template <typename T>
 bool AsyncObserver<T>::is_null() const {
+  if (rw_lock_ == nullptr) {
+    return true;
+  }
   auto guard = base::ScopedReadGuard(*rw_lock_);
-  return is_null_ == nullptr || *is_null_;
+  MIRAGE_DCHECK(is_null_ != nullptr);
+  return *is_null_;
 }
 
 template <typename T>
@@ -815,6 +820,13 @@ void AsyncObserver<T>::ResetPtr() {
   rw_lock_ = nullptr;
   is_null_ = nullptr;
   observer_cnt_ = nullptr;
+}
+
+template <typename T>
+ObservedAsync<T>::ReadGuard::ReadGuard(const T* raw_ptr,
+                                       base::ReadGuard&& rw_lock)
+    : raw_ptr_(raw_ptr), read_guard_(std::move(rw_lock)) {
+  MIRAGE_DCHECK(raw_ptr_ != nullptr);
 }
 
 template <typename T>
@@ -845,9 +857,8 @@ const T& ObservedAsync<T>::ReadGuard::operator*() const {
 }
 
 template <typename T>
-ObservedAsync<T>::ReadGuard::ReadGuard(const T* raw_ptr,
-                                       base::ReadGuard&& rw_lock)
-    : raw_ptr_(raw_ptr), read_guard_(std::move(rw_lock)) {
+ObservedAsync<T>::WriteGuard::WriteGuard(T* raw_ptr, base::WriteGuard&& rw_lock)
+    : raw_ptr_(raw_ptr), write_guard_(std::move(rw_lock)) {
   MIRAGE_DCHECK(raw_ptr_ != nullptr);
 }
 
@@ -876,12 +887,6 @@ T* ObservedAsync<T>::WriteGuard::operator->() const {
 template <typename T>
 T& ObservedAsync<T>::WriteGuard::operator*() const {
   return *raw_ptr_;
-}
-
-template <typename T>
-ObservedAsync<T>::WriteGuard::WriteGuard(T* raw_ptr, base::WriteGuard&& rw_lock)
-    : raw_ptr_(raw_ptr), write_guard_(std::move(rw_lock)) {
-  MIRAGE_DCHECK(raw_ptr_ != nullptr);
 }
 
 }  // namespace mirage::base

@@ -68,7 +68,7 @@ TEST(WeakTests, Reset) {
 
 TEST(WeakTests, CloneAsync) {
   int32_t is_destructed = 0;
-  SharedAsync<Base> shared = SharedAsync<Base>::New(&is_destructed);
+  auto shared = SharedAsync<Base>::New(&is_destructed);
   WeakAsync<Base> weak(shared);
   std::atomic_bool is_shared_destructed{false};
 
