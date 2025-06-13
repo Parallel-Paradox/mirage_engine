@@ -166,7 +166,7 @@ TEST(ObservedTests, LocalCloneObserver) {
 
 TEST(ObservedTests, AsyncCloneObserver) {
   int32_t is_destructed = 0;
-  ObservedAsync<Base> observed = ObservedAsync<Base>::New(&is_destructed);
+  auto observed = ObservedAsync<Base>::New(&is_destructed);
   auto observer = observed.NewObserver();
   std::atomic_bool is_observed_destructed{false};
 

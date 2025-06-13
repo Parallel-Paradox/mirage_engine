@@ -8,7 +8,7 @@ using namespace mirage::base;
 
 namespace {
 
-int32_t Add(const int32_t a, const int32_t b) { return a + b; }
+[[maybe_unused]] int32_t Add(const int32_t a, const int32_t b) { return a + b; }
 
 }  // namespace
 
@@ -32,7 +32,6 @@ void TestAddFuncTrait(FuncType func_type) {
 }
 
 TEST(FuncTraitTests, TestAddFuncTrait) {
-  EXPECT_EQ(2, Add(1, 1));  // Make compiler don't ignore this function.
   TestAddFuncTrait<FuncTrait<decltype(Add)>>(FuncType::kFunc);
   TestAddFuncTrait<FuncTrait<decltype(&Add)>>(FuncType::kFuncPtr);
   TestAddFuncTrait<FuncTrait<decltype(Add)&>>(FuncType::kFuncRef);
