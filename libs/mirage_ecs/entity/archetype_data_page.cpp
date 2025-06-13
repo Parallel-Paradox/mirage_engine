@@ -100,12 +100,11 @@ Courier ArchetypeDataPage::SwapPop(const size_t index) {
   return SwapPopMany({index});
 }
 
-Courier ArchetypeDataPage::SwapPopMany(
-    const std::initializer_list<size_t> index_list) {
+Courier ArchetypeDataPage::SwapPopMany(Array<size_t> index_array) {
   MIRAGE_DCHECK(is_initialized());
-  MIRAGE_DCHECK(index_list.size() > 0);
-  auto rv = Courier(*this, index_list);
-  SwapRemoveMany(index_list);
+  MIRAGE_DCHECK(index_array.size() > 0);
+  auto rv = Courier(*this, index_array);
+  SwapRemoveMany(std::move(index_array));
   return rv;
 }
 
@@ -113,15 +112,13 @@ void ArchetypeDataPage::SwapRemove(const size_t index) {
   return SwapRemoveMany({index});
 }
 
-void ArchetypeDataPage::SwapRemoveMany(
-    const std::initializer_list<size_t> index_list) {
+void ArchetypeDataPage::SwapRemoveMany(Array<size_t> index_array) {
   MIRAGE_DCHECK(is_initialized());
-  MIRAGE_DCHECK(index_list.size() > 0);
+  MIRAGE_DCHECK(index_array.size() > 0);
 
-  Array<size_t> index_list_array(index_list);
-  std::ranges::sort(index_list_array, std::greater());
+  std::ranges::sort(index_array, std::greater());
 
-  for (const size_t index : index_list_array) {
+  for (const size_t index : index_array) {
     MIRAGE_DCHECK(index < size_);
     size_ -= 1;
     std::byte* last = buffer_.ptr() + size_ * descriptor_->size();
@@ -453,13 +450,12 @@ ptrdiff_t Courier::ssize() const {
   return ssize;
 }
 
-Courier::Courier(ArchetypeDataPage& page,
-                 const std::initializer_list<size_t> index_list)
+Courier::Courier(ArchetypeDataPage& page, const Array<size_t>& index_array)
     : descriptor_(page.descriptor_.Clone()),
-      buffer_(Buffer(descriptor_->size() * index_list.size(),
+      buffer_(Buffer(descriptor_->size() * index_array.size(),
                      descriptor_->align())) {
   std::byte* dest = buffer_.ptr();
-  for (const size_t index : index_list) {
+  for (const size_t index : index_array) {
     MIRAGE_DCHECK(index < page.size());
     std::byte* target = page.buffer().ptr() + index * descriptor_->size();
     for (const auto& entry : descriptor_->offset_map()) {

@@ -2,19 +2,23 @@
 #define MIRAGE_ECS_ENTITY_ARCHETYPE_DATA_PAGE
 
 #include <compare>
-#include <initializer_list>
 #include <iterator>
 
 #include "mirage_base/auto_ptr/shared.hpp"
 #include "mirage_base/buffer/aligned_buffer.hpp"
+#include "mirage_base/container/array.hpp"
 #include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/component/component_id.hpp"
 #include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/entity/archetype_descriptor.hpp"
+#include "mirage_ecs/entity/entity_id.hpp"
 
 namespace mirage::ecs {
 
 class ArchetypeDataPage {
+  template <typename T>
+  using Array = base::Array<T>;
+
  public:
   using SharedDescriptor = base::SharedLocal<ArchetypeDescriptor>;
   using Buffer = base::AlignedBuffer;
@@ -42,9 +46,9 @@ class ArchetypeDataPage {
   [[nodiscard]] MIRAGE_ECS bool Push(ComponentBundle& bundle);
   [[nodiscard]] MIRAGE_ECS bool Push(View& view);
   MIRAGE_ECS Courier SwapPop(size_t index);
-  MIRAGE_ECS Courier SwapPopMany(std::initializer_list<size_t> index_list);
+  MIRAGE_ECS Courier SwapPopMany(Array<size_t> index_array);
   MIRAGE_ECS void SwapRemove(size_t index);
-  MIRAGE_ECS void SwapRemoveMany(std::initializer_list<size_t> index_list);
+  MIRAGE_ECS void SwapRemoveMany(Array<size_t> index_array);
 
   MIRAGE_ECS void Clear();
 
@@ -71,6 +75,8 @@ class ArchetypeDataPage {
   size_t size_{0};
 
   Buffer buffer_;
+  Array<EntityId> entity_id_array_;
+  Array<size_t> sparse_index_array_;
 };
 
 class MIRAGE_ECS ArchetypeDataPage::ConstView {
@@ -271,8 +277,7 @@ class ArchetypeDataPage::Courier {
 
  private:
   friend class ArchetypeDataPage;
-  MIRAGE_ECS Courier(ArchetypeDataPage& page,
-                     std::initializer_list<size_t> index_list);
+  MIRAGE_ECS Courier(ArchetypeDataPage& page, const Array<size_t>& index_array);
 
   SharedDescriptor descriptor_{nullptr};
   Buffer buffer_;
