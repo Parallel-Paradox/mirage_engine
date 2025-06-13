@@ -1,6 +1,5 @@
 #include "mirage_base/sync/lock.hpp"
 
-#include <new>
 #include <utility>
 
 using namespace mirage::base;

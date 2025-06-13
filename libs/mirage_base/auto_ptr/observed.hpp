@@ -1,8 +1,6 @@
 #ifndef MIRAGE_BASE_AUTO_PTR_OBSERVED
 #define MIRAGE_BASE_AUTO_PTR_OBSERVED
 
-#include <atomic>
-
 #include "mirage_base/auto_ptr/ref_count.hpp"
 #include "mirage_base/define/check.hpp"
 #include "mirage_base/sync/rw_lock.hpp"

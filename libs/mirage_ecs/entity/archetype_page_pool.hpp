@@ -5,7 +5,6 @@
 
 #include "mirage_base/container/array.hpp"
 #include "mirage_ecs/entity/archetype_data_page.hpp"
-#include "mirage_ecs/entity/archetype_descriptor.hpp"
 
 namespace mirage::ecs {
 
