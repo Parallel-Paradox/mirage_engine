@@ -96,37 +96,38 @@ Courier ArchetypeDataPage::SwapPop(const size_t index) {
   return SwapPopMany({index});
 }
 
-Courier ArchetypeDataPage::SwapPopMany(Array<size_t> index_array) {
+Courier ArchetypeDataPage::SwapPopMany(const Array<size_t>& index_array) {
   MIRAGE_DCHECK(is_initialized());
   MIRAGE_DCHECK(index_array.size() > 0);
   auto rv = Courier(*this, index_array);
-  SwapRemoveMany(std::move(index_array));
+  SwapRemoveMany(index_array);
   return rv;
 }
 
 void ArchetypeDataPage::SwapRemove(const size_t index) {
-  return SwapRemoveMany({index});
+  MIRAGE_DCHECK(index < size());
+  entity_id_array_.SwapRemove(index);
+  std::byte* last = buffer_.ptr() + size() * descriptor_->size();
+  std::byte* dest = buffer_.ptr() + index * descriptor_->size();
+  for (const auto& entry : descriptor_->offset_map()) {
+    const auto component_id = entry.key();
+    const auto offset = entry.val();
+
+    component_id.destruct_func()(dest + offset);
+    component_id.move_func()(last + offset, dest + offset);
+    component_id.destruct_func()(last + offset);
+  }
 }
 
-void ArchetypeDataPage::SwapRemoveMany(Array<size_t> index_array) {
+void ArchetypeDataPage::SwapRemoveMany(const Array<size_t>& index_array) {
   MIRAGE_DCHECK(is_initialized());
   MIRAGE_DCHECK(index_array.size() > 0);
 
-  std::ranges::sort(index_array, std::greater());
+  auto sorted_index_array = index_array;
+  std::ranges::sort(sorted_index_array, std::greater());
 
-  for (const size_t index : index_array) {
-    MIRAGE_DCHECK(index < size());
-    entity_id_array_.SwapRemove(index);
-    std::byte* last = buffer_.ptr() + size() * descriptor_->size();
-    std::byte* dest = buffer_.ptr() + index * descriptor_->size();
-    for (const auto& entry : descriptor_->offset_map()) {
-      const auto component_id = entry.key();
-      const auto offset = entry.val();
-
-      component_id.destruct_func()(dest + offset);
-      component_id.move_func()(last + offset, dest + offset);
-      component_id.destruct_func()(last + offset);
-    }
+  for (const size_t index : sorted_index_array) {
+    SwapRemove(index);
   }
 }
 

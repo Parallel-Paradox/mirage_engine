@@ -46,9 +46,9 @@ class ArchetypeDataPage {
   [[nodiscard]] MIRAGE_ECS bool Push(EntityId id, ComponentBundle& bundle);
   [[nodiscard]] MIRAGE_ECS bool Push(View& view);
   MIRAGE_ECS Courier SwapPop(size_t index);
-  MIRAGE_ECS Courier SwapPopMany(Array<size_t> index_array);
+  MIRAGE_ECS Courier SwapPopMany(const Array<size_t>& index_array);
   MIRAGE_ECS void SwapRemove(size_t index);
-  MIRAGE_ECS void SwapRemoveMany(Array<size_t> index_array);
+  MIRAGE_ECS void SwapRemoveMany(const Array<size_t>& index_array);
 
   MIRAGE_ECS void Clear();
 

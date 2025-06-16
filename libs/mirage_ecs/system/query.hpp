@@ -40,13 +40,8 @@ struct Without : QueryParamsTag_Without {
   using TypeList = base::TypeList<Ts...>;
 };
 
-// TODO: --- Or ---
-
-// TODO: --- And ---
-
 // ----------
 
-// TODO: Optimize finder
 template <typename ParamsTag, typename T, typename... Ts>
   requires IsQueryParam<ParamsTag> && IsQueryParam<T> && IsQueryParam<Ts...>
 consteval auto QueryParamsTypeList() {

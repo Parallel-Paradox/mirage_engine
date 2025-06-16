@@ -5,14 +5,24 @@
 
 namespace mirage::base {
 
-template <size_t I, typename Head, typename... Tail>
-  requires /* check bound */ (I < 1 + sizeof...(Tail))
-struct GetTypeFromArgs : GetTypeFromArgs<I - 1, Tail...> {};
-
-template <typename Head, typename... Tail>
-struct GetTypeFromArgs<0, Head, Tail...> {
-  using Type = Head;
+template <typename T>
+struct ArgsWrapper {
+  using Type = T;
 };
+
+template <size_t I, typename Head, typename... Tail>
+  requires /* check bound */ (I <= sizeof...(Tail))
+consteval auto GetFromArgs() {
+  if constexpr (I == 0) {
+    return ArgsWrapper<Head>();
+  } else {
+    return GetFromArgs<I - 1, Tail...>();
+  }
+}
+
+template <size_t I, typename... Args>
+  requires /* check bound */ (I < sizeof...(Args))
+using GetTypeFromArgs = typename decltype(GetFromArgs<I, Args...>())::Type;
 
 template <typename... Ts>
 struct TypeList {
@@ -23,7 +33,7 @@ struct TypeList {
   template <size_t I>
     requires /* check bound */ (I < size())
   struct Get {
-    using Type = typename GetTypeFromArgs<I, Ts...>::Type;
+    using Type = GetTypeFromArgs<I, Ts...>;
   };
 };
 
