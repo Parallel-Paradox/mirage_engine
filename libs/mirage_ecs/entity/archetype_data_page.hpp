@@ -43,7 +43,7 @@ class ArchetypeDataPage {
   MIRAGE_ECS void Initialize(SharedDescriptor descriptor);
   MIRAGE_ECS void Reset();
 
-  [[nodiscard]] MIRAGE_ECS bool Push(ComponentBundle& bundle);
+  [[nodiscard]] MIRAGE_ECS bool Push(EntityId id, ComponentBundle& bundle);
   [[nodiscard]] MIRAGE_ECS bool Push(View& view);
   MIRAGE_ECS Courier SwapPop(size_t index);
   MIRAGE_ECS Courier SwapPopMany(Array<size_t> index_array);
@@ -63,6 +63,8 @@ class ArchetypeDataPage {
   [[nodiscard]] MIRAGE_ECS bool is_initialized() const;
 
   [[nodiscard]] MIRAGE_ECS const SharedDescriptor& descriptor() const;
+
+  [[nodiscard]] MIRAGE_ECS const Array<EntityId>& entity_id_array() const;
   [[nodiscard]] MIRAGE_ECS size_t capacity() const;
   [[nodiscard]] MIRAGE_ECS size_t size() const;
 
@@ -71,12 +73,8 @@ class ArchetypeDataPage {
 
  private:
   SharedDescriptor descriptor_{nullptr};
-  size_t capacity_{0};
-  size_t size_{0};
-
-  Buffer buffer_;
   Array<EntityId> entity_id_array_;
-  Array<size_t> sparse_index_array_;
+  Buffer buffer_;
 };
 
 class MIRAGE_ECS ArchetypeDataPage::ConstView {
@@ -102,14 +100,18 @@ class MIRAGE_ECS ArchetypeDataPage::ConstView {
     return *TryGet<T>();
   }
 
+  [[nodiscard]] const EntityId& entity_id() const;
+
  private:
   friend class ArchetypeDataPage;
   friend class ConstIterator;
 
-  ConstView(const ArchetypeDescriptor* descriptor, const std::byte* view_ptr);
+  ConstView(const ArchetypeDescriptor* descriptor, const std::byte* view_ptr,
+            Array<EntityId>::ConstIterator entity_id_iter);
 
   const ArchetypeDescriptor* descriptor_{nullptr};
   const std::byte* view_ptr_{nullptr};
+  Array<EntityId>::ConstIterator entity_id_iter_{nullptr};
 };
 
 class MIRAGE_ECS ArchetypeDataPage::ConstIterator {
@@ -192,14 +194,18 @@ class MIRAGE_ECS ArchetypeDataPage::View {
     return *TryGet<T>();
   }
 
+  [[nodiscard]] const EntityId& entity_id() const;
+
  private:
   friend class ArchetypeDataPage;
   friend class Iterator;
 
-  View(const ArchetypeDescriptor* descriptor, std::byte* view_ptr);
+  View(const ArchetypeDescriptor* descriptor, std::byte* view_ptr,
+       Array<EntityId>::ConstIterator entity_id_iter);
 
   const ArchetypeDescriptor* descriptor_{nullptr};
   std::byte* view_ptr_{nullptr};
+  Array<EntityId>::ConstIterator entity_id_iter_{nullptr};
 };
 
 class MIRAGE_ECS ArchetypeDataPage::Iterator {
@@ -269,17 +275,19 @@ class ArchetypeDataPage::Courier {
 
   [[nodiscard]] MIRAGE_ECS const SharedDescriptor& descriptor() const;
 
-  [[nodiscard]] MIRAGE_ECS const Buffer& buffer() const;
-  MIRAGE_ECS Buffer& buffer();
-
+  [[nodiscard]] MIRAGE_ECS const Array<EntityId>& entity_id_array() const;
   [[nodiscard]] MIRAGE_ECS size_t size() const;
   [[nodiscard]] MIRAGE_ECS ptrdiff_t ssize() const;
+
+  [[nodiscard]] MIRAGE_ECS const Buffer& buffer() const;
+  MIRAGE_ECS Buffer& buffer();
 
  private:
   friend class ArchetypeDataPage;
   MIRAGE_ECS Courier(ArchetypeDataPage& page, const Array<size_t>& index_array);
 
   SharedDescriptor descriptor_{nullptr};
+  Array<EntityId> entity_id_array_;
   Buffer buffer_;
 };
 

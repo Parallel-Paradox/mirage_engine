@@ -1,5 +1,6 @@
 #include "mirage_base/sync/rw_lock.hpp"
 
+#include <new>  // NOLINT: Need for placement new on mac
 #include <utility>
 
 using namespace mirage::base;

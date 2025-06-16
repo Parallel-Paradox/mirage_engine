@@ -9,7 +9,6 @@
 #include "mirage_ecs/entity/archetype_descriptor.hpp"
 #include "mirage_ecs/entity/archetype_page_pool.hpp"
 #include "mirage_ecs/entity/entity_id.hpp"
-#include "mirage_ecs/util/marker.hpp"
 
 namespace mirage::ecs {
 

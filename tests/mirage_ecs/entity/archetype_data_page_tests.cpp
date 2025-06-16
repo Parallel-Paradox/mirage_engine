@@ -3,6 +3,7 @@
 #include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/entity/archetype_data_page.hpp"
 #include "mirage_ecs/entity/archetype_descriptor.hpp"
+#include "mirage_ecs/entity/entity_id.hpp"
 #include "mirage_ecs/util/marker.hpp"
 
 using namespace mirage::base;
@@ -73,21 +74,21 @@ TEST_F(ArchetypeDataPageTests, Curd) {
 
   // Push to empty page
   bundle.Add(Counter(0, &destruct_cnt_));
-  bool rv = page_.Push(bundle);
+  bool rv = page_.Push({0, 0}, bundle);
   EXPECT_TRUE(rv);
   EXPECT_EQ(page_.size(), 1);
   EXPECT_EQ(destruct_cnt_, 0);
 
   // Push to non-empty page
   bundle.Add(Counter(1, &destruct_cnt_));
-  rv = page_.Push(bundle);
+  rv = page_.Push({1, 0}, bundle);
   EXPECT_TRUE(rv);
   EXPECT_EQ(page_.size(), 2);
   EXPECT_EQ(destruct_cnt_, 0);
 
   // Push to full page
   bundle.Add(Counter(2, &destruct_cnt_));
-  rv = page_.Push(bundle);
+  rv = page_.Push({2, 0}, bundle);
   EXPECT_FALSE(rv);
   EXPECT_EQ(page_.size(), 2);
   EXPECT_EQ(destruct_cnt_, 0);
@@ -96,6 +97,11 @@ TEST_F(ArchetypeDataPageTests, Curd) {
   // View page contents
   EXPECT_EQ(page_[0].Get<Counter>().id_, 0);
   EXPECT_EQ(page_[1].Get<Counter>().id_, 1);
+
+  auto expect_entity_id = EntityId{0, 0};
+  EXPECT_EQ(page_[0].entity_id(), expect_entity_id);
+  expect_entity_id = EntityId{1, 0};
+  EXPECT_EQ(page_[1].entity_id(), expect_entity_id);
 
   // Pop many from page
   auto courier = page_.SwapPopMany({0, 1});
