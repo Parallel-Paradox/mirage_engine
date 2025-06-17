@@ -46,7 +46,7 @@ class ArchetypeDataPageTests : public ::testing::Test {
   }
 
   SharedDescriptor desc_{
-      SharedDescriptor::New(ArchetypeDescriptor::New<Counter>())};
+      SharedDescriptor::New(ArchetypeDescriptor::New<Counter>({}))};
   ArchetypeDataPage page_{desc_->size() * 2, desc_->align()};
   int32_t destruct_cnt_{0};
 };
@@ -104,7 +104,7 @@ TEST_F(ArchetypeDataPageTests, Curd) {
   EXPECT_EQ(page_[1].entity_id(), expect_entity_id);
 
   // Pop many from page
-  auto courier = page_.SwapPopMany({0, 1});
+  auto courier = page_.TakeMany({0, 1});
   EXPECT_EQ(courier.size(), 2);
   EXPECT_EQ(page_.size(), 0);
   EXPECT_EQ(destruct_cnt_, 0);

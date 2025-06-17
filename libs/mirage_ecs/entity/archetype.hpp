@@ -15,16 +15,18 @@ namespace mirage::ecs {
 class Archetype {
   using SharedDescriptor = base::SharedLocal<ArchetypeDescriptor>;
   using PagePoolObserver = base::LocalObserver<ArchetypePagePool>;
-  using ConstView = ArchetypeDataPage::ConstView;
-  using View = ArchetypeDataPage::View;
   using Courier = ArchetypeDataPage::Courier;
 
   template <typename T>
   using Array = base::Array<T>;
 
  public:
+  using ConstView = ArchetypeDataPage::ConstView;
+  using View = ArchetypeDataPage::View;
+
   Archetype() = delete;
-  MIRAGE_ECS Archetype(const SharedDescriptor &descriptor);
+  MIRAGE_ECS Archetype(const SharedDescriptor &descriptor,
+                       PagePoolObserver &&page_pool);
   MIRAGE_ECS ~Archetype() = default;
 
   Archetype(const Archetype &) = delete;
@@ -39,7 +41,9 @@ class Archetype {
   MIRAGE_ECS ConstView operator[](size_t index) const;
   MIRAGE_ECS View operator[](size_t index);
 
+  MIRAGE_ECS Courier Pop(size_t index);
   MIRAGE_ECS Courier PopMany(const Array<size_t> &index_list);
+  MIRAGE_ECS void Remove(size_t index);
   MIRAGE_ECS void RemoveMany(const Array<size_t> &index_list);
 
  private:

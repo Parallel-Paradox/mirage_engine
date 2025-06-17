@@ -74,7 +74,7 @@ TEST(WeakTests, CloneAsync) {
 
   auto async_operation = [&weak, &is_shared_destructed]() {
     for (int32_t i = 0; i < 1e5; ++i) {
-      weak.Clone();
+      weak.Clone();  // TODO: Fix like shared
     }
     while (!is_shared_destructed.load()) {
       // spin lock

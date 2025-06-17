@@ -23,7 +23,7 @@ struct Int64 : Component {
 };  // namespace
 
 TEST(ArchetypeDescriptorTests, LayoutCheck) {
-  const auto desc = ArchetypeDescriptor::New<Bool, Int64, Int32>();
+  const auto desc = ArchetypeDescriptor::New<Bool, Int64, Int32>({});
   EXPECT_EQ(desc.align(), 8);
   EXPECT_EQ(desc.size(), 16);
   EXPECT_EQ(desc.type_set(), (TypeSet::New<Bool, Int64, Int32>()));
@@ -35,7 +35,7 @@ TEST(ArchetypeDescriptorTests, LayoutCheck) {
 }
 
 TEST(ArchetypeDescriptorTests, DuplicateInit) {
-  const auto desc = ArchetypeDescriptor::New<Bool, Int64, Int32, Int64>();
+  const auto desc = ArchetypeDescriptor::New<Bool, Int64, Int32, Int64>({});
   EXPECT_EQ(desc.align(), 8);
   EXPECT_EQ(desc.size(), 16);
   EXPECT_EQ(desc.type_set(), (TypeSet::New<Bool, Int64, Int32>()));

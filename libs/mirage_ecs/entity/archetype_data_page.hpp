@@ -37,24 +37,34 @@ class ArchetypeDataPage {
   ArchetypeDataPage(const ArchetypeDataPage&) = delete;
   ArchetypeDataPage& operator=(const ArchetypeDataPage&) = delete;
 
-  MIRAGE_ECS ArchetypeDataPage(ArchetypeDataPage&&) noexcept;
-  MIRAGE_ECS ArchetypeDataPage& operator=(ArchetypeDataPage&&) noexcept;
+  MIRAGE_ECS ArchetypeDataPage(ArchetypeDataPage&&) noexcept = default;
+  MIRAGE_ECS ArchetypeDataPage& operator=(ArchetypeDataPage&&) noexcept =
+      default;
 
-  MIRAGE_ECS void Initialize(SharedDescriptor descriptor);
+  MIRAGE_ECS void Initialize(SharedDescriptor&& descriptor);
   MIRAGE_ECS void Reset();
 
-  [[nodiscard]] MIRAGE_ECS bool Push(EntityId id, ComponentBundle& bundle);
-  [[nodiscard]] MIRAGE_ECS bool Push(View& view);
-  MIRAGE_ECS Courier SwapPop(size_t index);
-  MIRAGE_ECS Courier SwapPopMany(const Array<size_t>& index_array);
-  MIRAGE_ECS void SwapRemove(size_t index);
-  MIRAGE_ECS void SwapRemoveMany(const Array<size_t>& index_array);
+  // Return sparse index, -1 if failed
+  [[nodiscard]] MIRAGE_ECS int32_t Push(EntityId id, ComponentBundle& bundle);
+  [[nodiscard]] MIRAGE_ECS int32_t Push(View& view);
+
+  MIRAGE_ECS Courier Take(int32_t sparse_id);
+  MIRAGE_ECS Courier TakeMany(const Array<int32_t>& sparse_id_array);
+
+  MIRAGE_ECS Courier Take(int32_t sparse_id,
+                          const SharedDescriptor& descriptor);
+  MIRAGE_ECS Courier TakeMany(const Array<int32_t>& sparse_id_array,
+                              const SharedDescriptor& descriptor);
+
+  MIRAGE_ECS void Remove(int32_t sparse_id);
+  MIRAGE_ECS void RemoveMany(const Array<int32_t>& sparse_id_array);
 
   MIRAGE_ECS void Clear();
 
-  MIRAGE_ECS ConstView operator[](size_t index) const;
-  MIRAGE_ECS View operator[](size_t index);
+  MIRAGE_ECS ConstView operator[](int32_t sparse_id) const;
+  MIRAGE_ECS View operator[](int32_t sparse_id);
 
+  // Iterate with dense index
   [[nodiscard]] MIRAGE_ECS ConstIterator begin() const;
   [[nodiscard]] MIRAGE_ECS ConstIterator end() const;
   MIRAGE_ECS Iterator begin();
@@ -72,9 +82,18 @@ class ArchetypeDataPage {
   MIRAGE_ECS Buffer& buffer();
 
  private:
+  MIRAGE_ECS Array<int32_t> MapSparseToDense(
+      const Array<int32_t>& sparse_id_array) const;
+  MIRAGE_ECS void SwapRemoveDense(int32_t dense_id);
+  MIRAGE_ECS void SwapRemoveManyDense(Array<int32_t>&& dense_id_array);
+
   SharedDescriptor descriptor_{nullptr};
   Array<EntityId> entity_id_array_;
   Buffer buffer_;
+
+  Array<int32_t> dense_;
+  Array<int32_t> sparse_;
+  Array<int32_t> hole_;
 };
 
 class MIRAGE_ECS ArchetypeDataPage::ConstView {
@@ -101,6 +120,7 @@ class MIRAGE_ECS ArchetypeDataPage::ConstView {
   }
 
   [[nodiscard]] const EntityId& entity_id() const;
+  [[nodiscard]] bool is_null() const;
 
  private:
   friend class ArchetypeDataPage;
@@ -195,6 +215,7 @@ class MIRAGE_ECS ArchetypeDataPage::View {
   }
 
   [[nodiscard]] const EntityId& entity_id() const;
+  [[nodiscard]] bool is_null() const;
 
  private:
   friend class ArchetypeDataPage;
@@ -284,7 +305,9 @@ class ArchetypeDataPage::Courier {
 
  private:
   friend class ArchetypeDataPage;
-  MIRAGE_ECS Courier(ArchetypeDataPage& page, const Array<size_t>& index_array);
+  MIRAGE_ECS Courier(const SharedDescriptor& descriptor,
+                     ArchetypeDataPage& page,
+                     const Array<int32_t>& dense_id_array);
 
   SharedDescriptor descriptor_{nullptr};
   Array<EntityId> entity_id_array_;

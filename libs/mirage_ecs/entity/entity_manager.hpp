@@ -3,18 +3,29 @@
 
 #include <cstddef>
 
+#include "mirage_base/auto_ptr/observed.hpp"
 #include "mirage_base/container/array.hpp"
+#include "mirage_base/container/hash_map.hpp"
+#include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/entity/archetype.hpp"
+#include "mirage_ecs/entity/archetype_id.hpp"
+#include "mirage_ecs/entity/archetype_page_pool.hpp"
 #include "mirage_ecs/entity/entity_id.hpp"
+#include "mirage_ecs/util/type_set.hpp"
 
 namespace mirage::ecs {
 
 class EntityManager {
+  using ObservedPagePool = base::ObservedLocal<ArchetypePagePool>;
+
   template <typename T>
   using Array = base::Array<T>;
 
  public:
+  class View;
+  class ConstView;
+
   MIRAGE_ECS EntityManager() = default;
   MIRAGE_ECS ~EntityManager() = default;
 
@@ -24,20 +35,39 @@ class EntityManager {
   MIRAGE_ECS EntityManager(EntityManager &&other) noexcept = default;
   MIRAGE_ECS EntityManager &operator=(EntityManager &&other) noexcept = default;
 
-  EntityId Create();
-  void Destroy(EntityId entity_id);
+  EntityId Create(ComponentBundle &bundle);
+  void Destroy(const EntityId &entity_id);
+
+  MIRAGE_ECS View Get(const EntityId &entity_id);
+  MIRAGE_ECS ConstView Get(const EntityId &entity_id) const;
 
  private:
-  Array<EntityId> available_id_array_;
+  ObservedPagePool page_pool_;
 
+  Array<ArchetypeId> available_archetype_id_;
   Array<Archetype> archetype_array_;
+  base::HashMap<TypeSet, ArchetypeId> archetype_route_map_;
+
   struct Route {
-    size_t archetype_index{0};
+    ArchetypeId archetype_id;
     size_t entity_index{0};
   };
-  Array<Route> index_route_map_;
-  // route = index_route_map_[entity_id.index()]
-  // iter = archetype_array_[route.archetype_index].begin() + route.entity_index
+  Array<EntityId> available_entity_id_;
+  Array<Route> entity_route_array_;
+};
+
+class EntityManager::View {
+ public:
+  // TODO
+ private:
+  Archetype::View archetype_view_;
+};
+
+class EntityManager::ConstView {
+ public:
+  // TODO
+ private:
+  Archetype::ConstView archetype_view_;
 };
 
 }  // namespace mirage::ecs

@@ -6,6 +6,7 @@
 #include "mirage_base/util/type_id.hpp"
 #include "mirage_base/wrap/optional.hpp"
 #include "mirage_ecs/entity/archetype.hpp"
+#include "mirage_ecs/entity/entity_manager.hpp"
 #include "mirage_ecs/util/marker.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
@@ -21,7 +22,6 @@ class World {
 
  public:
   using ResourceMap = base::HashMap<TypeId, Owned<Resource>>;
-  using ArchetypeMap = base::HashMap<TypeSet, Archetype>;
 
   World() = default;
   ~World() = default;
@@ -40,7 +40,7 @@ class World {
 
  private:
   ResourceMap resource_map_;
-  ArchetypeMap archetype_map_;
+  EntityManager entity_manager_;
 };
 
 template <IsResource T, typename... Args>
