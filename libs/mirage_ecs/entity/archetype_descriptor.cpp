@@ -6,12 +6,14 @@
 #include "mirage_base/container/array.hpp"
 #include "mirage_base/define/check.hpp"
 #include "mirage_ecs/component/component_id.hpp"
+#include "mirage_ecs/entity/archetype_id.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
 using namespace mirage::ecs;
 
 ArchetypeDescriptor::ArchetypeDescriptor(
-    base::Array<ComponentId> component_id_array) {
+    const ArchetypeId& id, base::Array<ComponentId>&& component_id_array)
+    : id_(id) {
   // Build type set and remove duplicates.
   type_set_.Reserve(component_id_array.size());
   for (auto iter = component_id_array.begin();
@@ -30,7 +32,7 @@ ArchetypeDescriptor::ArchetypeDescriptor(
   // entity alignment.
   // Because all alignments are powers of 2, the LCM is the largest alignment.
   align_ = type_set_.type_array()[0].type_align();
-  for (const TypeId& type_id : type_set_.type_array()) {
+  for (const auto& type_id : type_set_.type_array()) {
     const size_t align = type_id.type_align();
     // Check if the alignment is a power of 2.
     MIRAGE_DCHECK((align != 0 && (align & (align - 1)) == 0));
