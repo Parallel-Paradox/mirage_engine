@@ -43,18 +43,24 @@ class Array {
   template <typename... Args>
   void Insert(size_t index, Args&&... args);
 
-  T Remove(size_t index);
-  T SwapRemove(size_t index);
+  [[nodiscard]] T Take(size_t index);
+  [[nodiscard]] T SwapTake(size_t index);
+  [[nodiscard]] T Pop();
+
+  void Remove(size_t index);
+  void SwapRemove(size_t index);
+  void RemoveTail();
 
   void Swap(size_t index_a, size_t index_b);
-
-  T Pop();
 
   T& operator[](size_t index);
   T* TryGet(size_t index);
 
   const T& operator[](size_t index) const;
   const T* TryGet(size_t index) const;
+
+  T& Tail();
+  const T& Tail() const;
 
   bool operator==(const Array& other) const;
 
@@ -275,18 +281,15 @@ void Array<T>::Insert(const size_t index, Args&&... args) {
 }
 
 template <std::move_constructible T>
-T Array<T>::Remove(const size_t index) {
+T Array<T>::Take(const size_t index) {
   MIRAGE_DCHECK(index < size_);
   T rv = std::move((*this)[index]);
-  --size_;
-  for (size_t i = index; i < size_; ++i) {
-    (*this)[i] = (*this)[i + 1];
-  }
+  Remove(index);
   return rv;
 }
 
 template <std::move_constructible T>
-T Array<T>::SwapRemove(const size_t index) {
+T Array<T>::SwapTake(const size_t index) {
   MIRAGE_DCHECK(index < size_);
   Swap(index, size_ - 1);
   return Pop();
@@ -308,6 +311,29 @@ T Array<T>::Pop() {
   MIRAGE_DCHECK(size_ != 0);
   --size_;
   return std::move(data_[size_].ref());
+}
+
+template <std::move_constructible T>
+void Array<T>::Remove(size_t index) {
+  MIRAGE_DCHECK(index < size_);
+  --size_;
+  for (size_t i = index; i < size_; ++i) {
+    (*this)[i] = (*this)[i + 1];
+  }
+}
+
+template <std::move_constructible T>
+void Array<T>::SwapRemove(size_t index) {
+  MIRAGE_DCHECK(index < size_);
+  Swap(index, size_ - 1);
+  RemoveTail();
+}
+
+template <std::move_constructible T>
+void Array<T>::RemoveTail() {
+  MIRAGE_DCHECK(size_ != 0);
+  --size_;
+  data_[size_].ptr()->~T();
 }
 
 template <std::move_constructible T>
@@ -334,6 +360,16 @@ const T* Array<T>::TryGet(size_t index) const {
     return nullptr;
   }
   return data_[index].ptr();
+}
+
+template <std::move_constructible T>
+T& Array<T>::Tail() {
+  return data_[size_ - 1].ref();
+}
+
+template <std::move_constructible T>
+const T& Array<T>::Tail() const {
+  return data_[size_ - 1].ref();
 }
 
 template <std::move_constructible T>

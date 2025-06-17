@@ -116,6 +116,25 @@ TEST(ArrayTests, Insert) {
   EXPECT_EQ(array, result);
 }
 
+TEST(ArrayTests, Take) {
+  Array<int32_t> array = {0, 1, 2, 3};
+  Array<int32_t> expect_array;
+
+  const auto s = array.SwapTake(0);
+  expect_array = {3, 1, 2};
+  EXPECT_EQ(array, expect_array);
+  EXPECT_EQ(s, 0);
+
+  const auto r = array.Take(0);
+  expect_array = {1, 2};
+  EXPECT_EQ(array, expect_array);
+  EXPECT_EQ(r, 3);
+
+  const auto tail = array.Tail();
+  const auto pop = array.Pop();
+  EXPECT_EQ(tail, pop);
+}
+
 TEST(ArrayTests, Remove) {
   Array<int32_t> array = {0, 1, 2, 3};
   Array<int32_t> expect_array;
