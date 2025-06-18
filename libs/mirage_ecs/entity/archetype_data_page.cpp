@@ -37,8 +37,12 @@ void ArchetypeDataPage::Initialize(SharedDescriptor&& descriptor) {
 
   dense_.Reserve(entity_id_array_.capacity());
   sparse_.Reserve(entity_id_array_.capacity());
-  for (auto i = 0; i < sparse_.capacity(); ++i) {
-    sparse_.Push(-1);  // Initialize sparse array with -1
+  hole_.Reserve(entity_id_array_.capacity());
+  for (auto i = 0; i < entity_id_array_.capacity(); ++i) {
+    // Initialize sparse array with -1
+    sparse_.Push(-1);
+    // Fill hole with indices in reverse order
+    hole_.Push(static_cast<int32_t>(entity_id_array_.capacity()) - i - 1);
   }
 }
 
@@ -51,9 +55,9 @@ void ArchetypeDataPage::Reset() {
   hole_.Clear();
 }
 
-int32_t ArchetypeDataPage::Push(EntityId id, ComponentBundle& bundle) {
+int32_t ArchetypeDataPage::Push(const EntityId& id, ComponentBundle& bundle) {
   MIRAGE_DCHECK(is_initialized());
-  if (size() >= capacity()) {
+  if (hole_.empty()) {
     return -1;
   }
   std::byte* dest = buffer_.ptr() + size() * descriptor_->size();
@@ -65,17 +69,20 @@ int32_t ArchetypeDataPage::Push(EntityId id, ComponentBundle& bundle) {
     Box<Component> component = bundle.Remove(component_id.type_id()).Unwrap();
     component_id.move_func()(component.raw_ptr(), dest + offset);
   }
-  int32_t sparse_id = hole_.empty() ? hole_.Pop() : dense_.size();
-  sparse_[sparse_id] = dense_.size();
+
+  const auto sparse_id = hole_.Pop();
+  sparse_[sparse_id] = static_cast<int32_t>(dense_.size());
   dense_.Push(sparse_id);
+
   return sparse_id;
 }
 
 int32_t ArchetypeDataPage::Push(View& view) {
   MIRAGE_DCHECK(is_initialized());
-  if (size() >= capacity()) {
+  if (hole_.empty()) {
     return -1;
   }
+
   std::byte* dest = buffer_.ptr() + size() * descriptor_->size();
   entity_id_array_.Push(view.entity_id());
   for (const auto& entry : descriptor_->offset_map()) {
@@ -86,8 +93,9 @@ int32_t ArchetypeDataPage::Push(View& view) {
     MIRAGE_DCHECK(component != nullptr);
     component_id.move_func()(component, dest + offset);
   }
-  int32_t sparse_id = hole_.empty() ? hole_.Pop() : dense_.size();
-  sparse_[sparse_id] = dense_.size();
+
+  const auto sparse_id = hole_.Pop();
+  sparse_[sparse_id] = static_cast<int32_t>(dense_.size());
   dense_.Push(sparse_id);
   return sparse_id;
 }
@@ -97,9 +105,19 @@ Courier ArchetypeDataPage::Take(const int32_t sparse_id) {
 }
 
 Courier ArchetypeDataPage::TakeMany(const Array<int32_t>& sparse_id_array) {
+  return TakeMany(sparse_id_array, descriptor_);
+}
+
+Courier ArchetypeDataPage::Take(const int32_t sparse_id,
+                                const SharedDescriptor& descriptor) {
+  return TakeMany({sparse_id}, descriptor);
+}
+
+Courier ArchetypeDataPage::TakeMany(const Array<int32_t>& sparse_id_array,
+                                    const SharedDescriptor& descriptor) {
   MIRAGE_DCHECK(is_initialized());
   Array<int32_t> dense_id_array = MapSparseToDense(sparse_id_array);
-  auto rv = Courier(descriptor_, *this, dense_id_array);
+  auto rv = Courier(descriptor, *this, dense_id_array);
   SwapRemoveManyDense(std::move(dense_id_array));
   return rv;
 }
@@ -118,7 +136,7 @@ void ArchetypeDataPage::Clear() {
   if (!is_initialized()) {
     return;
   }
-  for (auto i = size() - 1; i >= 0; --i) {
+  for (auto i = 0; i < size(); ++i) {
     std::byte* target = buffer_.ptr() + i * descriptor_->size();
     for (const auto& entry : descriptor_->offset_map()) {
       const auto component_id = entry.key();
@@ -149,6 +167,18 @@ View ArchetypeDataPage::operator[](const int32_t sparse_id) {
           entity_id_array_.begin() + dense_id};
 }
 
+ConstIterator ArchetypeDataPage::begin() const { return ConstIterator(*this); }
+
+ConstIterator ArchetypeDataPage::end() const {
+  return begin() + static_cast<ConstIterator::difference_type>(size());
+}
+
+Iterator ArchetypeDataPage::begin() { return Iterator(*this); }
+
+Iterator ArchetypeDataPage::end() {
+  return begin() + static_cast<ConstIterator::difference_type>(size());
+}
+
 bool ArchetypeDataPage::is_initialized() const {
   return descriptor_ != nullptr;
 }
@@ -171,6 +201,12 @@ const Buffer& ArchetypeDataPage::buffer() const { return buffer_; }
 
 Buffer& ArchetypeDataPage::buffer() { return buffer_; }
 
+const Array<int32_t>& ArchetypeDataPage::dense() const { return dense_; }
+
+const Array<int32_t>& ArchetypeDataPage::sparse() const { return sparse_; }
+
+const Array<int32_t>& ArchetypeDataPage::hole() const { return hole_; }
+
 Array<int32_t> ArchetypeDataPage::MapSparseToDense(
     const Array<int32_t>& sparse_id_array) const {
   Array<int32_t> dense_id_array;
@@ -181,7 +217,7 @@ Array<int32_t> ArchetypeDataPage::MapSparseToDense(
   return dense_id_array;
 }
 
-void ArchetypeDataPage::SwapRemoveDense(int32_t dense_id) {
+void ArchetypeDataPage::SwapRemoveDense(const int32_t dense_id) {
   MIRAGE_DCHECK(dense_id >= 0);
   entity_id_array_.SwapRemove(dense_id);
   std::byte* last = buffer_.ptr() + size() * descriptor_->size();
@@ -196,7 +232,7 @@ void ArchetypeDataPage::SwapRemoveDense(int32_t dense_id) {
   }
 
   sparse_[dense_.Tail()] = dense_id;
-  auto hole_id = dense_.SwapTake(dense_id);
+  const auto hole_id = dense_.SwapTake(dense_id);
   hole_.Push(hole_id);
   sparse_[hole_id] = -1;
 }
@@ -204,7 +240,7 @@ void ArchetypeDataPage::SwapRemoveDense(int32_t dense_id) {
 void ArchetypeDataPage::SwapRemoveManyDense(Array<int32_t>&& dense_id_array) {
   std::ranges::sort(dense_id_array, std::greater());
 
-  for (const size_t index : dense_id_array) {
+  for (const auto index : dense_id_array) {
     SwapRemoveDense(index);
   }
 }
@@ -224,7 +260,7 @@ bool ConstView::is_null() const { return descriptor_ == nullptr; }
 
 ConstView::ConstView(const ArchetypeDescriptor* descriptor,
                      const std::byte* view_ptr,
-                     Array<EntityId>::ConstIterator entity_id_iter)
+                     const Array<EntityId>::ConstIterator entity_id_iter)
     : descriptor_(descriptor),
       view_ptr_(view_ptr),
       entity_id_iter_(entity_id_iter) {}
@@ -260,7 +296,7 @@ ConstIterator::reference ConstIterator::operator[](
 
 ConstIterator::iterator_type& ConstIterator::operator++() {
   view_.view_ptr_ += view_.descriptor_->size();
-  view_.entity_id_iter_++;
+  ++view_.entity_id_iter_;
   return *this;
 }
 
@@ -272,7 +308,7 @@ ConstIterator::iterator_type ConstIterator::operator++(int) {
 
 ConstIterator::iterator_type& ConstIterator::operator--() {
   view_.view_ptr_ -= view_.descriptor_->size();
-  view_.entity_id_iter_--;
+  --view_.entity_id_iter_;
   return *this;
 }
 
@@ -358,7 +394,7 @@ const EntityId& View::entity_id() const { return *entity_id_iter_; }
 bool View::is_null() const { return descriptor_ == nullptr; }
 
 View::View(const ArchetypeDescriptor* descriptor, std::byte* view_ptr,
-           Array<EntityId>::ConstIterator entity_id_iter)
+           const Array<EntityId>::ConstIterator entity_id_iter)
     : descriptor_(descriptor),
       view_ptr_(view_ptr),
       entity_id_iter_(entity_id_iter) {}
@@ -393,7 +429,7 @@ Iterator::reference Iterator::operator[](const difference_type diff) const {
 
 Iterator::iterator_type& Iterator::operator++() {
   view_.view_ptr_ += view_.descriptor_->size();
-  view_.entity_id_iter_++;
+  ++view_.entity_id_iter_;
   return *this;
 }
 
@@ -405,7 +441,7 @@ Iterator::iterator_type Iterator::operator++(int) {
 
 Iterator::iterator_type& Iterator::operator--() {
   view_.view_ptr_ -= view_.descriptor_->size();
-  view_.entity_id_iter_--;
+  --view_.entity_id_iter_;
   return *this;
 }
 
@@ -519,7 +555,8 @@ Courier::Courier(const SharedDescriptor& descriptor, ArchetypeDataPage& page,
   std::byte* dest = buffer_.ptr();
   for (const size_t index : dense_id_array) {
     MIRAGE_DCHECK(index < page.size());
-    entity_id_array_.Emplace(std::move(page.entity_id_array_[index]));
+    entity_id_array_.Push(page.entity_id_array_[index]);
+    page.entity_id_array_[index].Reset();
 
     std::byte* target = page.buffer().ptr() + index * page_descriptor->size();
     for (const auto& entry : descriptor_->offset_map()) {

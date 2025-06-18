@@ -45,16 +45,18 @@ class ArchetypeDataPage {
   MIRAGE_ECS void Reset();
 
   // Return sparse index, -1 if failed
-  [[nodiscard]] MIRAGE_ECS int32_t Push(EntityId id, ComponentBundle& bundle);
-  [[nodiscard]] MIRAGE_ECS int32_t Push(View& view);
+  MIRAGE_ECS int32_t Push(const EntityId& id, ComponentBundle& bundle);
+  MIRAGE_ECS int32_t Push(View& view);
 
-  MIRAGE_ECS Courier Take(int32_t sparse_id);
-  MIRAGE_ECS Courier TakeMany(const Array<int32_t>& sparse_id_array);
+  [[nodiscard]] MIRAGE_ECS Courier Take(int32_t sparse_id);
+  [[nodiscard]] MIRAGE_ECS Courier
+  TakeMany(const Array<int32_t>& sparse_id_array);
 
-  MIRAGE_ECS Courier Take(int32_t sparse_id,
-                          const SharedDescriptor& descriptor);
-  MIRAGE_ECS Courier TakeMany(const Array<int32_t>& sparse_id_array,
-                              const SharedDescriptor& descriptor);
+  [[nodiscard]] MIRAGE_ECS Courier Take(int32_t sparse_id,
+                                        const SharedDescriptor& descriptor);
+  [[nodiscard]] MIRAGE_ECS Courier
+  TakeMany(const Array<int32_t>& sparse_id_array,
+           const SharedDescriptor& descriptor);
 
   MIRAGE_ECS void Remove(int32_t sparse_id);
   MIRAGE_ECS void RemoveMany(const Array<int32_t>& sparse_id_array);
@@ -81,8 +83,12 @@ class ArchetypeDataPage {
   [[nodiscard]] MIRAGE_ECS const Buffer& buffer() const;
   MIRAGE_ECS Buffer& buffer();
 
+  [[nodiscard]] MIRAGE_ECS const Array<int32_t>& dense() const;
+  [[nodiscard]] MIRAGE_ECS const Array<int32_t>& sparse() const;
+  [[nodiscard]] MIRAGE_ECS const Array<int32_t>& hole() const;
+
  private:
-  MIRAGE_ECS Array<int32_t> MapSparseToDense(
+  [[nodiscard]] MIRAGE_ECS Array<int32_t> MapSparseToDense(
       const Array<int32_t>& sparse_id_array) const;
   MIRAGE_ECS void SwapRemoveDense(int32_t dense_id);
   MIRAGE_ECS void SwapRemoveManyDense(Array<int32_t>&& dense_id_array);

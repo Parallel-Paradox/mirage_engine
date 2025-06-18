@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <sys/_types/_int32_t.h>
 
 #include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/entity/archetype_data_page.hpp"
@@ -18,7 +19,7 @@ struct Counter : Component {
   int32_t *destruct_cnt_{nullptr};
 
   Counter() = default;
-  Counter(int32_t id, int32_t *destruct_cnt)
+  Counter(const int32_t id, int32_t *destruct_cnt)
       : id_(id), destruct_cnt_(destruct_cnt) {}
 
   Counter(Counter &&other) noexcept
@@ -74,22 +75,22 @@ TEST_F(ArchetypeDataPageTests, Curd) {
 
   // Push to empty page
   bundle.Add(Counter(0, &destruct_cnt_));
-  bool rv = page_.Push({0, 0}, bundle);
-  EXPECT_TRUE(rv);
+  int32_t rv = page_.Push({0, 0}, bundle);
+  EXPECT_EQ(rv, 0);
   EXPECT_EQ(page_.size(), 1);
   EXPECT_EQ(destruct_cnt_, 0);
 
   // Push to non-empty page
   bundle.Add(Counter(1, &destruct_cnt_));
   rv = page_.Push({1, 0}, bundle);
-  EXPECT_TRUE(rv);
+  EXPECT_EQ(rv, 1);
   EXPECT_EQ(page_.size(), 2);
   EXPECT_EQ(destruct_cnt_, 0);
 
   // Push to full page
   bundle.Add(Counter(2, &destruct_cnt_));
   rv = page_.Push({2, 0}, bundle);
-  EXPECT_FALSE(rv);
+  EXPECT_EQ(rv, -1);
   EXPECT_EQ(page_.size(), 2);
   EXPECT_EQ(destruct_cnt_, 0);
   EXPECT_EQ(bundle.size(), 1);
@@ -103,7 +104,7 @@ TEST_F(ArchetypeDataPageTests, Curd) {
   expect_entity_id = EntityId{1, 0};
   EXPECT_EQ(page_[1].entity_id(), expect_entity_id);
 
-  // Pop many from page
+  // Take many from page
   auto courier = page_.TakeMany({0, 1});
   EXPECT_EQ(courier.size(), 2);
   EXPECT_EQ(page_.size(), 0);
@@ -112,7 +113,7 @@ TEST_F(ArchetypeDataPageTests, Curd) {
   // Push many to page
   for (auto view : courier) {
     rv = page_.Push(view);
-    EXPECT_TRUE(rv);
+    EXPECT_TRUE(rv >= 0);
   }
   EXPECT_EQ(page_.size(), 2);
   EXPECT_EQ(destruct_cnt_, 0);
@@ -121,4 +122,56 @@ TEST_F(ArchetypeDataPageTests, Curd) {
   page_.Clear();
   EXPECT_EQ(page_.size(), 0);
   EXPECT_EQ(destruct_cnt_, 2);
+}
+
+TEST_F(ArchetypeDataPageTests, SparseDense) {
+  Array<int32_t> expect_sparse = {-1, -1};
+  Array<int32_t> expect_dense = {};
+  Array<int32_t> expect_hole = {1, 0};
+  EXPECT_EQ(page_.sparse(), expect_sparse);
+  EXPECT_EQ(page_.dense(), expect_dense);
+  EXPECT_EQ(page_.hole(), expect_hole);
+
+  auto bundle = ComponentBundle();
+
+  bundle.Add(Counter(0, &destruct_cnt_));
+  page_.Push({0, 0}, bundle);
+
+  bundle.Add(Counter(1, &destruct_cnt_));
+  page_.Push({1, 0}, bundle);
+
+  page_.Remove(0);
+
+  expect_sparse = {-1, 0};
+  expect_dense = {1};
+  expect_hole = {0};
+  EXPECT_EQ(page_.size(), 1);
+  EXPECT_EQ(destruct_cnt_, 1);
+  EXPECT_EQ(page_[1].Get<Counter>().id_, 1);
+  EXPECT_EQ(page_.sparse(), expect_sparse);
+  EXPECT_EQ(page_.dense(), expect_dense);
+  EXPECT_EQ(page_.hole(), expect_hole);
+
+  bundle.Add(Counter(2, &destruct_cnt_));
+  int32_t rv = page_.Push({2, 0}, bundle);
+  EXPECT_EQ(rv, 0);
+  expect_sparse = {1, 0};
+  expect_dense = {1, 0};
+  expect_hole = {};
+  EXPECT_EQ(page_.size(), 2);
+  EXPECT_EQ(destruct_cnt_, 1);
+  EXPECT_EQ(page_[rv].Get<Counter>().id_, 2);
+  EXPECT_EQ(page_.sparse(), expect_sparse);
+  EXPECT_EQ(page_.dense(), expect_dense);
+  EXPECT_EQ(page_.hole(), expect_hole);
+
+  page_.RemoveMany({0, 1});
+  expect_sparse = {-1, -1};
+  expect_dense = {};
+  expect_hole = {0, 1};
+  EXPECT_EQ(page_.size(), 0);
+  EXPECT_EQ(destruct_cnt_, 3);
+  EXPECT_EQ(page_.sparse(), expect_sparse);
+  EXPECT_EQ(page_.dense(), expect_dense);
+  EXPECT_EQ(page_.hole(), expect_hole);
 }

@@ -12,7 +12,7 @@ class MIRAGE_ECS EntityId {
   EntityId() = default;
   EntityId(size_t index, size_t generation)
       : index_(index), generation_(generation) {}
-  ~EntityId() = default;
+  ~EntityId() { Reset(); }
 
   EntityId(const EntityId &) = default;
   EntityId &operator=(const EntityId &) = default;
@@ -21,8 +21,13 @@ class MIRAGE_ECS EntityId {
     return index_ == other.index_ && generation_ == other.generation_;
   }
 
-  size_t index() const { return index_; }
-  size_t generation() const { return generation_; }
+  void Reset() {
+    index_ = 0;
+    generation_ = 0;
+  }
+
+  [[nodiscard]] size_t index() const { return index_; }
+  [[nodiscard]] size_t generation() const { return generation_; }
 
  private:
   size_t index_{0};
