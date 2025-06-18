@@ -33,12 +33,13 @@ void ArchetypeDataPage::Initialize(SharedDescriptor&& descriptor) {
   MIRAGE_DCHECK(descriptor->size() <= buffer_.size());
   Reset();
   descriptor_ = std::move(descriptor);
-  entity_id_array_.Reserve(buffer_.size() / descriptor_->size());
+  const auto capacity = buffer_.size() / descriptor_->size();
+  entity_id_array_.Reserve(capacity);
 
-  dense_.Reserve(entity_id_array_.capacity());
-  sparse_.Reserve(entity_id_array_.capacity());
-  hole_.Reserve(entity_id_array_.capacity());
-  for (auto i = 0; i < entity_id_array_.capacity(); ++i) {
+  dense_.Reserve(capacity);
+  sparse_.Reserve(capacity);
+  hole_.Reserve(capacity);
+  for (auto i = 0; i < capacity; ++i) {
     // Initialize sparse array with -1
     sparse_.Push(-1);
     // Fill hole with indices in reverse order
@@ -53,6 +54,44 @@ void ArchetypeDataPage::Reset() {
   dense_.Clear();
   sparse_.Clear();
   hole_.Clear();
+}
+
+void ArchetypeDataPage::Reserve(size_t new_buffer_size) {
+  if (new_buffer_size <= buffer_.size()) {
+    return;
+  }
+  auto new_buffer = Buffer(new_buffer_size, buffer_.align());
+  if (!is_initialized()) {
+    buffer_ = std::move(new_buffer);
+    return;
+  }
+
+  const auto s = size();
+  for (const auto& entry : descriptor_->offset_map()) {
+    const auto component_id = entry.key();
+    const auto offset = entry.val();
+
+    for (auto i = 0; i < s; ++i) {
+      const auto component_offset = i * descriptor_->size() + offset;
+      std::byte* target = buffer_.ptr() + component_offset;
+      std::byte* dest = new_buffer.ptr() + component_offset;
+      component_id.move_func()(target, dest);
+    }
+  }
+  buffer_ = std::move(new_buffer);
+
+  const auto new_capacity = new_buffer_size / descriptor_->size();
+  const auto fill_cnt = new_capacity - capacity();
+  entity_id_array_.Reserve(new_capacity);
+  dense_.Reserve(new_capacity);
+  sparse_.Reserve(new_capacity);
+  hole_.Reserve(new_capacity);
+  for (auto i = 0; i < fill_cnt; ++i) {
+    // Initialize sparse array with -1
+    sparse_.Push(-1);
+    // Fill hole with indices in reverse order
+    hole_.Push(static_cast<int32_t>(new_capacity) - i - 1);
+  }
 }
 
 int32_t ArchetypeDataPage::Push(const EntityId& id, ComponentBundle& bundle) {

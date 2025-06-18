@@ -55,13 +55,14 @@ class ArchetypeDataPageTests : public ::testing::Test {
 }  // namespace
 
 TEST_F(ArchetypeDataPageTests, Initialize) {
-  auto page = ArchetypeDataPage(16, desc_->align());
+  auto page = ArchetypeDataPage(desc_->size() * 2, desc_->align());
   EXPECT_FALSE(page.is_initialized());
   EXPECT_EQ(page.capacity(), 0);
   EXPECT_EQ(page.size(), 0);
   EXPECT_NE(page.buffer().ptr(), nullptr);
-  EXPECT_EQ(page.buffer().size(), 16);
-  size_t buffer_address = (size_t)page.buffer().ptr();  // NOLINT: Check align
+  EXPECT_EQ(page.buffer().size(), desc_->size() * 2);
+  const auto buffer_address =
+      (size_t)page.buffer().ptr();  // NOLINT: Check align
   EXPECT_EQ(buffer_address % page.buffer().align(), 0);
 
   page.Initialize(desc_.Clone());
@@ -174,4 +175,42 @@ TEST_F(ArchetypeDataPageTests, SparseDense) {
   EXPECT_EQ(page_.sparse(), expect_sparse);
   EXPECT_EQ(page_.dense(), expect_dense);
   EXPECT_EQ(page_.hole(), expect_hole);
+}
+
+TEST_F(ArchetypeDataPageTests, Reserve) {
+  auto page = ArchetypeDataPage(desc_->size() * 2, desc_->align());
+  EXPECT_FALSE(page.is_initialized());
+
+  page.Reserve(desc_->size());
+  EXPECT_EQ(page.buffer().size(), desc_->size() * 2);
+
+  page.Reserve(desc_->size() * 3);
+  EXPECT_EQ(page.buffer().size(), desc_->size() * 3);
+
+  page.Initialize(desc_.Clone());
+  EXPECT_TRUE(page.is_initialized());
+
+  auto bundle = ComponentBundle();
+  bundle.Add(Counter(0, &destruct_cnt_));
+  page.Push({0, 0}, bundle);
+
+  Array<int32_t> expect_sparse = {0, -1, -1};
+  Array<int32_t> expect_dense = {0};
+  Array<int32_t> expect_hole = {2, 1};
+  EXPECT_EQ(page.sparse(), expect_sparse);
+  EXPECT_EQ(page.dense(), expect_dense);
+  EXPECT_EQ(page.hole(), expect_hole);
+
+  page.Reserve(desc_->size() * 5);
+  EXPECT_EQ(page.buffer().size(), desc_->size() * 5);
+  EXPECT_EQ(page.size(), 1);
+  EXPECT_EQ(destruct_cnt_, 0);
+  EXPECT_EQ(page[0].Get<Counter>().id_, 0);
+
+  expect_sparse = {0, -1, -1, -1, -1};
+  expect_dense = {0};
+  expect_hole = {2, 1, 4, 3};
+  EXPECT_EQ(page.sparse(), expect_sparse);
+  EXPECT_EQ(page.dense(), expect_dense);
+  EXPECT_EQ(page.hole(), expect_hole);
 }

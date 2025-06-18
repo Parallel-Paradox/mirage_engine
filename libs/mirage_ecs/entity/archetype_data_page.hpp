@@ -44,6 +44,8 @@ class ArchetypeDataPage {
   MIRAGE_ECS void Initialize(SharedDescriptor&& descriptor);
   MIRAGE_ECS void Reset();
 
+  MIRAGE_ECS void Reserve(size_t new_buffer_size);
+
   // Return sparse index, -1 if failed
   MIRAGE_ECS int32_t Push(const EntityId& id, ComponentBundle& bundle);
   MIRAGE_ECS int32_t Push(View& view);
