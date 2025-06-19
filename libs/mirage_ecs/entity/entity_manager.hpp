@@ -23,9 +23,6 @@ class EntityManager {
   using Array = base::Array<T>;
 
  public:
-  class View;
-  class ConstView;
-
   MIRAGE_ECS EntityManager() = default;
   MIRAGE_ECS ~EntityManager() = default;
 
@@ -37,9 +34,6 @@ class EntityManager {
 
   EntityId Create(ComponentBundle &bundle);
   void Destroy(const EntityId &entity_id);
-
-  MIRAGE_ECS View Get(const EntityId &entity_id);
-  MIRAGE_ECS ConstView Get(const EntityId &entity_id) const;
 
  private:
   ObservedPagePool page_pool_;
@@ -54,20 +48,6 @@ class EntityManager {
   };
   Array<EntityId> available_entity_id_;
   Array<Route> entity_route_array_;
-};
-
-class EntityManager::View {
- public:
-  // TODO
- private:
-  Archetype::View archetype_view_;
-};
-
-class EntityManager::ConstView {
- public:
-  // TODO
- private:
-  Archetype::ConstView archetype_view_;
 };
 
 }  // namespace mirage::ecs

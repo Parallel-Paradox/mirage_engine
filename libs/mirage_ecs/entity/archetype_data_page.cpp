@@ -156,7 +156,7 @@ Courier ArchetypeDataPage::TakeMany(const Array<int32_t>& sparse_id_array,
                                     const SharedDescriptor& descriptor) {
   MIRAGE_DCHECK(is_initialized());
   Array<int32_t> dense_id_array = MapSparseToDense(sparse_id_array);
-  auto rv = Courier(descriptor, *this, dense_id_array);
+  auto rv = Courier(descriptor.Clone(), *this, dense_id_array);
   SwapRemoveManyDense(std::move(dense_id_array));
   return rv;
 }
@@ -583,9 +583,9 @@ const Buffer& Courier::buffer() const { return buffer_; }
 
 Buffer& Courier::buffer() { return buffer_; }
 
-Courier::Courier(const SharedDescriptor& descriptor, ArchetypeDataPage& page,
+Courier::Courier(SharedDescriptor&& descriptor, ArchetypeDataPage& page,
                  const Array<int32_t>& dense_id_array)
-    : descriptor_(descriptor.Clone()),
+    : descriptor_(std::move(descriptor)),
       buffer_(Buffer(descriptor_->size() * dense_id_array.size(),
                      descriptor_->align())) {
   const auto& page_descriptor = page.descriptor();
