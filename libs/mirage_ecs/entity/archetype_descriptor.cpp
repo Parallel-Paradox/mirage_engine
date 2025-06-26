@@ -70,7 +70,7 @@ size_t ArchetypeDescriptor::align() const { return align_; }
 
 size_t ArchetypeDescriptor::size() const { return size_; }
 
-ptrdiff_t ArchetypeDescriptor::ssize() const {
+ssize_t ArchetypeDescriptor::ssize() const {
   const auto ssize = static_cast<ptrdiff_t>(size());
   MIRAGE_DCHECK(ssize > 0);
   return ssize;

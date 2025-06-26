@@ -1,24 +1,24 @@
-#include "mirage_ecs/entity/archetype_page_pool.hpp"
+#include "mirage_ecs/util/aligned_buffer_pool.hpp"
 
-#include "mirage_base/define/check.hpp"
-#include "mirage_base/util/constant.hpp"
-#include "mirage_ecs/entity/archetype_data_page.hpp"
+#include "mirage_base/buffer/aligned_buffer.hpp"
 
 using namespace mirage::base;
 using namespace mirage::ecs;
 
-ArchetypeDataPage ArchetypePagePool::Allocate(size_t alignment) {
+using PoolIndex = AlignedBufferPool::PoolIndex;
+
+AlignedBuffer AlignedBufferPool::Allocate(size_t alignment) {
   PoolIndex index = GetPoolIndex(alignment);
 
   if (index == kAlignOther) {
     auto& pool = pool_[kAlignOther];
     auto size = pool.size();
     for (size_t i = 0; i < size; ++i) {
-      if (pool[i].buffer().align() >= alignment) {
+      if (pool[i].align() >= alignment) {
         return pool.SwapTake(i);
       }
     }
-    return ArchetypeDataPage(kPageSizeKB * kKB, alignment);
+    return AlignedBuffer(kBufferSize, alignment);
   }
 
   int32_t index_num = static_cast<int32_t>(index);
@@ -28,18 +28,16 @@ ArchetypeDataPage ArchetypePagePool::Allocate(size_t alignment) {
   if (index_num < kMaxIndex) {
     return pool_[index_num].Pop();
   }
-  return ArchetypeDataPage(kPageSizeKB * kKB, alignment);
+  return AlignedBuffer(kBufferSize, alignment);
 }
 
-void ArchetypePagePool::Release(ArchetypeDataPage&& page) {
-  MIRAGE_DCHECK(page.buffer().size() == kPageSizeKB * kKB);
-  page.Reset();
-  const PoolIndex index = GetPoolIndex(page.buffer().align());
-  pool_[index].Emplace(std::move(page));
+void AlignedBufferPool::Release(AlignedBuffer&& buffer) {
+  MIRAGE_DCHECK(buffer.size() == kBufferSize);
+  const PoolIndex index = GetPoolIndex(buffer.align());
+  pool_[index].Emplace(std::move(buffer));
 }
 
-ArchetypePagePool::PoolIndex ArchetypePagePool::GetPoolIndex(
-    size_t alignment) const {
+PoolIndex AlignedBufferPool::GetPoolIndex(size_t alignment) const {
   // Check if the alignment is a power of 2.
   MIRAGE_DCHECK((alignment != 0 && (alignment & (alignment - 1)) == 0));
   switch (alignment) {

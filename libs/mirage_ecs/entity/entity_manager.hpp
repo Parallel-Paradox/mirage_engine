@@ -10,22 +10,19 @@
 #include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/entity/archetype.hpp"
 #include "mirage_ecs/entity/archetype_id.hpp"
-#include "mirage_ecs/entity/archetype_page_pool.hpp"
 #include "mirage_ecs/entity/entity_id.hpp"
+#include "mirage_ecs/util/aligned_buffer_pool.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
 namespace mirage::ecs {
 
 class EntityManager {
-  using ObservedPagePool = base::ObservedLocal<ArchetypePagePool>;
+  using ObservedBufferPool = base::ObservedLocal<AlignedBufferPool>;
 
   template <typename T>
   using Array = base::Array<T>;
 
  public:
-  class View;
-  class ConstView;
-
   MIRAGE_ECS EntityManager() = default;
   MIRAGE_ECS ~EntityManager() = default;
 
@@ -38,11 +35,8 @@ class EntityManager {
   EntityId Create(ComponentBundle &bundle);
   void Destroy(const EntityId &entity_id);
 
-  MIRAGE_ECS View Get(const EntityId &entity_id);
-  MIRAGE_ECS ConstView Get(const EntityId &entity_id) const;
-
  private:
-  ObservedPagePool page_pool_;
+  ObservedBufferPool buffer_pool_;
 
   Array<ArchetypeId> available_archetype_id_;
   Array<Archetype> archetype_array_;
@@ -54,20 +48,6 @@ class EntityManager {
   };
   Array<EntityId> available_entity_id_;
   Array<Route> entity_route_array_;
-};
-
-class EntityManager::View {
- public:
-  // TODO
- private:
-  Archetype::View archetype_view_;
-};
-
-class EntityManager::ConstView {
- public:
-  // TODO
- private:
-  Archetype::ConstView archetype_view_;
 };
 
 }  // namespace mirage::ecs
