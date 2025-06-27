@@ -5,7 +5,7 @@
 
 namespace mirage::base {
 
-constexpr size_t kKB = 1024;
+constexpr static inline size_t kKB = 1024;
 
 }  // namespace mirage::base
 

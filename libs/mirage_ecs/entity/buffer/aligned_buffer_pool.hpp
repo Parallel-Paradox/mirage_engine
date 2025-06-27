@@ -1,5 +1,5 @@
-#ifndef MIRAGE_ECS_UTIL_ALIGNED_BUFFER_POOL
-#define MIRAGE_ECS_UTIL_ALIGNED_BUFFER_POOL
+#ifndef MIRAGE_ECS_ENTITY_BUFFER_ALIGNED_BUFFER_POOL
+#define MIRAGE_ECS_ENTITY_BUFFER_ALIGNED_BUFFER_POOL
 
 #include <concepts>
 
@@ -17,7 +17,7 @@ class AlignedBufferPool {
   using AlignedBuffer = base::AlignedBuffer;
 
  public:
-  static constexpr size_t kBufferSize = 16 * base::kKB;
+  constexpr static size_t kBufferSize = 16 * base::kKB;
 
   enum PoolIndex {
     kAlign8 = 0,
@@ -45,4 +45,4 @@ class AlignedBufferPool {
 
 }  // namespace mirage::ecs
 
-#endif  // MIRAGE_ECS_UTIL_ALIGNED_BUFFER_POOL
+#endif  // MIRAGE_ECS_ENTITY_BUFFER_ALIGNED_BUFFER_POOL
