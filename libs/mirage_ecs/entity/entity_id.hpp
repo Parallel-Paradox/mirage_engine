@@ -30,6 +30,8 @@ class MIRAGE_ECS EntityId {
     generation_ = 0;
   }
 
+  void MarkTomb() { generation_ = kTombGeneration; }
+
   [[nodiscard]] size_t index() const { return index_; }
   [[nodiscard]] size_t generation() const { return generation_; }
 
