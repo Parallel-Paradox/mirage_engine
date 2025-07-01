@@ -18,6 +18,7 @@ class AlignedBufferPool {
 
  public:
   constexpr static size_t kBufferSize = 16 * base::kKB;
+  constexpr static size_t kMinAlign = 8;
 
   enum PoolIndex {
     kAlign8 = 0,

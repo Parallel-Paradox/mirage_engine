@@ -13,11 +13,12 @@ AlignedBuffer AlignedBufferPool::Allocate(size_t alignment) {
 
   switch (index) {
     case kAlign8: {
-      auto& pool = pool_[kAlign8];
-      if (!pool.empty()) {
-        return pool.Pop();
+      size_t index_num = static_cast<size_t>(index);
+      while (pool_[index_num].empty() && index_num < kMaxIndex) {
+        ++index_num;
       }
-      return AlignedBuffer(kBufferSize, 8);
+      return index_num < kMaxIndex ? pool_[index_num].Pop()
+                                   : AlignedBuffer(kBufferSize, 8);
     }
     case kAlignOther: {
       auto& pool = pool_[kAlignOther];
@@ -36,7 +37,7 @@ AlignedBuffer AlignedBufferPool::Allocate(size_t alignment) {
 
 void AlignedBufferPool::Release(AlignedBuffer&& buffer) {
   MIRAGE_DCHECK(buffer.size() == kBufferSize);
-  MIRAGE_DCHECK(buffer.align() >= 8);
+  MIRAGE_DCHECK(buffer.align() >= kMinAlign);
 
   const PoolIndex index = GetPoolIndex(buffer.align());
   pool_[index].Emplace(std::move(buffer));
@@ -45,7 +46,7 @@ void AlignedBufferPool::Release(AlignedBuffer&& buffer) {
 PoolIndex AlignedBufferPool::GetPoolIndex(size_t alignment) const {
   // Check if the alignment is a power of 2.
   MIRAGE_DCHECK((alignment != 0 && (alignment & (alignment - 1)) == 0));
-  if (alignment <= 8) {
+  if (alignment <= kMinAlign) {
     return kAlign8;
   }
   return kAlignOther;

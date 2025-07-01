@@ -10,14 +10,14 @@
 #include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/entity/archetype.hpp"
 #include "mirage_ecs/entity/archetype_id.hpp"
-#include "mirage_ecs/entity/archetype_page_pool.hpp"
+#include "mirage_ecs/entity/buffer/aligned_buffer_pool.hpp"
 #include "mirage_ecs/entity/entity_id.hpp"
 #include "mirage_ecs/util/type_set.hpp"
 
 namespace mirage::ecs {
 
 class EntityManager {
-  using ObservedPagePool = base::ObservedLocal<ArchetypePagePool>;
+  using ObservedBufferPool = base::ObservedLocal<AlignedBufferPool>;
 
   template <typename T>
   using Array = base::Array<T>;
@@ -42,7 +42,7 @@ class EntityManager {
   MIRAGE_ECS ConstView Get(const EntityId &entity_id) const;
 
  private:
-  ObservedPagePool page_pool_;
+  ObservedBufferPool buffer_pool_;
 
   Array<ArchetypeId> available_archetype_id_;
   Array<Archetype> archetype_array_;

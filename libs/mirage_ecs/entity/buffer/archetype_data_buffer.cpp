@@ -59,8 +59,7 @@ ArchetypeDataBuffer::View ArchetypeDataBuffer::operator[](uint16_t index) {
   return View(descriptor_.raw_ptr(), view_ptr, entity_id_ptr);
 }
 
-void ArchetypeDataBuffer::Push(const EntityId& entity_id,
-                               ComponentBundle& bundle) {
+void ArchetypeDataBuffer::Push(const EntityId& id, ComponentBundle& bundle) {
   MIRAGE_DCHECK(size_ < capacity_);
   auto* view_ptr = buffer_.ptr() + size_ * descriptor_->size();
   for (const auto& entry : descriptor_->offset_map()) {
@@ -76,10 +75,10 @@ void ArchetypeDataBuffer::Push(const EntityId& entity_id,
   auto* entity_id_ptr =
       reinterpret_cast<EntityId*>(buffer_.ptr() + buffer_.size()) -
       (capacity_ - size_);
-  *entity_id_ptr = entity_id;
+  *entity_id_ptr = id;
 }
 
-void ArchetypeDataBuffer::Push(const EntityId& entity_id, View& view) {
+void ArchetypeDataBuffer::Push(const EntityId& id, View&& view) {
   MIRAGE_DCHECK(size_ < capacity_);
   auto* view_ptr = buffer_.ptr() + size_ * descriptor_->size();
   for (const auto& entry : descriptor_->offset_map()) {
@@ -94,7 +93,7 @@ void ArchetypeDataBuffer::Push(const EntityId& entity_id, View& view) {
   auto* entity_id_ptr =
       reinterpret_cast<EntityId*>(buffer_.ptr() + buffer_.size()) -
       (capacity_ - size_);
-  *entity_id_ptr = entity_id;
+  *entity_id_ptr = id;
 }
 
 void ArchetypeDataBuffer::RemoveTail() {

@@ -33,8 +33,8 @@ class MIRAGE_ECS ArchetypeDataBuffer {
   ConstView operator[](uint16_t index) const;
   View operator[](uint16_t index);
 
-  void Push(const EntityId& entity_id, ComponentBundle& bundle);
-  void Push(const EntityId& entity_id, View& view);
+  void Push(const EntityId& id, ComponentBundle& bundle);
+  void Push(const EntityId& id, View&& view);
 
   void RemoveTail();
   void Clear();

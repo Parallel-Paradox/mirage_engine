@@ -7,8 +7,8 @@ using namespace mirage::ecs;
 DenseBuffer::DenseBuffer(Buffer&& buffer)
     : buffer_(std::move(buffer)),
       capacity_(static_cast<uint16_t>(buffer_.size()) / sizeof(SparseId)) {
-  MIRAGE_DCHECK(buffer.align() >= DenseBuffer::kMinAlign);
-  MIRAGE_DCHECK(buffer.size() <= DenseBuffer::kMaxBufferSize);
+  MIRAGE_DCHECK(buffer_.align() >= DenseBuffer::kMinAlign);
+  MIRAGE_DCHECK(buffer_.size() <= DenseBuffer::kMaxBufferSize);
 }
 
 DenseBuffer::~DenseBuffer() {
@@ -61,15 +61,15 @@ uint16_t DenseBuffer::size() const { return size_; }
 uint16_t DenseBuffer::capacity() const { return capacity_; }
 
 SparseBuffer::SparseBuffer(Buffer&& buffer) : buffer_(std::move(buffer)) {
-  MIRAGE_DCHECK(buffer.align() >= SparseBuffer::kMinAlign);
-  MIRAGE_DCHECK(buffer.size() <= SparseBuffer::kMaxBufferSize);
+  MIRAGE_DCHECK(buffer_.align() >= SparseBuffer::kMinAlign);
+  MIRAGE_DCHECK(buffer_.size() <= SparseBuffer::kMaxBufferSize);
 
-  hole_cnt_ = buffer.size() / (sizeof(DenseId) + sizeof(uint16_t));
+  hole_cnt_ = buffer_.size() / (sizeof(DenseId) + sizeof(uint16_t));
   capacity_ = hole_cnt_;
 
   auto* id_begin_ptr = reinterpret_cast<DenseId*>(buffer_.ptr());
   auto* hole_end_ptr =
-      reinterpret_cast<uint16_t*>(buffer_.ptr() + buffer.size());
+      reinterpret_cast<uint16_t*>(buffer_.ptr() + buffer_.size());
   for (auto i = 0; i < hole_cnt_; ++i) {
     *id_begin_ptr = kInvalidDenseId;
     ++id_begin_ptr;
@@ -104,14 +104,11 @@ SparseBuffer& SparseBuffer::operator=(SparseBuffer&& other) noexcept {
 }
 
 DenseId const& SparseBuffer::operator[](uint16_t index) const {
-  MIRAGE_DCHECK(index < size_);
-  return *(reinterpret_cast<const DenseId*>(buffer_.ptr()) +
-           index * sizeof(DenseId));
+  return reinterpret_cast<const DenseId*>(buffer_.ptr())[index];
 }
 
 DenseId& SparseBuffer::operator[](uint16_t index) {
-  MIRAGE_DCHECK(index < size_);
-  return *(reinterpret_cast<DenseId*>(buffer_.ptr()) + index * sizeof(DenseId));
+  return reinterpret_cast<DenseId*>(buffer_.ptr())[index];
 }
 
 uint16_t SparseBuffer::FillHole(DenseId dense_id) {
@@ -136,12 +133,12 @@ DenseId SparseBuffer::Remove(uint16_t index) {
   auto* id_begin_ptr = reinterpret_cast<DenseId*>(buffer_.ptr());
   auto& id = id_begin_ptr[index];
   auto rv = id;
+  MIRAGE_DCHECK(rv != kInvalidDenseId);
   id = kInvalidDenseId;
 
   ++hole_cnt_;
   --size_;
 
-  MIRAGE_DCHECK(rv != kInvalidDenseId);
   return rv;
 }
 
