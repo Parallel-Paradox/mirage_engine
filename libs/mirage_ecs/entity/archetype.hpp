@@ -26,8 +26,8 @@ class Archetype {
 
   using Index = SparseId;
 
-  Archetype() = delete;
-  MIRAGE_ECS Archetype(const SharedDescriptor &descriptor,
+  Archetype() = default;
+  MIRAGE_ECS Archetype(SharedDescriptor &&descriptor,
                        BufferPoolObserver &&buffer_pool);
   MIRAGE_ECS ~Archetype() = default;
 
@@ -38,7 +38,7 @@ class Archetype {
   MIRAGE_ECS Archetype &operator=(Archetype &&other) noexcept = default;
 
   MIRAGE_ECS Index Push(const EntityId &id, ComponentBundle &bundle);
-  MIRAGE_ECS Index Push(const EntityId &id, View &view);
+  MIRAGE_ECS Index Push(const EntityId &id, View &&view);
 
   MIRAGE_ECS ConstView operator[](Index index) const;
   MIRAGE_ECS View operator[](Index index);
@@ -50,12 +50,20 @@ class Archetype {
   MIRAGE_ECS void RemoveMany(const Array<Index> &index_list);
 
  private:
+  void EnsureNotFull();
+  SparseId PushSparseDenseBuffer();
+
   SharedDescriptor descriptor_;
 
   BufferPoolObserver buffer_pool_;
+
   Array<SparseBuffer> sparse_;
+  Array<size_t> available_sparse_;
   Array<DenseBuffer> dense_;
+
   Array<ArchetypeDataBuffer> data_;
+
+  size_t size_{0};
 };
 
 }  // namespace mirage::ecs
