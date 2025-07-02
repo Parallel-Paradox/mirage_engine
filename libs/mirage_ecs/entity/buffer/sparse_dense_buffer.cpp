@@ -60,6 +60,8 @@ uint16_t DenseBuffer::size() const { return size_; }
 
 uint16_t DenseBuffer::capacity() const { return capacity_; }
 
+bool DenseBuffer::is_full() const { return size_ == capacity_; }
+
 SparseBuffer::SparseBuffer(Buffer&& buffer) : buffer_(std::move(buffer)) {
   MIRAGE_DCHECK(buffer_.align() >= SparseBuffer::kMinAlign);
   MIRAGE_DCHECK(buffer_.size() <= SparseBuffer::kMaxBufferSize);

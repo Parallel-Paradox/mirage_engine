@@ -1,6 +1,9 @@
 #include "mirage_ecs/entity/archetype.hpp"
 
 #include "mirage_base/define/check.hpp"
+#include "mirage_ecs/entity/buffer/aligned_buffer_pool.hpp"
+#include "mirage_ecs/entity/buffer/sparse_dense_buffer.hpp"
+#include "mirage_ecs/entity/entity_id.hpp"
 
 using namespace mirage::base;
 using namespace mirage::ecs;
@@ -68,7 +71,42 @@ void Archetype::RemoveMany(const Array<Index> &index_list) {
 }
 
 void Archetype::EnsureNotFull() {
-  // TODO
+  if (!available_sparse_.empty() && !dense_.empty() && !data_.empty() &&
+      !dense_.Tail().is_full() && !data_.Tail().is_full()) {
+    return;
+  }
+
+  if (sparse_.empty()) {
+    // TODO
+  } else if (sparse_.size() == 1) {
+    // TODO
+  } else {
+    available_sparse_.Emplace(sparse_.size());
+    sparse_.Emplace(buffer_pool_->Allocate(alignof(DenseId)));
+  }
+
+  if (dense_.empty()) {
+    // TODO
+  } else if (dense_.size() == 1) {
+    // TODO
+  } else {
+    dense_.Emplace(buffer_pool_->Allocate(alignof(SparseId)));
+  }
+
+  if (data_.empty()) {
+    // TODO
+  } else if (data_.size() == 1) {
+    // TODO
+  } else if (AlignedBufferPool::kBufferSize <
+             descriptor_->size() + sizeof(EntityId)) {
+    // TODO
+    MIRAGE_DCHECK(data_.Tail().capacity() > 0);
+  } else {
+    const auto desc_align = descriptor_->align();
+    const auto id_align = alignof(EntityId);
+    const auto align = desc_align > id_align ? desc_align : id_align;
+    data_.Emplace(buffer_pool_->Allocate(align));
+  }
 }
 
 SparseId Archetype::PushSparseDenseBuffer() {
@@ -76,6 +114,7 @@ SparseId Archetype::PushSparseDenseBuffer() {
 
   const auto sparse_buffer_id = available_sparse_[0];
   auto &sparse_buffer = sparse_[sparse_buffer_id];
+
   MIRAGE_DCHECK(sparse_buffer.hole_cnt() > 0);
   if (sparse_buffer.hole_cnt() == 1) {
     available_sparse_.SwapRemove(0);

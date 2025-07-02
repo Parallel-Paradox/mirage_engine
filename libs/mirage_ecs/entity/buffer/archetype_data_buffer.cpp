@@ -127,6 +127,8 @@ uint16_t ArchetypeDataBuffer::size() const { return size_; }
 
 uint16_t ArchetypeDataBuffer::capacity() const { return capacity_; }
 
+bool ArchetypeDataBuffer::is_full() const { return size_ == capacity_; }
+
 ArchetypeDataBuffer::ConstView::ConstView(const ArchetypeDescriptor* descriptor,
                                           const std::byte* view_ptr,
                                           const EntityId* entity_id_ptr)

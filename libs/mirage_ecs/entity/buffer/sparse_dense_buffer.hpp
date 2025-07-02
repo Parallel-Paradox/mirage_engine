@@ -41,6 +41,7 @@ class MIRAGE_ECS DenseBuffer {
 
   uint16_t size() const;
   uint16_t capacity() const;
+  bool is_full() const;
 
  private:
   Buffer buffer_;

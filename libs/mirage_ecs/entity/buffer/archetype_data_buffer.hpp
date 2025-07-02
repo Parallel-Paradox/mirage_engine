@@ -43,6 +43,7 @@ class MIRAGE_ECS ArchetypeDataBuffer {
 
   uint16_t size() const;
   uint16_t capacity() const;
+  bool is_full() const;
 
  private:
   SharedDescriptor descriptor_{nullptr};
