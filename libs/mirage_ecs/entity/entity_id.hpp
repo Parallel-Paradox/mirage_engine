@@ -14,7 +14,7 @@ class MIRAGE_ECS EntityId {
   constexpr static size_t kTombGeneration = SIZE_MAX;
 
   EntityId() = default;
-  EntityId(size_t index, size_t generation)
+  EntityId(const size_t index, const size_t generation)
       : index_(index), generation_(generation) {}
   ~EntityId() { Reset(); }
 

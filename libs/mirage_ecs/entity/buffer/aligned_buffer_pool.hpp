@@ -39,9 +39,9 @@ class AlignedBufferPool {
   MIRAGE_ECS void Release(AlignedBuffer&& buffer);
 
  private:
-  MIRAGE_ECS PoolIndex GetPoolIndex(size_t alignment) const;
+  MIRAGE_ECS static PoolIndex GetPoolIndex(size_t alignment);
 
-  Array<AlignedBuffer> pool_[PoolIndex::kMaxIndex];
+  Array<AlignedBuffer> pool_[kMaxIndex];
 };
 
 }  // namespace mirage::ecs

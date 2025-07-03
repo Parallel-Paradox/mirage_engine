@@ -66,6 +66,8 @@ ArchetypeDescriptor::ArchetypeDescriptor(
   size_ = offset;
 }
 
+const ArchetypeId& ArchetypeDescriptor::id() const { return id_; }
+
 size_t ArchetypeDescriptor::align() const { return align_; }
 
 size_t ArchetypeDescriptor::size() const { return size_; }

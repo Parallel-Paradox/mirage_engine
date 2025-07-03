@@ -40,7 +40,7 @@ ArchetypeDataBuffer& ArchetypeDataBuffer::operator=(
 }
 
 ArchetypeDataBuffer::ConstView ArchetypeDataBuffer::operator[](
-    uint16_t index) const {
+    const uint16_t index) const {
   MIRAGE_DCHECK(index < size_);
   const auto* view_ptr = buffer_.ptr() + index * descriptor_->size();
   const auto* entity_id_ptr =
@@ -49,7 +49,8 @@ ArchetypeDataBuffer::ConstView ArchetypeDataBuffer::operator[](
   return ConstView(descriptor_.raw_ptr(), view_ptr, entity_id_ptr);
 }
 
-ArchetypeDataBuffer::View ArchetypeDataBuffer::operator[](uint16_t index) {
+ArchetypeDataBuffer::View ArchetypeDataBuffer::operator[](
+    const uint16_t index) {
   MIRAGE_DCHECK(index < size_);
   auto* view_ptr = buffer_.ptr() + index * descriptor_->size();
   auto* entity_id_ptr =
@@ -144,8 +145,8 @@ ArchetypeDataBuffer::ConstView::ConstView(const View& view)
       view_ptr_(view.view_ptr_),
       entity_id_ptr_(view.entity_id_ptr_) {}
 
-const void* ArchetypeDataBuffer::ConstView::TryGet(ComponentId id) const {
-  auto it = descriptor_->offset_map().TryFind(id);
+const void* ArchetypeDataBuffer::ConstView::TryGet(const ComponentId id) const {
+  const auto it = descriptor_->offset_map().TryFind(id);
   if (!it) {
     return nullptr;
   }
@@ -163,8 +164,8 @@ ArchetypeDataBuffer::View::View(const ArchetypeDescriptor* descriptor,
       view_ptr_(view_ptr),
       entity_id_ptr_(entity_id_ptr) {}
 
-const void* ArchetypeDataBuffer::View::TryGet(ComponentId id) const {
-  auto it = descriptor_->offset_map().TryFind(id);
+const void* ArchetypeDataBuffer::View::TryGet(const ComponentId id) const {
+  const auto it = descriptor_->offset_map().TryFind(id);
   if (!it) {
     return nullptr;
   }
@@ -172,8 +173,8 @@ const void* ArchetypeDataBuffer::View::TryGet(ComponentId id) const {
   return view_ptr_ + offset;
 }
 
-void* ArchetypeDataBuffer::View::TryGet(ComponentId id) {
-  auto it = descriptor_->offset_map().TryFind(id);
+void* ArchetypeDataBuffer::View::TryGet(const ComponentId id) {
+  const auto it = descriptor_->offset_map().TryFind(id);
   if (!it) {
     return nullptr;
   }

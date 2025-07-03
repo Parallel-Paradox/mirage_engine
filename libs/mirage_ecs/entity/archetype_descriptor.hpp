@@ -47,7 +47,7 @@ ArchetypeDescriptor ArchetypeDescriptor::New(const ArchetypeId &id) {
   base::Array<ComponentId> component_id_array;
   component_id_array.Reserve(sizeof...(Ts));
   (component_id_array.Push(ComponentId::Of<Ts>()), ...);
-  return ArchetypeDescriptor(id, std::move(component_id_array));
+  return {id, std::move(component_id_array)};
 }
 
 }  // namespace mirage::ecs

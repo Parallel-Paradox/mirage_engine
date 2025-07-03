@@ -32,17 +32,17 @@ DenseBuffer& DenseBuffer::operator=(DenseBuffer&& other) noexcept {
   return *this;
 }
 
-SparseId const& DenseBuffer::operator[](uint16_t index) const {
+SparseId const& DenseBuffer::operator[](const uint16_t index) const {
   MIRAGE_DCHECK(index < size_);
   return reinterpret_cast<const SparseId*>(buffer_.ptr())[index];
 }
 
-SparseId& DenseBuffer::operator[](uint16_t index) {
+SparseId& DenseBuffer::operator[](const uint16_t index) {
   MIRAGE_DCHECK(index < size_);
   return reinterpret_cast<SparseId*>(buffer_.ptr())[index];
 }
 
-void DenseBuffer::Push(SparseId sparse_id) {
+void DenseBuffer::Push(const SparseId sparse_id) {
   MIRAGE_DCHECK(size_ < capacity_);
   auto* id_begin_ptr = reinterpret_cast<SparseId*>(buffer_.ptr());
   id_begin_ptr[size_] = sparse_id;
@@ -106,19 +106,19 @@ SparseBuffer& SparseBuffer::operator=(SparseBuffer&& other) noexcept {
   return *this;
 }
 
-DenseId const& SparseBuffer::operator[](uint16_t index) const {
+DenseId const& SparseBuffer::operator[](const uint16_t index) const {
   return reinterpret_cast<const DenseId*>(buffer_.ptr())[index];
 }
 
-DenseId& SparseBuffer::operator[](uint16_t index) {
+DenseId& SparseBuffer::operator[](const uint16_t index) {
   return reinterpret_cast<DenseId*>(buffer_.ptr())[index];
 }
 
-uint16_t SparseBuffer::FillHole(DenseId dense_id) {
+uint16_t SparseBuffer::FillHole(const DenseId dense_id) {
   MIRAGE_DCHECK(hole_cnt_ > 0);
 
   auto* id_begin_ptr = reinterpret_cast<DenseId*>(buffer_.ptr());
-  auto* hole_ptr =
+  const auto* hole_ptr =
       reinterpret_cast<uint16_t*>(buffer_.ptr() + buffer_.size()) - size_ - 1;
 
   id_begin_ptr[*hole_ptr] = dense_id;
@@ -127,7 +127,7 @@ uint16_t SparseBuffer::FillHole(DenseId dense_id) {
   return *hole_ptr;
 }
 
-DenseId SparseBuffer::Remove(uint16_t index) {
+DenseId SparseBuffer::Remove(const uint16_t index) {
   MIRAGE_DCHECK(size_ > 0);
   auto* hole_ptr =
       reinterpret_cast<uint16_t*>(buffer_.ptr() + buffer_.size()) - size_;
@@ -135,7 +135,7 @@ DenseId SparseBuffer::Remove(uint16_t index) {
 
   auto* id_begin_ptr = reinterpret_cast<DenseId*>(buffer_.ptr());
   auto& id = id_begin_ptr[index];
-  auto rv = id;
+  const auto rv = id;
   MIRAGE_DCHECK(rv != kInvalidDenseId);
   id = kInvalidDenseId;
 

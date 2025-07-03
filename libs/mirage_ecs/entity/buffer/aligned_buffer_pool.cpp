@@ -8,10 +8,8 @@ using namespace mirage::ecs;
 
 using PoolIndex = AlignedBufferPool::PoolIndex;
 
-AlignedBuffer AlignedBufferPool::Allocate(size_t alignment) {
-  PoolIndex index = GetPoolIndex(alignment);
-
-  switch (index) {
+AlignedBuffer AlignedBufferPool::Allocate(const size_t alignment) {
+  switch (const PoolIndex index = GetPoolIndex(alignment)) {
     case kAlign8: {
       size_t index_num = static_cast<size_t>(index);
       while (pool_[index_num].empty() && index_num < kMaxIndex) {
@@ -22,7 +20,7 @@ AlignedBuffer AlignedBufferPool::Allocate(size_t alignment) {
     }
     case kAlignOther: {
       auto& pool = pool_[kAlignOther];
-      auto size = pool.size();
+      const auto size = pool.size();
       for (size_t i = 0; i < size; ++i) {
         if (pool[i].align() >= alignment) {
           return pool.SwapTake(i);
@@ -32,7 +30,7 @@ AlignedBuffer AlignedBufferPool::Allocate(size_t alignment) {
     }
     default: {
       NOT_REACHABLE;
-      return AlignedBuffer();
+      return AlignedBuffer();  // NOLINT: Return value for all branches.
     }
   }
 }
@@ -45,7 +43,7 @@ void AlignedBufferPool::Release(AlignedBuffer&& buffer) {
   pool_[index].Emplace(std::move(buffer));
 }
 
-PoolIndex AlignedBufferPool::GetPoolIndex(size_t alignment) const {
+PoolIndex AlignedBufferPool::GetPoolIndex(const size_t alignment) {
   // Check if the alignment is a power of 2.
   MIRAGE_DCHECK((alignment != 0 && (alignment & (alignment - 1)) == 0));
   if (alignment <= kMinAlign) {

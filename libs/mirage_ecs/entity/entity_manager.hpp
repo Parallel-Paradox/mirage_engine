@@ -1,8 +1,6 @@
 #ifndef MIRAGE_ECS_ENTITY_ENTITY_MANAGER
 #define MIRAGE_ECS_ENTITY_ENTITY_MANAGER
 
-#include <cstddef>
-
 #include "mirage_base/auto_ptr/observed.hpp"
 #include "mirage_base/container/array.hpp"
 #include "mirage_base/container/hash_map.hpp"
@@ -39,7 +37,7 @@ class EntityManager {
   void Destroy(const EntityId &entity_id);
 
   MIRAGE_ECS View Get(const EntityId &entity_id);
-  MIRAGE_ECS ConstView Get(const EntityId &entity_id) const;
+  [[nodiscard]] MIRAGE_ECS ConstView Get(const EntityId &entity_id) const;
 
  private:
   ObservedBufferPool buffer_pool_;
