@@ -41,19 +41,20 @@ View Archetype::operator[](Index index) {
   MIRAGE_DCHECK(sparse_.size() > 0);
   const auto sparse_buffer_capacity = sparse_[0].capacity();
   const auto sparse_buffer_id = index / sparse_buffer_capacity;
+  const auto sparse_buffer_offset =
+      static_cast<uint16_t>(index - sparse_buffer_id * sparse_buffer_capacity);
 
   MIRAGE_DCHECK(sparse_.size() > sparse_buffer_id);
-  const auto dense_id =
-      sparse_[sparse_buffer_id]
-             [index - sparse_buffer_id * sparse_buffer_capacity];
+  const auto dense_id = sparse_[sparse_buffer_id][sparse_buffer_offset];
 
   MIRAGE_DCHECK(data_.size() > 0);
   const auto data_buffer_capacity = data_[0].capacity();
   const auto data_buffer_id = dense_id / data_[0].capacity();
+  const auto dense_buffer_offset =
+      static_cast<uint16_t>(dense_id - data_buffer_id * data_buffer_capacity);
 
   MIRAGE_DCHECK(data_.size() > data_buffer_id);
-  return data_[data_buffer_id]
-              [dense_id - data_buffer_id * data_buffer_capacity];
+  return data_[data_buffer_id][dense_buffer_offset];
 }
 
 Array<ArchetypeDataBuffer> Archetype::TakeMany(const SharedDescriptor &target,
@@ -105,7 +106,7 @@ void Archetype::EnsureNotFull() {
     const auto desc_align = descriptor_->align();
     const auto id_align = alignof(EntityId);
     const auto align = desc_align > id_align ? desc_align : id_align;
-    data_.Emplace(buffer_pool_->Allocate(align));
+    data_.Emplace(buffer_pool_->Allocate(align), descriptor_.Clone());
   }
 }
 

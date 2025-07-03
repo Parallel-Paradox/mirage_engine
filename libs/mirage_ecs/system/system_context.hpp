@@ -4,16 +4,15 @@
 #include "mirage_base/container/array.hpp"
 #include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/entity/archetype_id.hpp"
-#include "mirage_ecs/util/type_set.hpp"
 
 namespace mirage::ecs {
 
-class MIRAGE_ECS SystemContext {
+class SystemContext {
   template <typename T>
   using Array = base::Array<T>;
 
  public:
-  [[nodiscard]] bool ConflictWith(const SystemContext &other) const;
+  [[nodiscard]] MIRAGE_ECS bool ConflictWith(const SystemContext &other) const;
 
  private:
   Array<ArchetypeId> interested_archetype_array_;

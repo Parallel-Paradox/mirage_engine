@@ -66,7 +66,8 @@ SparseBuffer::SparseBuffer(Buffer&& buffer) : buffer_(std::move(buffer)) {
   MIRAGE_DCHECK(buffer_.align() >= SparseBuffer::kMinAlign);
   MIRAGE_DCHECK(buffer_.size() <= SparseBuffer::kMaxBufferSize);
 
-  hole_cnt_ = buffer_.size() / (sizeof(DenseId) + sizeof(uint16_t));
+  const auto hole_cnt = buffer_.size() / (sizeof(DenseId) + sizeof(uint16_t));
+  hole_cnt_ = static_cast<uint16_t>(hole_cnt);
   capacity_ = hole_cnt_;
 
   auto* id_begin_ptr = reinterpret_cast<DenseId*>(buffer_.ptr());

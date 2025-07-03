@@ -68,6 +68,7 @@ TEST_F(ArchetypeDataBufferTests, PushBundleAndAccess) {
   EXPECT_EQ(destruct_cnt_, 0);
 
   const auto id_2 = EntityId{2, 0};
+  bundle.Add(Counter(&destruct_cnt_));
   buffer_.Push(id_2, bundle);
   EXPECT_EQ(buffer_.size(), 2);
   EXPECT_EQ(buffer_[1].entity_id(), id_2);
@@ -83,6 +84,7 @@ TEST_F(ArchetypeDataBufferTests, PushViewAndClear) {
   buffer.Push({1, 0}, bundle);
 
   auto id_2 = EntityId{2, 0};
+  bundle.Add(Counter(&destruct_cnt_));
   buffer_.Push({2, 0}, buffer[0]);
   EXPECT_EQ(buffer_.size(), 1);
   EXPECT_EQ(buffer_[0].entity_id(), id_2);

@@ -1,7 +1,5 @@
 #include "mirage_ecs/entity/buffer/archetype_data_buffer.hpp"
 
-#include <_types/_uint16_t.h>
-
 #include "mirage_base/define/check.hpp"
 
 using namespace mirage::ecs;
@@ -12,8 +10,9 @@ ArchetypeDataBuffer::ArchetypeDataBuffer(Buffer&& buffer,
   MIRAGE_DCHECK(buffer_.align() >= alignof(EntityId));
   MIRAGE_DCHECK(buffer_.align() >= descriptor_->align());
   size_ = 0;
-  capacity_ = static_cast<uint16_t>(buffer_.size()) /
-              (descriptor_->size() + sizeof(EntityId));
+  const auto capacity =
+      buffer_.size() / (descriptor_->size() + sizeof(EntityId));
+  capacity_ = static_cast<uint16_t>(capacity);
 }
 
 ArchetypeDataBuffer::~ArchetypeDataBuffer() {
@@ -76,6 +75,8 @@ void ArchetypeDataBuffer::Push(const EntityId& id, ComponentBundle& bundle) {
       reinterpret_cast<EntityId*>(buffer_.ptr() + buffer_.size()) -
       (capacity_ - size_);
   *entity_id_ptr = id;
+
+  ++size_;
 }
 
 void ArchetypeDataBuffer::Push(const EntityId& id, View&& view) {
@@ -94,6 +95,8 @@ void ArchetypeDataBuffer::Push(const EntityId& id, View&& view) {
       reinterpret_cast<EntityId*>(buffer_.ptr() + buffer_.size()) -
       (capacity_ - size_);
   *entity_id_ptr = id;
+
+  ++size_;
 }
 
 void ArchetypeDataBuffer::RemoveTail() {

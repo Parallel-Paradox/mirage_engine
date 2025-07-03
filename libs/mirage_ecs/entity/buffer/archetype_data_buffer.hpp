@@ -12,7 +12,7 @@
 
 namespace mirage::ecs {
 
-class MIRAGE_ECS ArchetypeDataBuffer {
+class ArchetypeDataBuffer {
   using Buffer = base::AlignedBuffer;
   using SharedDescriptor = base::SharedLocal<ArchetypeDescriptor>;
 
@@ -20,30 +20,31 @@ class MIRAGE_ECS ArchetypeDataBuffer {
   class ConstView;
   class View;
 
-  ArchetypeDataBuffer() = default;
-  explicit ArchetypeDataBuffer(Buffer&& buffer, SharedDescriptor&& descriptor);
-  ~ArchetypeDataBuffer();
+  MIRAGE_ECS ArchetypeDataBuffer() = default;
+  MIRAGE_ECS explicit ArchetypeDataBuffer(Buffer&& buffer,
+                                          SharedDescriptor&& descriptor);
+  MIRAGE_ECS ~ArchetypeDataBuffer();
 
   ArchetypeDataBuffer(const ArchetypeDataBuffer&) = delete;
   ArchetypeDataBuffer& operator=(const ArchetypeDataBuffer&) = delete;
 
-  ArchetypeDataBuffer(ArchetypeDataBuffer&&) noexcept;
-  ArchetypeDataBuffer& operator=(ArchetypeDataBuffer&&) noexcept;
+  MIRAGE_ECS ArchetypeDataBuffer(ArchetypeDataBuffer&&) noexcept;
+  MIRAGE_ECS ArchetypeDataBuffer& operator=(ArchetypeDataBuffer&&) noexcept;
 
-  ConstView operator[](uint16_t index) const;
-  View operator[](uint16_t index);
+  MIRAGE_ECS ConstView operator[](uint16_t index) const;
+  MIRAGE_ECS View operator[](uint16_t index);
 
-  void Push(const EntityId& id, ComponentBundle& bundle);
-  void Push(const EntityId& id, View&& view);
+  MIRAGE_ECS void Push(const EntityId& id, ComponentBundle& bundle);
+  MIRAGE_ECS void Push(const EntityId& id, View&& view);
 
-  void RemoveTail();
-  void Clear();
+  MIRAGE_ECS void RemoveTail();
+  MIRAGE_ECS void Clear();
 
-  [[nodiscard]] const SharedDescriptor& descriptor() const;
+  [[nodiscard]] MIRAGE_ECS const SharedDescriptor& descriptor() const;
 
-  uint16_t size() const;
-  uint16_t capacity() const;
-  bool is_full() const;
+  MIRAGE_ECS uint16_t size() const;
+  MIRAGE_ECS uint16_t capacity() const;
+  MIRAGE_ECS bool is_full() const;
 
  private:
   SharedDescriptor descriptor_{nullptr};

@@ -30,8 +30,10 @@ AlignedBuffer AlignedBufferPool::Allocate(size_t alignment) {
       }
       return AlignedBuffer(kBufferSize, alignment);
     }
-    default:
+    default: {
       NOT_REACHABLE;
+      return AlignedBuffer();
+    }
   }
 }
 
