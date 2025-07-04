@@ -53,10 +53,12 @@ TEST_F(ArchetypeDataBufferTests, Construct) {
 
   EXPECT_EQ(buffer_.size(), 0);
   EXPECT_EQ(buffer_.capacity(), 2);
+  EXPECT_EQ(buffer_.is_full(), false);
+  EXPECT_EQ(buffer_.unit_size(), desc_->size() + sizeof(EntityId));
 }
 
 TEST_F(ArchetypeDataBufferTests, PushBundleAndAccess) {
-  auto bundle = ComponentBundle();
+  ComponentBundle bundle;
   bundle.Add(Counter(&destruct_cnt_));
 
   const auto id_1 = EntityId{1, 0};
@@ -79,15 +81,15 @@ TEST_F(ArchetypeDataBufferTests, PushBundleAndAccess) {
 TEST_F(ArchetypeDataBufferTests, PushViewAndClear) {
   auto buffer = ArchetypeDataBuffer(
       {2 * (desc_->size() + sizeof(EntityId)), desc_->align()}, desc_.Clone());
-  auto bundle = ComponentBundle();
+  ComponentBundle bundle;
   bundle.Add(Counter(&destruct_cnt_));
-  buffer.Push({1, 0}, bundle);
+  const auto id_1 = EntityId{1, 0};
+  buffer.Push(id_1, bundle);
 
-  auto id_2 = EntityId{2, 0};
   bundle.Add(Counter(&destruct_cnt_));
-  buffer_.Push({2, 0}, buffer[0]);
+  buffer_.Push(buffer[0]);
   EXPECT_EQ(buffer_.size(), 1);
-  EXPECT_EQ(buffer_[0].entity_id(), id_2);
+  EXPECT_EQ(buffer_[0].entity_id(), id_1);
   EXPECT_EQ(buffer_[0].Get<Counter>().destruct_cnt_, &destruct_cnt_);
   EXPECT_EQ(destruct_cnt_, 0);
 
@@ -99,7 +101,7 @@ TEST_F(ArchetypeDataBufferTests, PushViewAndClear) {
 }
 
 TEST_F(ArchetypeDataBufferTests, RemoveTail) {
-  auto bundle = ComponentBundle();
+  ComponentBundle bundle;
 
   const auto id_1 = EntityId{1, 0};
   bundle.Add(Counter(&destruct_cnt_));
@@ -125,4 +127,41 @@ TEST_F(ArchetypeDataBufferTests, RemoveTail) {
   EXPECT_EQ(buffer_.size(), 1);
   EXPECT_EQ(buffer_[0].entity_id(), id_3);
   EXPECT_EQ(destruct_cnt_, 2);
+}
+
+TEST_F(ArchetypeDataBufferTests, Reserve) {
+  auto buffer = ArchetypeDataBuffer(
+      {desc_->size() + sizeof(EntityId), desc_->align()}, desc_.Clone());
+  ComponentBundle bundle;
+  bundle.Add(Counter(&destruct_cnt_));
+  buffer.Push({1, 0}, bundle);
+  EXPECT_EQ(buffer.size(), 1);
+  EXPECT_EQ(buffer.capacity(), 1);
+  EXPECT_EQ(buffer[0].Get<Counter>().destruct_cnt_, &destruct_cnt_);
+
+  buffer.Reserve(0);
+  EXPECT_EQ(buffer.size(), 1);
+  EXPECT_EQ(buffer.capacity(), 1);
+  EXPECT_EQ(buffer[0].Get<Counter>().destruct_cnt_, &destruct_cnt_);
+
+  buffer.Reserve(2);
+  EXPECT_EQ(buffer.size(), 1);
+  EXPECT_EQ(buffer.capacity(), 2);
+  EXPECT_EQ(buffer[0].Get<Counter>().destruct_cnt_, &destruct_cnt_);
+  EXPECT_EQ(destruct_cnt_, 0);
+}
+
+TEST_F(ArchetypeDataBufferTests, TakeBuffer) {
+  auto buffer = ArchetypeDataBuffer(
+      {desc_->size() + sizeof(EntityId), desc_->align()}, desc_.Clone());
+  ComponentBundle bundle;
+  bundle.Add(Counter(&destruct_cnt_));
+  buffer.Push({1, 0}, bundle);
+  EXPECT_EQ(buffer.size(), 1);
+  EXPECT_EQ(destruct_cnt_, 0);
+
+  auto taken_buffer = std::move(buffer).TakeBuffer();
+  EXPECT_EQ(taken_buffer.size(), desc_->size() + sizeof(EntityId));
+  EXPECT_EQ(taken_buffer.align(), desc_->align());
+  EXPECT_EQ(destruct_cnt_, 1);
 }

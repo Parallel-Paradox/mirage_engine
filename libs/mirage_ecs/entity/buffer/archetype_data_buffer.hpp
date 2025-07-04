@@ -21,8 +21,8 @@ class ArchetypeDataBuffer {
   class View;
 
   MIRAGE_ECS ArchetypeDataBuffer() = default;
-  MIRAGE_ECS explicit ArchetypeDataBuffer(Buffer&& buffer,
-                                          SharedDescriptor&& descriptor);
+  MIRAGE_ECS ArchetypeDataBuffer(Buffer&& buffer,
+                                 SharedDescriptor&& descriptor);
   MIRAGE_ECS ~ArchetypeDataBuffer();
 
   ArchetypeDataBuffer(const ArchetypeDataBuffer&) = delete;
@@ -35,16 +35,19 @@ class ArchetypeDataBuffer {
   MIRAGE_ECS View operator[](uint16_t index);
 
   MIRAGE_ECS void Push(const EntityId& id, ComponentBundle& bundle);
-  MIRAGE_ECS void Push(const EntityId& id, View&& view);
+  MIRAGE_ECS void Push(View&& view);
 
   MIRAGE_ECS void RemoveTail();
   MIRAGE_ECS void Clear();
+  MIRAGE_ECS void Reserve(uint16_t capacity);
+  MIRAGE_ECS Buffer TakeBuffer() &&;
 
   [[nodiscard]] MIRAGE_ECS const SharedDescriptor& descriptor() const;
 
-  MIRAGE_ECS uint16_t size() const;
-  MIRAGE_ECS uint16_t capacity() const;
-  MIRAGE_ECS bool is_full() const;
+  [[nodiscard]] MIRAGE_ECS uint16_t size() const;
+  [[nodiscard]] MIRAGE_ECS uint16_t capacity() const;
+  [[nodiscard]] MIRAGE_ECS bool is_full() const;
+  [[nodiscard]] MIRAGE_ECS size_t unit_size() const;
 
  private:
   SharedDescriptor descriptor_{nullptr};
@@ -125,6 +128,8 @@ class MIRAGE_ECS ArchetypeDataBuffer::View {
   T& Get() {
     return *TryGet<T>();
   }
+
+  std::byte* view_ptr();
 
   EntityId& entity_id();
   [[nodiscard]] const EntityId& entity_id() const;

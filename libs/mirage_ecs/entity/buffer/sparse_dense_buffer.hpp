@@ -22,6 +22,7 @@ class MIRAGE_ECS DenseBuffer {
  public:
   constexpr static size_t kMaxBufferSize = AlignedBufferPool::kBufferSize;
   constexpr static size_t kMinAlign = alignof(SparseId);
+  constexpr static size_t kUnitSize = sizeof(SparseId);
 
   DenseBuffer() = default;
   explicit DenseBuffer(Buffer&& buffer);
@@ -38,6 +39,8 @@ class MIRAGE_ECS DenseBuffer {
 
   void Push(SparseId sparse_id);
   void RemoveTail();
+  void Reserve(uint16_t capacity);
+  Buffer TakeBuffer() &&;
 
   uint16_t size() const;
   uint16_t capacity() const;
@@ -55,6 +58,7 @@ class MIRAGE_ECS SparseBuffer {
  public:
   constexpr static size_t kMaxBufferSize = AlignedBufferPool::kBufferSize;
   constexpr static size_t kMinAlign = alignof(DenseId);
+  constexpr static size_t kUnitSize = sizeof(DenseId) + sizeof(uint16_t);
 
   SparseBuffer() = default;
   explicit SparseBuffer(Buffer&& buffer);
@@ -71,6 +75,8 @@ class MIRAGE_ECS SparseBuffer {
 
   [[nodiscard]] uint16_t FillHole(DenseId dense_id);
   DenseId Remove(uint16_t index);
+  void Reserve(uint16_t capacity);
+  Buffer TakeBuffer() &&;
 
   uint16_t size() const;
   uint16_t hole_cnt() const;

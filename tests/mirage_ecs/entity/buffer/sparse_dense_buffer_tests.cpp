@@ -44,6 +44,28 @@ TEST(DenseBufferTests, RemoveTail) {
   EXPECT_EQ(buffer.size(), 0);
 }
 
+TEST(DenseBufferTests, Reserve) {
+  DenseBuffer buffer({DenseBuffer::kUnitSize, alignof(SparseId)});
+  buffer.Reserve(0);
+  EXPECT_EQ(buffer.size(), 0);
+  EXPECT_EQ(buffer.capacity(), 1);
+
+  buffer.Push(1);
+  buffer.Reserve(2);
+  EXPECT_EQ(buffer.size(), 1);
+  EXPECT_EQ(buffer.capacity(), 2);
+  EXPECT_EQ(buffer[0], 1);
+}
+
+TEST(DenseBufferTests, TakeBuffer) {
+  DenseBuffer buffer({2 * DenseBuffer::kUnitSize, alignof(SparseId)});
+  buffer.Push(0);
+  buffer.Push(1);
+  auto taken_buffer = std::move(buffer).TakeBuffer();
+  EXPECT_EQ(taken_buffer.size(), 2 * sizeof(SparseId));
+  EXPECT_EQ(taken_buffer.align(), alignof(SparseId));
+}
+
 TEST(SparseBufferTests, Construct) {
   SparseBuffer buffer;
   EXPECT_EQ(buffer.size(), 0);
@@ -102,4 +124,34 @@ TEST(SparseBufferTests, Remove) {
   EXPECT_EQ(buffer.size(), 1);
   EXPECT_EQ(buffer.hole_cnt(), 1);
   EXPECT_EQ(buffer[index_1_], 3);
+}
+
+TEST(SparseBufferTests, Reserve) {
+  SparseBuffer buffer({SparseBuffer::kUnitSize, alignof(DenseId)});
+
+  buffer.Reserve(0);
+  EXPECT_EQ(buffer.size(), 0);
+  EXPECT_EQ(buffer.hole_cnt(), 1);
+  EXPECT_EQ(buffer.capacity(), 1);
+
+  const auto index_0 = buffer.FillHole(1);
+  buffer.Reserve(2);
+  EXPECT_EQ(buffer.size(), 1);
+  EXPECT_EQ(buffer.hole_cnt(), 1);
+  EXPECT_EQ(buffer.capacity(), 2);
+  EXPECT_EQ(buffer[index_0], 1);
+
+  const auto index_1 = buffer.FillHole(2);
+  EXPECT_EQ(index_1, 1);
+  EXPECT_EQ(buffer.size(), 2);
+  EXPECT_EQ(buffer.hole_cnt(), 0);
+  EXPECT_EQ(buffer.capacity(), 2);
+  EXPECT_EQ(buffer[index_1], 2);
+}
+
+TEST(SparseBufferTests, TakeBuffer) {
+  SparseBuffer buffer({2 * SparseBuffer::kUnitSize, alignof(DenseId)});
+  auto taken_buffer = std::move(buffer).TakeBuffer();
+  EXPECT_EQ(taken_buffer.size(), 2 * SparseBuffer::kUnitSize);
+  EXPECT_EQ(taken_buffer.align(), alignof(DenseId));
 }
