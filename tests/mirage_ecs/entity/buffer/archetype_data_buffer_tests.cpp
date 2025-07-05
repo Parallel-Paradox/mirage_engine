@@ -144,7 +144,7 @@ TEST_F(ArchetypeDataBufferTests, Reserve) {
   EXPECT_EQ(buffer.capacity(), 1);
   EXPECT_EQ(buffer[0].Get<Counter>().destruct_cnt_, &destruct_cnt_);
 
-  buffer.Reserve(2);
+  buffer.Reserve(2 * ArchetypeDataBuffer::unit_size(*desc_));
   EXPECT_EQ(buffer.size(), 1);
   EXPECT_EQ(buffer.capacity(), 2);
   EXPECT_EQ(buffer[0].Get<Counter>().destruct_cnt_, &destruct_cnt_);

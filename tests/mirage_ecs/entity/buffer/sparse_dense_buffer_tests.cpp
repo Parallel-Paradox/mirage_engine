@@ -51,7 +51,7 @@ TEST(DenseBufferTests, Reserve) {
   EXPECT_EQ(buffer.capacity(), 1);
 
   buffer.Push(1);
-  buffer.Reserve(2);
+  buffer.Reserve(2 * DenseBuffer::kUnitSize);
   EXPECT_EQ(buffer.size(), 1);
   EXPECT_EQ(buffer.capacity(), 2);
   EXPECT_EQ(buffer[0], 1);
@@ -135,7 +135,7 @@ TEST(SparseBufferTests, Reserve) {
   EXPECT_EQ(buffer.capacity(), 1);
 
   const auto index_0 = buffer.FillHole(1);
-  buffer.Reserve(2);
+  buffer.Reserve(2 * SparseBuffer::kUnitSize);
   EXPECT_EQ(buffer.size(), 1);
   EXPECT_EQ(buffer.hole_cnt(), 1);
   EXPECT_EQ(buffer.capacity(), 2);

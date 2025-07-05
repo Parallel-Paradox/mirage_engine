@@ -11,7 +11,7 @@ ArchetypeDataBuffer::ArchetypeDataBuffer(Buffer&& buffer,
   MIRAGE_DCHECK(buffer_.align() >= alignof(EntityId));
   MIRAGE_DCHECK(buffer_.align() >= descriptor_->align());
   size_ = 0;
-  const auto capacity = buffer_.size() / unit_size(*descriptor);
+  const auto capacity = buffer_.size() / unit_size(*descriptor_);
   capacity_ = static_cast<uint16_t>(capacity);
 }
 

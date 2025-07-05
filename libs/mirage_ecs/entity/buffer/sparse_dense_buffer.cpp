@@ -165,7 +165,7 @@ void SparseBuffer::Reserve(const size_t byte_size) {
   }
 
   Buffer new_buffer({byte_size, buffer_.align()});
-  const auto capacity = static_cast<uint16_t>(new_buffer.size()) / kUnitSize;
+  const auto capacity = static_cast<uint16_t>(new_buffer.size() / kUnitSize);
 
   auto* new_id_begin_ptr = reinterpret_cast<DenseId*>(new_buffer.ptr());
   const auto* id_begin_ptr = reinterpret_cast<DenseId*>(buffer_.ptr());
