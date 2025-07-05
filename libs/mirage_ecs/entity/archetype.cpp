@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "mirage_base/buffer/aligned_buffer.hpp"
 #include "mirage_base/define/check.hpp"
 #include "mirage_ecs/entity/buffer/aligned_buffer_pool.hpp"
 #include "mirage_ecs/entity/buffer/archetype_data_buffer.hpp"
@@ -111,41 +112,96 @@ void Archetype::RemoveMany(Array<Index> &&index_list,
 }
 
 void Archetype::EnsureNotFull(AlignedBufferPool &buffer_pool) {
-  if (!dense_.empty() && !data_.empty() && !dense_.Tail().is_full() &&
-      !data_.Tail().is_full()) {
+  EnsureNotFullSparse(buffer_pool);
+  EnsureNotFullDense(buffer_pool);
+  EnsureNotFullData(buffer_pool);
+}
+
+void Archetype::EnsureNotFullSparse(AlignedBufferPool &buffer_pool) {
+  if (!available_sparse_.empty()) {
     return;
   }
-  // TODO check available sparse
 
   if (sparse_.empty()) {
-    // TODO
-  } else if (sparse_.size() == 1) {
-    // TODO
-  } else {
-    available_sparse_.Emplace(sparse_.size());
-    sparse_.Emplace(buffer_pool.Allocate(alignof(DenseId)));
+    available_sparse_.Emplace(0);
+    sparse_.Emplace(
+        AlignedBuffer{SparseBuffer::kUnitSize, SparseBuffer::kMinAlign});
+    return;
+  }
+  if (sparse_.size() == 1) {
+    const auto new_byte_size = sparse_[0].buffer().size() * 2;
+    if (new_byte_size <= AlignedBufferPool::kBufferSize &&
+        AlignedBufferPool::kBufferSize - new_byte_size >=
+            SparseBuffer::kUnitSize) {
+      sparse_[0].Reserve(new_byte_size);
+    } else {
+      sparse_[0].Reserve(AlignedBufferPool::kBufferSize);
+    }
+
+    if (sparse_[0].hole_cnt() > 0) {
+      available_sparse_.Emplace(0);
+      return;
+    }
+  }
+
+  available_sparse_.Emplace(sparse_.size());
+  sparse_.Emplace(buffer_pool.Allocate(SparseBuffer::kMinAlign));
+}
+
+void Archetype::EnsureNotFullDense(AlignedBufferPool &buffer_pool) {
+  if (!dense_.empty() && !dense_.Tail().is_full()) {
+    return;
   }
 
   if (dense_.empty()) {
-    // TODO
+    dense_.Emplace(
+        AlignedBuffer{DenseBuffer::kUnitSize, DenseBuffer::kMinAlign});
+    return;
   } else if (dense_.size() == 1) {
-    // TODO
-  } else {
-    dense_.Emplace(buffer_pool.Allocate(alignof(SparseId)));
+    const auto new_byte_size = dense_[0].buffer().size() * 2;
+    if (new_byte_size <= AlignedBufferPool::kBufferSize &&
+        AlignedBufferPool::kBufferSize - new_byte_size >=
+            DenseBuffer::kUnitSize) {
+      dense_[0].Reserve(new_byte_size);
+    } else {
+      dense_[0].Reserve(AlignedBufferPool::kBufferSize);
+    }
+
+    if (!dense_[0].is_full()) {
+      return;
+    }
+  }
+  dense_.Emplace(buffer_pool.Allocate(DenseBuffer::kMinAlign));
+}
+
+void Archetype::EnsureNotFullData(AlignedBufferPool &buffer_pool) {
+  if (!data_.empty() && !data_.Tail().is_full()) {
+    return;
   }
 
+  const auto unit_size = ArchetypeDataBuffer::unit_size(*descriptor_);
+
+  const auto desc_align = descriptor_->align();
+  const auto id_align = alignof(EntityId);
+  const auto align = desc_align > id_align ? desc_align : id_align;
+  static_assert(AlignedBufferPool::kBufferSize >= alignof(EntityId));
+
   if (data_.empty()) {
-    // TODO
+    data_.Emplace(AlignedBuffer{unit_size, align}, descriptor_.Clone());
   } else if (data_.size() == 1) {
-    // TODO
-  } else {
-    // TODO
-    const auto desc_align = descriptor_->align();
-    const auto id_align = alignof(EntityId);
-    const auto align = desc_align > id_align ? desc_align : id_align;
-    static_assert(AlignedBufferPool::kBufferSize >= alignof(EntityId));
-    data_.Emplace(buffer_pool.Allocate(align), descriptor_.Clone());
+    const auto new_byte_size = data_[0].buffer().size() * 2;
+    if (new_byte_size <= AlignedBufferPool::kBufferSize &&
+        AlignedBufferPool::kBufferSize - new_byte_size >= unit_size) {
+      data_[0].Reserve(new_byte_size);
+    } else {
+      data_[0].Reserve(AlignedBufferPool::kBufferSize);
+    }
+
+    if (!data_[0].is_full()) {
+      return;
+    }
   }
+  data_.Emplace(buffer_pool.Allocate(align), descriptor_.Clone());
 }
 
 SparseId Archetype::PushSparseDenseBuffer(AlignedBufferPool &buffer_pool) {
@@ -153,10 +209,17 @@ SparseId Archetype::PushSparseDenseBuffer(AlignedBufferPool &buffer_pool) {
 
   const auto sparse_buffer_id = available_sparse_[0];
   auto &sparse_buffer = sparse_[sparse_buffer_id];
+  if (sparse_buffer.capacity() == 0) {
+    if (sparse_.size() == 1) {
+      sparse_buffer =
+          SparseBuffer({SparseBuffer::kUnitSize, SparseBuffer::kMinAlign});
+    } else {
+      sparse_buffer =
+          SparseBuffer(buffer_pool.Allocate(SparseBuffer::kMinAlign));
+    }
+  }
 
-  if (sparse_buffer.hole_cnt() == 0) {
-    sparse_buffer = SparseBuffer(buffer_pool.Allocate(alignof(DenseId)));
-  } else if (sparse_buffer.hole_cnt() == 1) {
+  if (sparse_buffer.hole_cnt() == 1) {
     available_sparse_.SwapRemove(0);
   }
   MIRAGE_DCHECK(sparse_buffer.hole_cnt() > 0);

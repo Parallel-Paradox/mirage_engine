@@ -1,6 +1,7 @@
 #include "mirage_ecs/entity/buffer/archetype_data_buffer.hpp"
 
 #include "mirage_base/define/check.hpp"
+#include "mirage_ecs/entity/archetype_descriptor.hpp"
 
 using namespace mirage::ecs;
 
@@ -10,7 +11,7 @@ ArchetypeDataBuffer::ArchetypeDataBuffer(Buffer&& buffer,
   MIRAGE_DCHECK(buffer_.align() >= alignof(EntityId));
   MIRAGE_DCHECK(buffer_.align() >= descriptor_->align());
   size_ = 0;
-  const auto capacity = buffer_.size() / unit_size();
+  const auto capacity = buffer_.size() / unit_size(*descriptor);
   capacity_ = static_cast<uint16_t>(capacity);
 }
 
@@ -146,14 +147,18 @@ const ArchetypeDataBuffer::SharedDescriptor& ArchetypeDataBuffer::descriptor()
   return descriptor_;
 }
 
+const ArchetypeDataBuffer::Buffer& ArchetypeDataBuffer::buffer() const {
+  return buffer_;
+}
+
 uint16_t ArchetypeDataBuffer::size() const { return size_; }
 
 uint16_t ArchetypeDataBuffer::capacity() const { return capacity_; }
 
 bool ArchetypeDataBuffer::is_full() const { return size_ == capacity_; }
 
-size_t ArchetypeDataBuffer::unit_size() const {
-  return descriptor_->size() + sizeof(EntityId);
+size_t ArchetypeDataBuffer::unit_size(ArchetypeDescriptor& descriptor) {
+  return descriptor.size() + sizeof(EntityId);
 }
 
 ArchetypeDataBuffer::ConstView::ConstView(const ArchetypeDescriptor* descriptor,

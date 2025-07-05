@@ -50,6 +50,10 @@ class Archetype {
 
  private:
   MIRAGE_ECS void EnsureNotFull(AlignedBufferPool &buffer_pool);
+  MIRAGE_ECS void EnsureNotFullSparse(AlignedBufferPool &buffer_pool);
+  MIRAGE_ECS void EnsureNotFullDense(AlignedBufferPool &buffer_pool);
+  MIRAGE_ECS void EnsureNotFullData(AlignedBufferPool &buffer_pool);
+
   MIRAGE_ECS SparseId PushSparseDenseBuffer(AlignedBufferPool &buffer_pool);
 
   struct MIRAGE_ECS Route {

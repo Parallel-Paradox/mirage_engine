@@ -44,10 +44,12 @@ class ArchetypeDataBuffer {
 
   [[nodiscard]] MIRAGE_ECS const SharedDescriptor& descriptor() const;
 
+  [[nodiscard]] MIRAGE_ECS const Buffer& buffer() const;
   [[nodiscard]] MIRAGE_ECS uint16_t size() const;
   [[nodiscard]] MIRAGE_ECS uint16_t capacity() const;
   [[nodiscard]] MIRAGE_ECS bool is_full() const;
-  [[nodiscard]] MIRAGE_ECS size_t unit_size() const;
+  [[nodiscard]] MIRAGE_ECS static size_t unit_size(
+      ArchetypeDescriptor& descriptor);
 
  private:
   SharedDescriptor descriptor_{nullptr};

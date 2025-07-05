@@ -54,7 +54,7 @@ TEST_F(ArchetypeDataBufferTests, Construct) {
   EXPECT_EQ(buffer_.size(), 0);
   EXPECT_EQ(buffer_.capacity(), 2);
   EXPECT_EQ(buffer_.is_full(), false);
-  EXPECT_EQ(buffer_.unit_size(), desc_->size() + sizeof(EntityId));
+  EXPECT_EQ(buffer_.unit_size(*desc_), desc_->size() + sizeof(EntityId));
 }
 
 TEST_F(ArchetypeDataBufferTests, PushBundleAndAccess) {
