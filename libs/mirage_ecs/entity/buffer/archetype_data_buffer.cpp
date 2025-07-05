@@ -120,16 +120,15 @@ void ArchetypeDataBuffer::Clear() {
   }
 }
 
-void ArchetypeDataBuffer::Reserve(uint16_t capacity) {
-  if (capacity <= capacity_) {
+void ArchetypeDataBuffer::Reserve(size_t byte_size) {
+  if (byte_size <= buffer_.size()) {
     return;
   }
 
   ArchetypeDataBuffer old_buffer = std::move(*this);
   const auto old_buffer_size = old_buffer.size_;
-  new (this) ArchetypeDataBuffer(
-      {capacity * old_buffer.unit_size(), old_buffer.buffer_.align()},
-      old_buffer.descriptor_.Clone());
+  new (this) ArchetypeDataBuffer({byte_size, old_buffer.buffer_.align()},
+                                 old_buffer.descriptor_.Clone());
   for (auto i = 0; i < old_buffer_size; ++i) {
     Push(old_buffer[i]);
   }

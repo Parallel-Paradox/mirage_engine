@@ -53,14 +53,14 @@ void DenseBuffer::RemoveTail() {
   id_begin_ptr[size_] = kInvalidSparseId;
 }
 
-void DenseBuffer::Reserve(const uint16_t capacity) {
-  if (capacity <= capacity_) {
+void DenseBuffer::Reserve(const size_t byte_size) {
+  if (byte_size <= buffer_.size()) {
     return;
   }
 
   DenseBuffer old_buffer = std::move(*this);
   const auto old_buffer_size = old_buffer.size_;
-  new (this) DenseBuffer({capacity * kUnitSize, old_buffer.buffer_.align()});
+  new (this) DenseBuffer({byte_size, old_buffer.buffer_.align()});
   for (auto i = 0; i < old_buffer_size; ++i) {
     Push(old_buffer[i]);
   }
@@ -71,6 +71,8 @@ DenseBuffer::Buffer DenseBuffer::TakeBuffer() && {
   capacity_ = 0;
   return std::move(buffer_);
 }
+
+const DenseBuffer::Buffer& DenseBuffer::buffer() const { return buffer_; }
 
 uint16_t DenseBuffer::size() const { return size_; }
 
@@ -157,12 +159,13 @@ DenseId SparseBuffer::Remove(const uint16_t index) {
   return rv;
 }
 
-void SparseBuffer::Reserve(const uint16_t capacity) {
-  if (capacity <= capacity_) {
+void SparseBuffer::Reserve(const size_t byte_size) {
+  if (byte_size <= buffer_.size()) {
     return;
   }
 
-  Buffer new_buffer({capacity * kUnitSize, buffer_.align()});
+  Buffer new_buffer({byte_size, buffer_.align()});
+  const auto capacity = static_cast<uint16_t>(new_buffer.size()) / kUnitSize;
 
   auto* new_id_begin_ptr = reinterpret_cast<DenseId*>(new_buffer.ptr());
   const auto* id_begin_ptr = reinterpret_cast<DenseId*>(buffer_.ptr());
@@ -201,6 +204,8 @@ SparseBuffer::Buffer SparseBuffer::TakeBuffer() && {
   capacity_ = 0;
   return std::move(buffer_);
 }
+
+const SparseBuffer::Buffer& SparseBuffer::buffer() const { return buffer_; }
 
 uint16_t SparseBuffer::size() const { return size_; }
 
