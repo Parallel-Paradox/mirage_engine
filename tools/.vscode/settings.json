@@ -1,0 +1,24 @@
+{
+    "editor.formatOnSave": true,
+    "editor.rulers": [
+        80
+    ],
+    "editor.tabSize": 2,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.eol": "\n",
+    "cSpell.words": [
+        "clangd",
+        "xmake"
+    ],
+    "clangd.arguments": [
+        "--background-index",
+        "--compile-commands-dir=.",
+        "--clang-tidy",
+        "--clang-tidy-checks=performance-*,bugprone-*",
+        "--all-scopes-completion",
+        "--completion-style=detailed",
+        "--header-insertion=iwyu"
+    ],
+    "xmake.compileCommandsDirectory": "."
+}
