@@ -47,6 +47,7 @@ xmake config --kind=shared --mirage_split=true
 如果你想查看当前的所有编译选项，使用下面的指令：
 
 ```sh
+xmake config --help
 xmake config --verbose
 ```
 
@@ -62,8 +63,21 @@ xmake run -g tests
 
 我们推荐在 CLion 中使用 `cmake` 作为构建工具，这是因为 CLion 内置了对 `cmake` 的支持，可以直接读取 `CMakeLists.txt` 文件进行构建和调试。
 
-> TODO
+只需要打开项目目录，CLion 会自动识别并加载 CMake 配置。
+
+### cmake 设置
+
+在 **构建，执行，部署 > CMake** 增加下面的 cmake 配置项可以将蜃楼引擎的各个部分拆分开，分别编译成动态库，这可以帮助你在开发过程中快速编译和调试，不再需要修改一个部分后重新编译整个引擎来执行对应的单元测试。
+
+> 更多的配置项参考 [编译选项](#编译选项) 章节。
+
+```
+-DMIRAGE_BUILD_SHARED -DMIRAGE_BUILD_SPLIT
+```
 
 ## 编译选项
 
-> TODO
+| cmake 配置项            | xmake 配置项          | 描述                                 |
+| ----------------------- | --------------------- | ------------------------------------ |
+| `-DMIRAGE_BUILD_SHARED` | `--kind=shared`       | 将各个部分编译为动态库               |
+| `-DMIRAGE_BUILD_SPLIT`  | `--mirage_split=true` | 拆分引擎的各个部分以便快速编译和调试 |
