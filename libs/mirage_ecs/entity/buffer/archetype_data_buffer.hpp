@@ -4,16 +4,16 @@
 #include <cstdint>
 
 #include "mirage_base/auto_ptr/shared.hpp"
-#include "mirage_base/buffer/aligned_buffer.hpp"
 #include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/entity/archetype_descriptor.hpp"
+#include "mirage_ecs/entity/buffer/aligned_buffer.hpp"
 #include "mirage_ecs/entity/entity_id.hpp"
 
 namespace mirage::ecs {
 
 class ArchetypeDataBuffer {
-  using Buffer = base::AlignedBuffer;
+  using Buffer = AlignedBuffer;
   using SharedDescriptor = base::SharedLocal<ArchetypeDescriptor>;
 
  public:

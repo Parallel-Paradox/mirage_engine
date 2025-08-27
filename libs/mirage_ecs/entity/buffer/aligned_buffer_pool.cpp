@@ -1,7 +1,8 @@
 #include "mirage_ecs/entity/buffer/aligned_buffer_pool.hpp"
 
-#include "mirage_base/buffer/aligned_buffer.hpp"
 #include "mirage_base/define/check.hpp"
+#include "mirage_base/util/math.hpp"
+#include "mirage_ecs/entity/buffer/aligned_buffer.hpp"
 
 using namespace mirage::base;
 using namespace mirage::ecs;
@@ -44,8 +45,7 @@ void AlignedBufferPool::Release(AlignedBuffer&& buffer) {
 }
 
 PoolIndex AlignedBufferPool::GetPoolIndex(const size_t alignment) {
-  // Check if the alignment is a power of 2.
-  MIRAGE_DCHECK((alignment != 0 && (alignment & (alignment - 1)) == 0));
+  MIRAGE_DCHECK(IsPowerOfTwo(alignment));
   if (alignment <= kMinAlign) {
     return kAlign8;
   }

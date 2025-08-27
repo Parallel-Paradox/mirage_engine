@@ -1,12 +1,13 @@
-#include "mirage_base/buffer/aligned_buffer.hpp"
+#include "mirage_ecs/entity/buffer/aligned_buffer.hpp"
 
 #include <cstddef>
 #include <new>
 #include <utility>
 
 #include "mirage_base/define/check.hpp"
+#include "mirage_base/util/math.hpp"
 
-using namespace mirage::base;
+using namespace mirage::ecs;
 
 AlignedBuffer::AlignedBuffer(const size_t size, size_t align)
     : buffer_ptr_(static_cast<std::byte*>(
@@ -14,8 +15,7 @@ AlignedBuffer::AlignedBuffer(const size_t size, size_t align)
       size_(size),
       align_(align) {
   MIRAGE_DCHECK(size > 0);
-  // Check if the alignment is a power of 2.
-  MIRAGE_DCHECK((align != 0 && (align & (align - 1)) == 0));
+  MIRAGE_DCHECK(base::IsPowerOfTwo(align));
 }
 
 AlignedBuffer::~AlignedBuffer() {

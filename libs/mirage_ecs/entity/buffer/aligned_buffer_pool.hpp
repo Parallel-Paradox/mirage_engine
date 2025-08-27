@@ -3,18 +3,16 @@
 
 #include <concepts>
 
-#include "mirage_base/buffer/aligned_buffer.hpp"
 #include "mirage_base/container/array.hpp"
 #include "mirage_base/util/constant.hpp"
 #include "mirage_ecs/define/export.hpp"
+#include "mirage_ecs/entity/buffer/aligned_buffer.hpp"
 
 namespace mirage::ecs {
 
 class AlignedBufferPool {
   template <std::move_constructible T>
   using Array = base::Array<T>;
-
-  using AlignedBuffer = base::AlignedBuffer;
 
  public:
   constexpr static size_t kBufferSize = 16 * base::kKB;

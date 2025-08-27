@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "mirage_base/buffer/aligned_buffer.hpp"
 #include "mirage_base/define/check.hpp"
+#include "mirage_ecs/entity/buffer/aligned_buffer.hpp"
 #include "mirage_ecs/entity/buffer/aligned_buffer_pool.hpp"
 #include "mirage_ecs/entity/buffer/archetype_data_buffer.hpp"
 #include "mirage_ecs/entity/buffer/sparse_dense_buffer.hpp"

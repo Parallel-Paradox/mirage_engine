@@ -8,9 +8,9 @@
 using namespace mirage::base;
 using namespace mirage::ecs;
 
-using SharedDescriptor = SharedLocal<ArchetypeDescriptor>;
-
 namespace {
+
+using SharedDescriptor = SharedLocal<ArchetypeDescriptor>;
 
 struct Counter : Component {
   int32_t *destruct_cnt_{nullptr};

@@ -5,6 +5,7 @@
 
 #include "mirage_base/container/array.hpp"
 #include "mirage_base/define/check.hpp"
+#include "mirage_base/util/math.hpp"
 #include "mirage_ecs/component/component_id.hpp"
 #include "mirage_ecs/entity/archetype_id.hpp"
 #include "mirage_ecs/util/type_set.hpp"
@@ -34,8 +35,7 @@ ArchetypeDescriptor::ArchetypeDescriptor(
   align_ = type_set_.type_array()[0].type_align();
   for (const auto& type_id : type_set_.type_array()) {
     const size_t align = type_id.type_align();
-    // Check if the alignment is a power of 2.
-    MIRAGE_DCHECK((align != 0 && (align & (align - 1)) == 0));
+    MIRAGE_DCHECK(base::IsPowerOfTwo(align));
     align_ = std::max(align_, align);
   }
 

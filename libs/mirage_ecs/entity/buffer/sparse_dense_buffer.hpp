@@ -4,8 +4,8 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "mirage_base/buffer/aligned_buffer.hpp"
 #include "mirage_ecs/define/export.hpp"
+#include "mirage_ecs/entity/buffer/aligned_buffer.hpp"
 #include "mirage_ecs/entity/buffer/aligned_buffer_pool.hpp"
 
 namespace mirage::ecs {
@@ -17,7 +17,7 @@ using DenseId = size_t;
 constexpr static inline DenseId kInvalidDenseId = SIZE_MAX;
 
 class MIRAGE_ECS DenseBuffer {
-  using Buffer = base::AlignedBuffer;
+  using Buffer = AlignedBuffer;
 
  public:
   constexpr static size_t kMaxBufferSize = AlignedBufferPool::kBufferSize;
@@ -54,7 +54,7 @@ class MIRAGE_ECS DenseBuffer {
 };
 
 class MIRAGE_ECS SparseBuffer {
-  using Buffer = base::AlignedBuffer;
+  using Buffer = AlignedBuffer;
 
  public:
   constexpr static size_t kMaxBufferSize = AlignedBufferPool::kBufferSize;
