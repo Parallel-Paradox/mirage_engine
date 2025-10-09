@@ -7,8 +7,8 @@
 #include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/entity/archetype_descriptor.hpp"
-#include "mirage_ecs/entity/buffer/aligned_buffer.hpp"
 #include "mirage_ecs/entity/entity_id.hpp"
+#include "mirage_ecs/entity/memory/aligned_buffer.hpp"
 
 namespace mirage::ecs {
 

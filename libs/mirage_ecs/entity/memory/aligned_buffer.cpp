@@ -1,4 +1,4 @@
-#include "mirage_ecs/entity/buffer/aligned_buffer.hpp"
+#include "mirage_ecs/entity/memory/aligned_buffer.hpp"
 
 #include <cstddef>
 #include <new>
@@ -10,7 +10,7 @@
 using namespace mirage::ecs;
 
 AlignedBuffer::AlignedBuffer(const size_t size, size_t align)
-    : buffer_ptr_(static_cast<std::byte*>(
+    : ptr_(static_cast<std::byte*>(
           ::operator new[](size, std::align_val_t{align}))),
       size_(size),
       align_(align) {
@@ -19,17 +19,17 @@ AlignedBuffer::AlignedBuffer(const size_t size, size_t align)
 }
 
 AlignedBuffer::~AlignedBuffer() {
-  if (buffer_ptr_) {
-    ::operator delete[](buffer_ptr_, std::align_val_t{align_});
+  if (ptr_) {
+    ::operator delete[](ptr_, std::align_val_t{align_});
   }
-  buffer_ptr_ = nullptr;
+  ptr_ = nullptr;
   size_ = 0;
   align_ = 0;
 }
 
 AlignedBuffer::AlignedBuffer(AlignedBuffer&& other) noexcept
-    : buffer_ptr_(other.buffer_ptr_), size_(other.size_), align_(other.align_) {
-  other.buffer_ptr_ = nullptr;
+    : ptr_(other.ptr_), size_(other.size_), align_(other.align_) {
+  other.ptr_ = nullptr;
   other.size_ = 0;
   other.align_ = 0;
 }
@@ -43,9 +43,9 @@ AlignedBuffer& AlignedBuffer::operator=(AlignedBuffer&& other) noexcept {
   return *this;
 }
 
-std::byte* AlignedBuffer::ptr() { return buffer_ptr_; }
+std::byte* AlignedBuffer::ptr() { return ptr_; }
 
-const std::byte* AlignedBuffer::ptr() const { return buffer_ptr_; }
+const std::byte* AlignedBuffer::ptr() const { return ptr_; }
 
 size_t AlignedBuffer::size() const { return size_; }
 

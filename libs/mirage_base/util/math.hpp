@@ -2,12 +2,14 @@
 #define MIRAGE_BASE_UTIL_MATH
 
 #include <cstddef>
+#include <cstdint>
+
+#include "mirage_base/define/export.hpp"
 
 namespace mirage::base {
 
-constexpr bool IsPowerOfTwo(size_t value) {
-  return (value != 0) && ((value & (value - 1)) == 0);
-}
+MIRAGE_BASE bool IsPowerOfTwo(size_t value);
+MIRAGE_BASE uint16_t FixToPowerOfTwo(uint16_t val);
 
 }  // namespace mirage::base
 

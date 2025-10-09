@@ -6,7 +6,7 @@
 #include "mirage_base/container/array.hpp"
 #include "mirage_base/util/constant.hpp"
 #include "mirage_ecs/define/export.hpp"
-#include "mirage_ecs/entity/buffer/aligned_buffer.hpp"
+#include "mirage_ecs/entity/memory/aligned_buffer.hpp"
 
 namespace mirage::ecs {
 

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "mirage_ecs/entity/buffer/aligned_buffer.hpp"
 #include "mirage_ecs/entity/buffer/aligned_buffer_pool.hpp"
+#include "mirage_ecs/entity/memory/aligned_buffer.hpp"
 
 using namespace mirage::base;
 using namespace mirage::ecs;

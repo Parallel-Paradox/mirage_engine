@@ -5,8 +5,8 @@
 #include <cstdint>
 
 #include "mirage_ecs/define/export.hpp"
-#include "mirage_ecs/entity/buffer/aligned_buffer.hpp"
 #include "mirage_ecs/entity/buffer/aligned_buffer_pool.hpp"
+#include "mirage_ecs/entity/memory/aligned_buffer.hpp"
 
 namespace mirage::ecs {
 

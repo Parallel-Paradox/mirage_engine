@@ -26,7 +26,7 @@ class MIRAGE_ECS AlignedBuffer {
   [[nodiscard]] size_t align() const;
 
  private:
-  std::byte* buffer_ptr_{nullptr};
+  std::byte* ptr_{nullptr};
   size_t size_{0};
   size_t align_{0};
 };
