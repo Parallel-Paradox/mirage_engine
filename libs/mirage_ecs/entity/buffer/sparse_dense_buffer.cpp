@@ -1,5 +1,7 @@
 #include "mirage_ecs/entity/buffer/sparse_dense_buffer.hpp"
 
+#include <utility>
+
 #include "mirage_base/define/check.hpp"
 
 using namespace mirage::ecs;
@@ -7,11 +9,14 @@ using namespace mirage::ecs;
 DenseBuffer::DenseBuffer(Buffer&& buffer)
     : buffer_(std::move(buffer)),
       capacity_(static_cast<uint16_t>(buffer_.size()) / kUnitSize) {
-  MIRAGE_DCHECK(buffer_.align() >= DenseBuffer::kMinAlign);
-  MIRAGE_DCHECK(buffer_.size() <= DenseBuffer::kMaxBufferSize);
+  MIRAGE_DCHECK(buffer_.align() >= DenseBuffer::kAlign);
 }
 
-DenseBuffer::~DenseBuffer() { std::move(*this).TakeBuffer(); }
+DenseBuffer::~DenseBuffer() {
+  size_ = 0;
+  capacity_ = 0;
+  buffer_ = {};
+}
 
 DenseBuffer::DenseBuffer(DenseBuffer&& other) noexcept
     : buffer_(std::move(other.buffer_)),
@@ -66,12 +71,6 @@ void DenseBuffer::Reserve(const size_t byte_size) {
   }
 }
 
-DenseBuffer::Buffer DenseBuffer::TakeBuffer() && {
-  size_ = 0;
-  capacity_ = 0;
-  return std::move(buffer_);
-}
-
 const DenseBuffer::Buffer& DenseBuffer::buffer() const { return buffer_; }
 
 uint16_t DenseBuffer::size() const { return size_; }
@@ -81,8 +80,7 @@ uint16_t DenseBuffer::capacity() const { return capacity_; }
 bool DenseBuffer::is_full() const { return size_ == capacity_; }
 
 SparseBuffer::SparseBuffer(Buffer&& buffer) : buffer_(std::move(buffer)) {
-  MIRAGE_DCHECK(buffer_.align() >= SparseBuffer::kMinAlign);
-  MIRAGE_DCHECK(buffer_.size() <= SparseBuffer::kMaxBufferSize);
+  MIRAGE_DCHECK(buffer_.align() >= SparseBuffer::kAlign);
 
   const auto hole_cnt = buffer_.size() / kUnitSize;
   hole_cnt_ = static_cast<uint16_t>(hole_cnt);
@@ -100,7 +98,12 @@ SparseBuffer::SparseBuffer(Buffer&& buffer) : buffer_(std::move(buffer)) {
   }
 }
 
-SparseBuffer::~SparseBuffer() { std::move(*this).TakeBuffer(); }
+SparseBuffer::~SparseBuffer() {
+  size_ = 0;
+  hole_cnt_ = 0;
+  capacity_ = 0;
+  buffer_ = {};
+}
 
 SparseBuffer::SparseBuffer(SparseBuffer&& other) noexcept
     : buffer_(std::move(other.buffer_)),
@@ -196,13 +199,6 @@ void SparseBuffer::Reserve(const size_t byte_size) {
   buffer_ = std::move(new_buffer);
   capacity_ = capacity;
   hole_cnt_ = capacity_ - size_;
-}
-
-SparseBuffer::Buffer SparseBuffer::TakeBuffer() && {
-  size_ = 0;
-  hole_cnt_ = 0;
-  capacity_ = 0;
-  return std::move(buffer_);
 }
 
 const SparseBuffer::Buffer& SparseBuffer::buffer() const { return buffer_; }

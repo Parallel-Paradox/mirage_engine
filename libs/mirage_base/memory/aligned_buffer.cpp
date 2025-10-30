@@ -1,4 +1,4 @@
-#include "mirage_ecs/entity/memory/aligned_buffer.hpp"
+#include "mirage_base/memory/aligned_buffer.hpp"
 
 #include <cstddef>
 #include <new>
@@ -7,7 +7,7 @@
 #include "mirage_base/define/check.hpp"
 #include "mirage_base/util/math.hpp"
 
-using namespace mirage::ecs;
+using namespace mirage::base;
 
 AlignedBuffer::AlignedBuffer(const size_t size, size_t align)
     : ptr_(static_cast<std::byte*>(

@@ -4,9 +4,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "mirage_base/memory/aligned_buffer.hpp"
 #include "mirage_ecs/define/export.hpp"
-#include "mirage_ecs/entity/buffer/aligned_buffer_pool.hpp"
-#include "mirage_ecs/entity/memory/aligned_buffer.hpp"
 
 namespace mirage::ecs {
 
@@ -17,11 +16,10 @@ using DenseId = size_t;
 constexpr static inline DenseId kInvalidDenseId = SIZE_MAX;
 
 class MIRAGE_ECS DenseBuffer {
-  using Buffer = AlignedBuffer;
+  using Buffer = base::AlignedBuffer;
 
  public:
-  constexpr static size_t kMaxBufferSize = AlignedBufferPool::kBufferSize;
-  constexpr static size_t kMinAlign = alignof(SparseId);
+  constexpr static size_t kAlign = alignof(SparseId);
   constexpr static size_t kUnitSize = sizeof(SparseId);
 
   DenseBuffer() = default;
@@ -40,7 +38,6 @@ class MIRAGE_ECS DenseBuffer {
   void Push(SparseId sparse_id);
   void RemoveTail();
   void Reserve(size_t byte_size);
-  Buffer TakeBuffer() &&;
 
   const Buffer& buffer() const;
   uint16_t size() const;
@@ -54,11 +51,10 @@ class MIRAGE_ECS DenseBuffer {
 };
 
 class MIRAGE_ECS SparseBuffer {
-  using Buffer = AlignedBuffer;
+  using Buffer = base::AlignedBuffer;
 
  public:
-  constexpr static size_t kMaxBufferSize = AlignedBufferPool::kBufferSize;
-  constexpr static size_t kMinAlign = alignof(DenseId);
+  constexpr static size_t kAlign = alignof(DenseId);
   constexpr static size_t kUnitSize = sizeof(DenseId) + sizeof(uint16_t);
 
   SparseBuffer() = default;
@@ -77,7 +73,6 @@ class MIRAGE_ECS SparseBuffer {
   [[nodiscard]] uint16_t FillHole(DenseId dense_id);
   DenseId Remove(uint16_t index);
   void Reserve(size_t byte_size);
-  Buffer TakeBuffer() &&;
 
   const Buffer& buffer() const;
   uint16_t size() const;

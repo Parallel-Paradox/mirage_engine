@@ -4,11 +4,11 @@
 #include <utility>
 
 #include "mirage_base/define/check.hpp"
-#include "mirage_ecs/entity/buffer/aligned_buffer_pool.hpp"
+#include "mirage_base/memory/aligned_buffer.hpp"
+#include "mirage_base/util/constant.hpp"
 #include "mirage_ecs/entity/buffer/archetype_data_buffer.hpp"
 #include "mirage_ecs/entity/buffer/sparse_dense_buffer.hpp"
 #include "mirage_ecs/entity/entity_id.hpp"
-#include "mirage_ecs/entity/memory/aligned_buffer.hpp"
 
 using namespace mirage::base;
 using namespace mirage::ecs;
@@ -17,24 +17,25 @@ using Index = Archetype::Index;
 using ConstView = Archetype::ConstView;
 using View = Archetype::View;
 
+constexpr static inline uint16_t kMaxBufferSize = 16 * kKB;
+
 Archetype::Archetype(SharedDescriptor &&descriptor)
     : descriptor_(std::move(descriptor)) {}
 
-Index Archetype::Push(const EntityId &id, ComponentBundle &bundle,
-                      AlignedBufferPool &buffer_pool) {
-  EnsureNotFull(buffer_pool);
+Index Archetype::Push(const EntityId &id, ComponentBundle &bundle) {
+  EnsureNotFull();
   ++size_;
   auto &data_buffer = data_.Tail();
   data_buffer.Push(id, bundle);
-  return PushSparseDenseBuffer(buffer_pool);
+  return PushSparseDenseBuffer();
 }
 
-Index Archetype::Push(View &&view, AlignedBufferPool &buffer_pool) {
-  EnsureNotFull(buffer_pool);
+Index Archetype::Push(View &&view) {
+  EnsureNotFull();
   ++size_;
   auto &data_buffer = data_.Tail();
   data_buffer.Push(std::move(view));
-  return PushSparseDenseBuffer(buffer_pool);
+  return PushSparseDenseBuffer();
 }
 
 ConstView Archetype::operator[](Index index) const {
@@ -50,14 +51,13 @@ View Archetype::operator[](Index index) {
 }
 
 Array<ArchetypeDataBuffer> Archetype::TakeMany(SharedDescriptor &&target,
-                                               Array<Index> &&index_list,
-                                               AlignedBufferPool &buffer_pool) {
+                                               Array<Index> &&index_list) {
   if (index_list.empty()) {
     return Array<ArchetypeDataBuffer>();
   }
 
   for (auto &index : index_list) {
-    index = TakeDenseIdFromSparse(index, buffer_pool);
+    index = TakeDenseIdFromSparse(index);
   }
 
   Array<ArchetypeDataBuffer> take_buffer;
@@ -66,20 +66,23 @@ Array<ArchetypeDataBuffer> Archetype::TakeMany(SharedDescriptor &&target,
   const auto target_align = target->align();
   const auto id_align = alignof(EntityId);
   const auto align = target_align > id_align ? target_align : id_align;
-  static_assert(AlignedBufferPool::kBufferSize >= alignof(EntityId));
-  if (AlignedBufferPool::kBufferSize < unit_size) {
-    take_buffer.Reserve(index_list_size);
-    auto iter = index_list_size;
-    while (iter != 0) {
-      --iter;
+  const auto capacity = kMaxBufferSize / unit_size;
+  if (capacity == 0) {
+    auto buffer_cnt = index_list_size;
+    take_buffer.Reserve(buffer_cnt);
+    while (buffer_cnt != 0) {
+      --buffer_cnt;
       take_buffer.Emplace(AlignedBuffer{unit_size, align}, target.Clone());
     }
+  } else if (capacity < index_list_size) {
+    take_buffer.Emplace(AlignedBuffer{unit_size * index_list_size, align},
+                        target.Clone());
   } else {
-    const auto capacity = AlignedBufferPool::kBufferSize / unit_size;
-    auto iter = (index_list_size / capacity) + 1;
-    while (iter != 0) {
-      --iter;
-      take_buffer.Emplace(buffer_pool.Allocate(align), target.Clone());
+    auto buffer_cnt = (index_list_size / capacity) + 1;
+    take_buffer.Reserve(buffer_cnt);
+    while (buffer_cnt != 0) {
+      --buffer_cnt;
+      take_buffer.Emplace(AlignedBuffer{kMaxBufferSize, align}, target.Clone());
     }
   }
 
@@ -92,32 +95,31 @@ Array<ArchetypeDataBuffer> Archetype::TakeMany(SharedDescriptor &&target,
     }
   }
 
-  RemoveManyDenseDataBuffer(std::move(index_list), buffer_pool);
+  RemoveManyDenseDataBuffer(std::move(index_list));
   return Array<ArchetypeDataBuffer>();
 }
 
-void Archetype::Remove(Index index, AlignedBufferPool &buffer_pool) {
-  RemoveDenseDataBuffer(TakeDenseIdFromSparse(index, buffer_pool), buffer_pool);
+void Archetype::Remove(Index index) {
+  RemoveDenseDataBuffer(TakeDenseIdFromSparse(index));
 }
 
-void Archetype::RemoveMany(Array<Index> &&index_list,
-                           AlignedBufferPool &buffer_pool) {
+void Archetype::RemoveMany(Array<Index> &&index_list) {
   if (index_list.empty()) {
     return;
   }
   for (auto &index : index_list) {
-    index = TakeDenseIdFromSparse(index, buffer_pool);
+    index = TakeDenseIdFromSparse(index);
   }
-  RemoveManyDenseDataBuffer(std::move(index_list), buffer_pool);
+  RemoveManyDenseDataBuffer(std::move(index_list));
 }
 
-void Archetype::EnsureNotFull(AlignedBufferPool &buffer_pool) {
-  EnsureNotFullSparse(buffer_pool);
-  EnsureNotFullDense(buffer_pool);
-  EnsureNotFullData(buffer_pool);
+void Archetype::EnsureNotFull() {
+  EnsureNotFullSparse();
+  EnsureNotFullDense();
+  EnsureNotFullData();
 }
 
-void Archetype::EnsureNotFullSparse(AlignedBufferPool &buffer_pool) {
+void Archetype::EnsureNotFullSparse() {
   if (!available_sparse_.empty()) {
     return;
   }
@@ -125,17 +127,16 @@ void Archetype::EnsureNotFullSparse(AlignedBufferPool &buffer_pool) {
   if (sparse_.empty()) {
     available_sparse_.Emplace(0);
     sparse_.Emplace(
-        AlignedBuffer{SparseBuffer::kUnitSize, SparseBuffer::kMinAlign});
+        AlignedBuffer{SparseBuffer::kUnitSize, SparseBuffer::kAlign});
     return;
   }
   if (sparse_.size() == 1) {
     const auto new_byte_size = sparse_[0].buffer().size() * 2;
-    if (new_byte_size <= AlignedBufferPool::kBufferSize &&
-        AlignedBufferPool::kBufferSize - new_byte_size >=
-            SparseBuffer::kUnitSize) {
+    if (new_byte_size <= kMaxBufferSize &&
+        kMaxBufferSize - new_byte_size >= SparseBuffer::kUnitSize) {
       sparse_[0].Reserve(new_byte_size);
     } else {
-      sparse_[0].Reserve(AlignedBufferPool::kBufferSize);
+      sparse_[0].Reserve(kMaxBufferSize);
     }
 
     if (sparse_[0].hole_cnt() > 0) {
@@ -145,36 +146,34 @@ void Archetype::EnsureNotFullSparse(AlignedBufferPool &buffer_pool) {
   }
 
   available_sparse_.Emplace(sparse_.size());
-  sparse_.Emplace(buffer_pool.Allocate(SparseBuffer::kMinAlign));
+  sparse_.Emplace(AlignedBuffer{kMaxBufferSize, SparseBuffer::kAlign});
 }
 
-void Archetype::EnsureNotFullDense(AlignedBufferPool &buffer_pool) {
+void Archetype::EnsureNotFullDense() {
   if (!dense_.empty() && !dense_.Tail().is_full()) {
     return;
   }
 
   if (dense_.empty()) {
-    dense_.Emplace(
-        AlignedBuffer{DenseBuffer::kUnitSize, DenseBuffer::kMinAlign});
+    dense_.Emplace(AlignedBuffer{DenseBuffer::kUnitSize, DenseBuffer::kAlign});
     return;
   } else if (dense_.size() == 1) {
     const auto new_byte_size = dense_[0].buffer().size() * 2;
-    if (new_byte_size <= AlignedBufferPool::kBufferSize &&
-        AlignedBufferPool::kBufferSize - new_byte_size >=
-            DenseBuffer::kUnitSize) {
+    if (new_byte_size <= kMaxBufferSize &&
+        kMaxBufferSize - new_byte_size >= DenseBuffer::kUnitSize) {
       dense_[0].Reserve(new_byte_size);
     } else {
-      dense_[0].Reserve(AlignedBufferPool::kBufferSize);
+      dense_[0].Reserve(kMaxBufferSize);
     }
 
     if (!dense_[0].is_full()) {
       return;
     }
   }
-  dense_.Emplace(buffer_pool.Allocate(DenseBuffer::kMinAlign));
+  dense_.Emplace(AlignedBuffer{kMaxBufferSize, DenseBuffer::kAlign});
 }
 
-void Archetype::EnsureNotFullData(AlignedBufferPool &buffer_pool) {
+void Archetype::EnsureNotFullData() {
   if (!data_.empty() && !data_.Tail().is_full()) {
     return;
   }
@@ -184,38 +183,38 @@ void Archetype::EnsureNotFullData(AlignedBufferPool &buffer_pool) {
   const auto desc_align = descriptor_->align();
   const auto id_align = alignof(EntityId);
   const auto align = desc_align > id_align ? desc_align : id_align;
-  static_assert(AlignedBufferPool::kBufferSize >= alignof(EntityId));
+  static_assert(kMaxBufferSize >= alignof(EntityId));
 
   if (data_.empty()) {
     data_.Emplace(AlignedBuffer{unit_size, align}, descriptor_.Clone());
   } else if (data_.size() == 1) {
     const auto new_byte_size = data_[0].buffer().size() * 2;
-    if (new_byte_size <= AlignedBufferPool::kBufferSize &&
-        AlignedBufferPool::kBufferSize - new_byte_size >= unit_size) {
+    if (new_byte_size <= kMaxBufferSize &&
+        kMaxBufferSize - new_byte_size >= unit_size) {
       data_[0].Reserve(new_byte_size);
     } else {
-      data_[0].Reserve(AlignedBufferPool::kBufferSize);
+      data_[0].Reserve(kMaxBufferSize);
     }
 
     if (!data_[0].is_full()) {
       return;
     }
   }
-  data_.Emplace(buffer_pool.Allocate(align), descriptor_.Clone());
+  data_.Emplace(AlignedBuffer{kMaxBufferSize, align}, descriptor_.Clone());
 }
 
-SparseId Archetype::PushSparseDenseBuffer(AlignedBufferPool &buffer_pool) {
+SparseId Archetype::PushSparseDenseBuffer() {
   MIRAGE_DCHECK(available_sparse_.size() > 0);
 
   const auto sparse_buffer_id = available_sparse_[0];
   auto &sparse_buffer = sparse_[sparse_buffer_id];
   if (sparse_buffer.capacity() == 0) {
     if (sparse_.size() == 1) {
-      sparse_buffer =
-          SparseBuffer({SparseBuffer::kUnitSize, SparseBuffer::kMinAlign});
+      sparse_buffer = SparseBuffer(
+          AlignedBuffer{SparseBuffer::kUnitSize, SparseBuffer::kAlign});
     } else {
       sparse_buffer =
-          SparseBuffer(buffer_pool.Allocate(SparseBuffer::kMinAlign));
+          SparseBuffer(AlignedBuffer{kMaxBufferSize, SparseBuffer::kAlign});
     }
   }
 
@@ -264,8 +263,7 @@ Archetype::Route Archetype::GetDataRoute(DenseId dense_id) {
   return {id, offset};
 }
 
-DenseId Archetype::TakeDenseIdFromSparse(SparseId sparse_id,
-                                         AlignedBufferPool &buffer_pool) {
+DenseId Archetype::TakeDenseIdFromSparse(SparseId sparse_id) {
   auto route = GetSparseRoute(sparse_id);
   auto &sparse_buffer = sparse_[route.id];
   if (sparse_buffer.hole_cnt() == 0) {
@@ -275,19 +273,13 @@ DenseId Archetype::TakeDenseIdFromSparse(SparseId sparse_id,
   auto rv = sparse_buffer.Remove(route.offset);
 
   if (sparse_buffer.size() == 0) {
-    auto buffer = std::move(sparse_buffer).TakeBuffer();
-    if (buffer.size() == AlignedBufferPool::kBufferSize &&
-        buffer.align() >= AlignedBufferPool::kMinAlign) {
-      buffer_pool.Release(std::move(buffer));
-    }
     sparse_buffer = SparseBuffer();
   }
 
   return rv;
 }
 
-void Archetype::RemoveDenseDataBuffer(DenseId dense_id,
-                                      AlignedBufferPool &buffer_pool) {
+void Archetype::RemoveDenseDataBuffer(DenseId dense_id) {
   // Remove dense buffer
   auto &dense_tail_buffer = dense_.Tail();
   SparseId &dense_tail = dense_tail_buffer[dense_tail_buffer.size() - 1];
@@ -298,11 +290,6 @@ void Archetype::RemoveDenseDataBuffer(DenseId dense_id,
   dense_[dense_route.id][dense_route.offset] = dense_tail;
   dense_tail_buffer.RemoveTail();
   if (dense_tail_buffer.size() == 0) {
-    auto buffer = std::move(dense_tail_buffer).TakeBuffer();
-    if (buffer.size() == AlignedBufferPool::kBufferSize &&
-        buffer.align() >= AlignedBufferPool::kMinAlign) {
-      buffer_pool.Release(std::move(buffer));
-    }
     dense_.RemoveTail();
   }
 
@@ -326,19 +313,13 @@ void Archetype::RemoveDenseDataBuffer(DenseId dense_id,
   }
   data_tail_buffer.RemoveTail();
   if (data_tail_buffer.size() == 0) {
-    auto buffer = std::move(data_tail_buffer).TakeBuffer();
-    if (buffer.size() == AlignedBufferPool::kBufferSize &&
-        buffer.align() >= AlignedBufferPool::kMinAlign) {
-      buffer_pool.Release(std::move(buffer));
-    }
     data_.RemoveTail();
   }
 }
 
-void Archetype::RemoveManyDenseDataBuffer(Array<DenseId> &&dense_list,
-                                          AlignedBufferPool &buffer_pool) {
+void Archetype::RemoveManyDenseDataBuffer(Array<DenseId> &&dense_list) {
   std::ranges::sort(dense_list, std::greater<DenseId>());
   for (const auto &dense_id : dense_list) {
-    RemoveDenseDataBuffer(dense_id, buffer_pool);
+    RemoveDenseDataBuffer(dense_id);
   }
 }

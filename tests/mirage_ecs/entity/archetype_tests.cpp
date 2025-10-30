@@ -16,7 +16,6 @@ class ArchetypeTests : public ::testing::Test {
   void TearDown() override {}
 
   SharedDescriptor desc_;
-  AlignedBufferPool pool_;
   Archetype archetype_;
 };
 

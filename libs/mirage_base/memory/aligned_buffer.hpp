@@ -1,13 +1,13 @@
-#ifndef MIRAGE_ECS_ALIGNED_BUFFER
-#define MIRAGE_ECS_ALIGNED_BUFFER
+#ifndef MIRAGE_BASE_MEMORY_ALIGNED_BUFFER
+#define MIRAGE_BASE_MEMORY_ALIGNED_BUFFER
 
 #include <cstddef>
 
-#include "mirage_ecs/define/export.hpp"
+#include "mirage_base/define/export.hpp"
 
-namespace mirage::ecs {
+namespace mirage::base {
 
-class MIRAGE_ECS AlignedBuffer {
+class MIRAGE_BASE AlignedBuffer {
  public:
   AlignedBuffer() = default;
   AlignedBuffer(size_t size, size_t align);
@@ -31,6 +31,6 @@ class MIRAGE_ECS AlignedBuffer {
   size_t align_{0};
 };
 
-}  // namespace mirage::ecs
+}  // namespace mirage::base
 
-#endif  // MIRAGE_ECS_ALIGNED_BUFFER
+#endif  // MIRAGE_BASE_MEMORY_ALIGNED_BUFFER

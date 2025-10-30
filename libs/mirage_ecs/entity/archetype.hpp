@@ -33,28 +33,25 @@ class Archetype {
   MIRAGE_ECS Archetype(Archetype &&other) noexcept = default;
   MIRAGE_ECS Archetype &operator=(Archetype &&other) noexcept = default;
 
-  MIRAGE_ECS Index Push(const EntityId &id, ComponentBundle &bundle,
-                        AlignedBufferPool &buffer_pool);
-  MIRAGE_ECS Index Push(View &&view, AlignedBufferPool &buffer_pool);
+  MIRAGE_ECS Index Push(const EntityId &id, ComponentBundle &bundle);
+  MIRAGE_ECS Index Push(View &&view);
 
   MIRAGE_ECS ConstView operator[](Index index) const;
   MIRAGE_ECS View operator[](Index index);
 
-  MIRAGE_ECS Array<ArchetypeDataBuffer> TakeMany(
-      SharedDescriptor &&target, Array<Index> &&index_list,
-      AlignedBufferPool &buffer_pool);
+  MIRAGE_ECS Array<ArchetypeDataBuffer> TakeMany(SharedDescriptor &&target,
+                                                 Array<Index> &&index_list);
 
-  MIRAGE_ECS void Remove(Index index, AlignedBufferPool &buffer_pool);
-  MIRAGE_ECS void RemoveMany(Array<Index> &&index_list,
-                             AlignedBufferPool &buffer_pool);
+  MIRAGE_ECS void Remove(Index index);
+  MIRAGE_ECS void RemoveMany(Array<Index> &&index_list);
 
  private:
-  MIRAGE_ECS void EnsureNotFull(AlignedBufferPool &buffer_pool);
-  MIRAGE_ECS void EnsureNotFullSparse(AlignedBufferPool &buffer_pool);
-  MIRAGE_ECS void EnsureNotFullDense(AlignedBufferPool &buffer_pool);
-  MIRAGE_ECS void EnsureNotFullData(AlignedBufferPool &buffer_pool);
+  MIRAGE_ECS void EnsureNotFull();
+  MIRAGE_ECS void EnsureNotFullSparse();
+  MIRAGE_ECS void EnsureNotFullDense();
+  MIRAGE_ECS void EnsureNotFullData();
 
-  MIRAGE_ECS SparseId PushSparseDenseBuffer(AlignedBufferPool &buffer_pool);
+  MIRAGE_ECS SparseId PushSparseDenseBuffer();
 
   struct MIRAGE_ECS Route {
     size_t id{0};
@@ -64,13 +61,10 @@ class Archetype {
   MIRAGE_ECS Route GetDenseRoute(DenseId dense_id);
   MIRAGE_ECS Route GetDataRoute(DenseId dense_id);
 
-  MIRAGE_ECS DenseId TakeDenseIdFromSparse(SparseId sparse_id,
-                                           AlignedBufferPool &buffer_pool);
+  MIRAGE_ECS DenseId TakeDenseIdFromSparse(SparseId sparse_id);
 
-  MIRAGE_ECS void RemoveDenseDataBuffer(DenseId dense_id,
-                                        AlignedBufferPool &buffer_pool);
-  MIRAGE_ECS void RemoveManyDenseDataBuffer(Array<DenseId> &&dense_list,
-                                            AlignedBufferPool &buffer_pool);
+  MIRAGE_ECS void RemoveDenseDataBuffer(DenseId dense_id);
+  MIRAGE_ECS void RemoveManyDenseDataBuffer(Array<DenseId> &&dense_list);
 
   SharedDescriptor descriptor_;
 
