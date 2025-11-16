@@ -9,7 +9,10 @@
 
 namespace mirage::base {
 
-template <typename Base>
+template <typename T>
+struct AnyConstraint : std::true_type {};
+
+template <template <typename> typename Constraint = AnyConstraint>
 class Box {
  public:
   Box() = default;
@@ -35,8 +38,7 @@ class Box {
 
   template <typename T>
     requires /* conflict with move */ (!std::is_reference_v<T>) ||
-             (std::move_constructible<T> &&
-              (std::same_as<Base, void> || std::derived_from<T, Base>))
+             (std::move_constructible<T> && Constraint<T>::value)
   Box(T val) {
     if constexpr (AllowSmallObjectOptimize<T>()) {
       handle_func_ = SmallHandler<T>;
@@ -49,8 +51,7 @@ class Box {
 
   template <typename T>
     requires /* conflict with move */ (!std::is_reference_v<T>) ||
-             (std::move_constructible<T> &&
-              (std::same_as<Base, void> || std::derived_from<T, Base>))
+             (std::move_constructible<T> && Constraint<T>::value)
   Box& operator=(T val) {
     this->~Box();
     new (this) Box(std::move(val));
@@ -58,9 +59,6 @@ class Box {
   }
 
   template <typename T>
-    requires /* conflict with move */ (!std::is_reference_v<T>) ||
-             (std::move_constructible<T> &&
-              (std::same_as<Base, void> || std::derived_from<T, Base>))
   T Unwrap() {
     MIRAGE_DCHECK(is_valid());
 
@@ -73,13 +71,11 @@ class Box {
   }
 
   template <typename T>
-    requires std::same_as<Base, void> || std::derived_from<T, Base>
   T* TryCast() {
     return static_cast<T*>(Call(kGet, nullptr, &TypeMeta::Of<T>()));
   }
 
   template <typename T>
-    requires std::same_as<Base, void> || std::derived_from<T, Base>
   const T* TryCast() const {
     return static_cast<const T*>(Call(kGet, nullptr, &TypeMeta::Of<T>()));
   }
@@ -98,8 +94,8 @@ class Box {
     return TypeId(*static_cast<const TypeMeta*>(Call(kTypeMeta)));
   }
 
-  Base* raw_ptr() { return static_cast<Base*>(Call(kGet)); }
-  const Base* raw_ptr() const { return static_cast<const Base*>(Call(kGet)); }
+  void* raw_ptr() { return Call(kGet); }
+  const void* raw_ptr() const { return Call(kGet); }
 
   template <typename T>
   consteval static bool AllowSmallObjectOptimize() {
@@ -180,8 +176,6 @@ class Box {
   } obj_;
   HandleFuncPtr handle_func_{nullptr};
 };
-
-using BoxAny = Box<void>;
 
 }  // namespace mirage::base
 

@@ -3,25 +3,25 @@
 using namespace mirage::base;
 using namespace mirage::ecs;
 
-Optional<Box<Component>> ComponentBundle::Add(Box<Component> component) {
+Optional<BoxComponent> ComponentBundle::Add(BoxComponent component) {
   MIRAGE_DCHECK(component.is_valid());
 
   TypeId type_id = component.type_id();
   auto kv_opt = component_map_.Insert(type_id, std::move(component));
   if (!kv_opt.is_valid()) {
-    return Optional<Box<Component>>::None();
+    return Optional<BoxComponent>::None();
   }
   auto kv = kv_opt.Unwrap();
-  return Optional<Box<Component>>::New(std::move(kv.val()));
+  return Optional<BoxComponent>::New(std::move(kv.val()));
 }
 
-Optional<Box<Component>> ComponentBundle::Remove(const TypeId &type_id) {
+Optional<BoxComponent> ComponentBundle::Remove(const TypeId &type_id) {
   auto kv_opt = component_map_.Remove(type_id);
   if (!kv_opt.is_valid()) {
-    return Optional<Box<Component>>::None();
+    return Optional<BoxComponent>::None();
   }
   auto kv = kv_opt.Unwrap();
-  return Optional<Box<Component>>::New(std::move(kv.val()));
+  return Optional<BoxComponent>::New(std::move(kv.val()));
 }
 
 TypeSet ComponentBundle::MakeTypeSet() const {

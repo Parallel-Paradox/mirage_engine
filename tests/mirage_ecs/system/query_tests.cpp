@@ -1,25 +1,32 @@
 #include <gtest/gtest.h>
 
 #include "mirage_ecs/system/query.hpp"
+#include "mirage_ecs/util/marker.hpp"
 
 using namespace mirage;
 using namespace mirage::ecs;
 
 namespace {
 
-struct Position : Component {
+struct Position {
+  MIRAGE_COMPONENT;
   float x;
   float y;
 };
 
-struct Velocity : Component {
+struct Velocity {
+  MIRAGE_COMPONENT;
   float x;
   float y;
 };
 
-struct WithTag : Component {};
+struct WithTag {
+  MIRAGE_COMPONENT;
+};
 
-struct WithoutTag : Component {};
+struct WithoutTag {
+  MIRAGE_COMPONENT;
+};
 
 }  // namespace
 

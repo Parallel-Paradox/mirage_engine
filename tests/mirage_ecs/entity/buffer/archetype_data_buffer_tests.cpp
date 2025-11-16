@@ -12,7 +12,9 @@ namespace {
 
 using SharedDescriptor = SharedLocal<ArchetypeDescriptor>;
 
-struct Counter : Component {
+struct Counter {
+  MIRAGE_COMPONENT;
+
   int32_t *destruct_cnt_{nullptr};
 
   Counter() = default;

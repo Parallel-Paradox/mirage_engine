@@ -17,7 +17,8 @@ TEST(SystemTests, EmptyConstruct) {
   EXPECT_TRUE(std::is_const_v<std::remove_reference_t<const int32_t&>>);
 }
 
-struct GlobalNum final : Resource {
+struct GlobalNum {
+  MIRAGE_RESOURCE;
   int32_t num{0};
 };
 

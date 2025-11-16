@@ -1,14 +1,10 @@
 #ifndef MIRAGE_ECS_FRAMEWORK_WORLD
 #define MIRAGE_ECS_FRAMEWORK_WORLD
 
-#include "mirage_base/auto_ptr/owned.hpp"
-#include "mirage_base/container/hash_map.hpp"
 #include "mirage_base/util/type_id.hpp"
 #include "mirage_base/wrap/optional.hpp"
-#include "mirage_ecs/entity/archetype.hpp"
 #include "mirage_ecs/entity/entity_manager.hpp"
 #include "mirage_ecs/util/marker.hpp"
-#include "mirage_ecs/util/type_set.hpp"
 
 namespace mirage::ecs {
 
@@ -17,11 +13,9 @@ class World {
 
   template <typename T>
   using Optional = base::Optional<T>;
-  template <typename T>
-  using Owned = base::Owned<T>;
 
  public:
-  using ResourceMap = base::HashMap<TypeId, Owned<Resource>>;
+  using ResourceMap = base::HashMap<TypeId, BoxResource>;
 
   World() = default;
   ~World() = default;
@@ -50,19 +44,16 @@ T& World::InitResource(Args&&... args) {
     return *resource_ptr;
   }
 
-  resource_ptr = new T(std::forward<Args>(args)...);
-  Owned<Resource> owned_resource =
-      Owned<Resource>(static_cast<Resource*>(resource_ptr));
-  resource_map_.Insert(TypeId::Of<T>(), std::move(owned_resource));
+  resource_map_.Insert(TypeId::Of<T>(),
+                       BoxResource(T(std::forward<Args>(args)...)));
   return *resource_ptr;
 }
 
 template <IsResource T, typename... Args>
 base::Optional<T> World::SetResource(Args&&... args) {
-  Optional<base::HashKeyVal<TypeId, Owned<Resource>>> optional_kv =
+  Optional<base::HashKeyVal<TypeId, BoxResource>> optional_kv =
       resource_map_.Insert(TypeId::Of<T>(),
-                           Owned<Resource>(static_cast<Resource*>(
-                               new T(std::forward<Args>(args)...))));
+                           BoxResource(T(std::forward<Args>(args)...)));
   if (optional_kv.is_valid()) {
     return Optional<T>::None();
   }

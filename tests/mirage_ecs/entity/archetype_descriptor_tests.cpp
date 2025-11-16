@@ -8,15 +8,18 @@ using namespace mirage::ecs;
 
 namespace {
 
-struct Bool : Component {
+struct Bool {
+  MIRAGE_COMPONENT;
   bool value{false};
 };
 
-struct Int32 : Component {
+struct Int32 {
+  MIRAGE_COMPONENT;
   int32_t value{0};
 };
 
-struct Int64 : Component {
+struct Int64 {
+  MIRAGE_COMPONENT;
   int64_t value{0};
 };
 

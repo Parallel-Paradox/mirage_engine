@@ -13,12 +13,10 @@ class ComponentBundle {
   using TypeId = base::TypeId;
 
   template <typename T>
-  using Box = base::Box<T>;
-  template <typename T>
   using Optional = base::Optional<T>;
 
  public:
-  using ComponentMap = base::HashMap<TypeId, Box<Component>>;
+  using ComponentMap = base::HashMap<TypeId, BoxComponent>;
 
   MIRAGE_ECS ComponentBundle() = default;
   MIRAGE_ECS ~ComponentBundle() = default;
@@ -31,11 +29,11 @@ class ComponentBundle {
 
   template <IsComponent T>
   Optional<T> Add(T components);
-  MIRAGE_ECS Optional<Box<Component>> Add(Box<Component> component);
+  MIRAGE_ECS Optional<BoxComponent> Add(BoxComponent component);
 
   template <IsComponent T>
   Optional<T> Remove();
-  MIRAGE_ECS Optional<Box<Component>> Remove(const TypeId &type_id);
+  MIRAGE_ECS Optional<BoxComponent> Remove(const TypeId &type_id);
 
   [[nodiscard]] MIRAGE_ECS TypeSet MakeTypeSet() const;
 
@@ -48,8 +46,8 @@ class ComponentBundle {
 
 template <IsComponent T>
 base::Optional<T> ComponentBundle::Add(T component) {
-  Optional<Box<Component>> old_component_opt =
-      Add(Box<Component>(std::move(component)));
+  Optional<BoxComponent> old_component_opt =
+      Add(BoxComponent(std::move(component)));
   if (!old_component_opt.is_valid()) {
     return Optional<T>::None();
   }
@@ -58,7 +56,7 @@ base::Optional<T> ComponentBundle::Add(T component) {
 
 template <IsComponent T>
 base::Optional<T> ComponentBundle::Remove() {
-  Optional<Box<Component>> component_opt = Remove(TypeId::Of<T>());
+  Optional<BoxComponent> component_opt = Remove(TypeId::Of<T>());
   if (!component_opt.is_valid()) {
     return Optional<T>::None();
   }

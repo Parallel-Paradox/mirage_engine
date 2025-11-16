@@ -8,9 +8,13 @@ using namespace mirage::ecs;
 
 namespace {
 
-struct TestComponent : Component {};
+struct TestComponent {
+  MIRAGE_COMPONENT;
+};
 
-struct Counter : Component {
+struct Counter {
+  MIRAGE_COMPONENT;
+
   int32_t *move_cnt_{nullptr};
   int32_t *destruct_cnt_{nullptr};
 

@@ -11,7 +11,9 @@ using namespace mirage::ecs;
 
 namespace {
 
-struct DestructCounter : Component {
+struct DestructCounter {
+  MIRAGE_COMPONENT;
+
   size_t* counter_ptr{nullptr};
 
   DestructCounter(size_t* counter_ptr) : counter_ptr(counter_ptr) {}
