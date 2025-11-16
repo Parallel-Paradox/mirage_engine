@@ -2,7 +2,7 @@
 #define MIRAGE_ECS_ENTITY_ARCHETYPE_DESCRIPTOR
 
 #include "mirage_base/container/hash_map.hpp"
-#include "mirage_ecs/component/component_id.hpp"
+#include "mirage_ecs/component/component_handler.hpp"
 #include "mirage_ecs/entity/archetype_id.hpp"
 #include "mirage_ecs/util/marker.hpp"
 #include "mirage_ecs/util/type_set.hpp"

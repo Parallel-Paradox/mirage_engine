@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "mirage_ecs/component/component_id.hpp"
+#include "mirage_ecs/component/component_handler.hpp"
 #include "mirage_ecs/util/marker.hpp"
 
 using namespace mirage::base;
@@ -42,28 +42,27 @@ struct Counter {
 
 }  // namespace
 
-TEST(ComponentIdTests, Consistent) {
-  const ComponentId id = ComponentId::Of<TestComponent>();
-  EXPECT_EQ(id, ComponentId::Of<TestComponent>());
-  EXPECT_EQ(id.type_id(), TypeId::Of<TestComponent>());
-
-  EXPECT_NE(id, ComponentId::Of<Counter>());
+TEST(ComponentHandlerTests, Consistent) {
+  const ComponentHandler handler = ComponentHandler::Of<TestComponent>();
+  EXPECT_EQ(handler, ComponentHandler::Of<TestComponent>());
+  EXPECT_EQ(handler.type_id(), TypeId::Of<TestComponent>());
+  EXPECT_NE(handler, ComponentHandler::Of<Counter>());
 }
 
-TEST(ComponentIdTests, MoveAndDestruct) {
+TEST(ComponentHandlerTests, MoveAndDestruct) {
   int32_t move_cnt = 0;
   int32_t destruct_cnt = 0;
   auto counter = Counter{&move_cnt, &destruct_cnt};
-  const ComponentId id = ComponentId::Of<Counter>();
+  const ComponentHandler handler = ComponentHandler::Of<Counter>();
 
   Counter move_counter;
-  id.move_func()(&counter, &move_counter);
+  handler.move(&counter, &move_counter);
   EXPECT_EQ(move_cnt, 1);
   EXPECT_EQ(destruct_cnt, 0);
   EXPECT_EQ(counter.move_cnt_, nullptr);
   EXPECT_EQ(counter.destruct_cnt_, nullptr);
 
-  id.destruct_func()(&move_counter);
+  handler.destruct(&move_counter);
   EXPECT_EQ(move_cnt, 1);
   EXPECT_EQ(destruct_cnt, 1);
   EXPECT_EQ(move_counter.move_cnt_, nullptr);

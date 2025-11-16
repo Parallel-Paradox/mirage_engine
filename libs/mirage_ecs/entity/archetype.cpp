@@ -307,9 +307,8 @@ void Archetype::RemoveDenseDataBuffer(DenseId dense_id) {
   for (auto &entry : descriptor_->offset_map()) {
     const auto component_id = entry.key();
     const auto offset = entry.val();
-    component_id.destruct_func()(data_view_ptr + offset);
-    component_id.move_func()(data_tail_view_ptr + offset,
-                             data_view_ptr + offset);
+    component_id.destruct(data_view_ptr + offset);
+    component_id.move(data_tail_view_ptr + offset, data_view_ptr + offset);
   }
   data_tail_buffer.RemoveTail();
   if (data_tail_buffer.size() == 0) {

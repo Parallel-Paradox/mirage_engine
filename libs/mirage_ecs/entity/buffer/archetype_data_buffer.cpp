@@ -69,7 +69,7 @@ void ArchetypeDataBuffer::Push(const EntityId& id, ComponentBundle& bundle) {
     auto box_op = bundle.Remove(component_id.type_id());
     MIRAGE_DCHECK(box_op.is_valid());
     auto box = box_op.Unwrap();
-    component_id.move_func()(box.raw_ptr(), view_ptr + offset);
+    component_id.move(box.raw_ptr(), view_ptr + offset);
   }
 
   auto* entity_id_ptr =
@@ -91,7 +91,7 @@ void ArchetypeDataBuffer::Push(View&& view) {
     if (!component_ptr) {
       continue;
     }
-    component_id.move_func()(component_ptr, view_ptr + offset);
+    component_id.move(component_ptr, view_ptr + offset);
   }
 
   auto* entity_id_ptr =
@@ -115,7 +115,7 @@ void ArchetypeDataBuffer::RemoveTail() {
   for (const auto& entry : descriptor_->offset_map()) {
     const auto& component_id = entry.key();
     const auto& offset = entry.val();
-    component_id.destruct_func()(view_ptr + offset);
+    component_id.destruct(view_ptr + offset);
   }
 }
 
