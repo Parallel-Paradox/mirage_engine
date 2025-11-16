@@ -1,5 +1,6 @@
 #include "mirage_ecs/entity/buffer/sparse_dense_buffer.hpp"
 
+#include <new>  // IWYU pragma: keep
 #include <utility>
 
 #include "mirage_base/define/check.hpp"

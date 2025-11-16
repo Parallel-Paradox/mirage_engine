@@ -150,18 +150,3 @@ TEST_F(ArchetypeDataBufferTests, Reserve) {
   EXPECT_EQ(buffer[0].Get<Counter>().destruct_cnt_, &destruct_cnt_);
   EXPECT_EQ(destruct_cnt_, 0);
 }
-
-TEST_F(ArchetypeDataBufferTests, TakeBuffer) {
-  auto buffer = ArchetypeDataBuffer(
-      {desc_->size() + sizeof(EntityId), desc_->align()}, desc_.Clone());
-  ComponentBundle bundle;
-  bundle.Add(Counter(&destruct_cnt_));
-  buffer.Push({1, 0}, bundle);
-  EXPECT_EQ(buffer.size(), 1);
-  EXPECT_EQ(destruct_cnt_, 0);
-
-  auto taken_buffer = std::move(buffer).TakeBuffer();
-  EXPECT_EQ(taken_buffer.size(), desc_->size() + sizeof(EntityId));
-  EXPECT_EQ(taken_buffer.align(), desc_->align());
-  EXPECT_EQ(destruct_cnt_, 1);
-}

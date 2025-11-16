@@ -40,7 +40,6 @@ class ArchetypeDataBuffer {
   MIRAGE_ECS void RemoveTail();
   MIRAGE_ECS void Clear();
   MIRAGE_ECS void Reserve(size_t byte_size);
-  MIRAGE_ECS Buffer TakeBuffer() &&;
 
   [[nodiscard]] MIRAGE_ECS const SharedDescriptor& descriptor() const;
 

@@ -1,6 +1,6 @@
 #include "mirage_base/sync/lock.hpp"
 
-#include <new>  // NOLINT: Need for placement new on mac
+#include <new>  // IWYU pragma: keep
 #include <utility>
 
 using namespace mirage::base;

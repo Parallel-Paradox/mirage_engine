@@ -15,7 +15,11 @@ ArchetypeDataBuffer::ArchetypeDataBuffer(Buffer&& buffer,
   capacity_ = static_cast<uint16_t>(capacity);
 }
 
-ArchetypeDataBuffer::~ArchetypeDataBuffer() { std::move(*this).TakeBuffer(); }
+ArchetypeDataBuffer::~ArchetypeDataBuffer() {
+  Clear();
+  descriptor_ = nullptr;
+  capacity_ = 0;
+}
 
 ArchetypeDataBuffer::ArchetypeDataBuffer(ArchetypeDataBuffer&& other) noexcept
     : descriptor_(std::move(other.descriptor_)),
@@ -133,13 +137,6 @@ void ArchetypeDataBuffer::Reserve(size_t byte_size) {
   for (auto i = 0; i < old_buffer_size; ++i) {
     Push(old_buffer[i]);
   }
-}
-
-ArchetypeDataBuffer::Buffer ArchetypeDataBuffer::TakeBuffer() && {
-  Clear();
-  descriptor_ = nullptr;
-  capacity_ = 0;
-  return std::move(buffer_);
 }
 
 const ArchetypeDataBuffer::SharedDescriptor& ArchetypeDataBuffer::descriptor()
