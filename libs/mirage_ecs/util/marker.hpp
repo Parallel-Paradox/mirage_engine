@@ -5,8 +5,10 @@
 
 #include "mirage_base/wrap/box.hpp"
 
-#define MIRAGE_COMPONENT static constexpr bool mirage_ecs_is_component = true
-#define MIRAGE_RESOURCE static constexpr bool mirage_ecs_is_resource = true
+#define MIRAGE_COMPONENT \
+  [[maybe_unused]] static constexpr bool mirage_ecs_is_component = true
+#define MIRAGE_RESOURCE \
+  [[maybe_unused]] static constexpr bool mirage_ecs_is_resource = true
 
 namespace mirage::ecs {
 

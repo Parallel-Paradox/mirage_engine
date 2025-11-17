@@ -75,15 +75,19 @@ Array<ArchetypeDataBuffer> Archetype::TakeMany(SharedDescriptor &&target,
       take_buffer.Emplace(AlignedBuffer{unit_size, align}, target.Clone());
     }
   } else if (capacity < index_list_size) {
-    take_buffer.Emplace(AlignedBuffer{unit_size * index_list_size, align},
-                        target.Clone());
-  } else {
     auto buffer_cnt = (index_list_size / capacity) + 1;
+    auto index_cnt = index_list_size;
     take_buffer.Reserve(buffer_cnt);
-    while (buffer_cnt != 0) {
+    while (buffer_cnt != 1) {
       --buffer_cnt;
+      index_cnt -= capacity;
       take_buffer.Emplace(AlignedBuffer{kMaxBufferSize, align}, target.Clone());
     }
+    take_buffer.Emplace(AlignedBuffer{unit_size * index_cnt, align},
+                        target.Clone());
+  } else {
+    take_buffer.Emplace(AlignedBuffer{unit_size * index_list_size, align},
+                        target.Clone());
   }
 
   auto iter = index_list.begin();
@@ -96,7 +100,7 @@ Array<ArchetypeDataBuffer> Archetype::TakeMany(SharedDescriptor &&target,
   }
 
   RemoveManyDenseDataBuffer(std::move(index_list));
-  return Array<ArchetypeDataBuffer>();
+  return take_buffer;
 }
 
 void Archetype::Remove(Index index) {
@@ -112,6 +116,8 @@ void Archetype::RemoveMany(Array<Index> &&index_list) {
   }
   RemoveManyDenseDataBuffer(std::move(index_list));
 }
+
+size_t Archetype::size() const { return size_; }
 
 void Archetype::EnsureNotFull() {
   EnsureNotFullSparse();
@@ -187,6 +193,7 @@ void Archetype::EnsureNotFullData() {
 
   if (data_.empty()) {
     data_.Emplace(AlignedBuffer{unit_size, align}, descriptor_.Clone());
+    return;
   } else if (data_.size() == 1) {
     const auto new_byte_size = data_[0].buffer().size() * 2;
     if (new_byte_size <= kMaxBufferSize &&
@@ -280,12 +287,11 @@ DenseId Archetype::TakeDenseIdFromSparse(SparseId sparse_id) {
 }
 
 void Archetype::RemoveDenseDataBuffer(DenseId dense_id) {
+  --size_;
+
   // Remove dense buffer
   auto &dense_tail_buffer = dense_.Tail();
   SparseId &dense_tail = dense_tail_buffer[dense_tail_buffer.size() - 1];
-  const auto tail_route = GetSparseRoute(dense_tail);
-  sparse_[tail_route.id][tail_route.offset] = dense_id;
-
   const auto dense_route = GetDenseRoute(dense_id);
   dense_[dense_route.id][dense_route.offset] = dense_tail;
   dense_tail_buffer.RemoveTail();

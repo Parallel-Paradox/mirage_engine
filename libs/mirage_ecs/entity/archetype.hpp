@@ -45,6 +45,8 @@ class Archetype {
   MIRAGE_ECS void Remove(Index index);
   MIRAGE_ECS void RemoveMany(Array<Index> &&index_list);
 
+  [[nodiscard]] MIRAGE_ECS size_t size() const;
+
  private:
   MIRAGE_ECS void EnsureNotFull();
   MIRAGE_ECS void EnsureNotFullSparse();
