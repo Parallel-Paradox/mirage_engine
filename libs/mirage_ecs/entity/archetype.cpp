@@ -246,7 +246,7 @@ Archetype::Route Archetype::GetSparseRoute(SparseId sparse_id) {
   const auto offset = static_cast<uint16_t>(sparse_id - id * capacity);
 
   MIRAGE_DCHECK(sparse_.size() > id);
-  MIRAGE_DCHECK(sparse_[id].size() > offset);
+  MIRAGE_DCHECK(sparse_[id].capacity() > offset);
   return {id, offset};
 }
 
