@@ -104,7 +104,7 @@ TEST_F(ArchetypeTests, IndexOperatorMutable) {
   EXPECT_EQ(modified_view.Get<Int32>().value, 100);
 }
 
-TEST_F(ArchetypeTests, TakeManyEmpty) {
+TEST_F(ArchetypeTests, TakeNothing) {
   auto result = archetype_.TakeMany(desc_.Clone(), {});
   EXPECT_TRUE(result.empty());
 
@@ -129,4 +129,26 @@ TEST_F(ArchetypeTests, TakeMany) {
   auto result =
       archetype_.TakeMany(std::move(shared_target), std::move(indices));
   EXPECT_EQ(archetype_.size(), 0);
+
+  for (auto &buffer : result) {
+    for (uint16_t i = 0; i < buffer.size(); ++i) {
+      auto view = buffer[i];
+      const auto iter = view.entity_id().index();
+      EXPECT_EQ(view.entity_id().generation(), 0);
+      EXPECT_EQ(view.Get<Bool>().value, iter % 2 == 0);
+      EXPECT_EQ(view.Get<Int32>().value, static_cast<int32_t>(iter));
+      EXPECT_EQ(view.TryGet<Int64>(), nullptr);
+    }
+  }
+
+  EntityId entity_id = {0, 1};
+  const auto index = archetype_.Push(entity_id, bundle_);
+  EXPECT_EQ(archetype_.size(), 1);
+  EXPECT_EQ(index, 0);
+
+  auto view = archetype_[index];
+  EXPECT_EQ(view.entity_id(), entity_id);
+  EXPECT_EQ(view.Get<Bool>().value, true);
+  EXPECT_EQ(view.Get<Int32>().value, 42);
+  EXPECT_EQ(view.Get<Int64>().value, 123456789);
 }

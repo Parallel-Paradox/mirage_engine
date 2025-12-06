@@ -43,8 +43,8 @@ ConstView Archetype::operator[](Index index) const {
 }
 
 View Archetype::operator[](Index index) {
-  const auto dense_route = GetDenseRoute(index);
-  const auto dense_id = sparse_[dense_route.id][dense_route.offset];
+  const auto sparse_route = GetSparseRoute(index);
+  const auto dense_id = sparse_[sparse_route.id][sparse_route.offset];
   MIRAGE_DCHECK(dense_id != kInvalidDenseId);
   const auto data_route = GetDataRoute(dense_id);
   return data_[data_route.id][data_route.offset];
@@ -144,11 +144,8 @@ void Archetype::EnsureNotFullSparse() {
     } else {
       sparse_[0].Reserve(kMaxBufferSize);
     }
-
-    if (sparse_[0].hole_cnt() > 0) {
-      available_sparse_.Emplace(0);
-      return;
-    }
+    available_sparse_.Emplace(0);
+    return;
   }
 
   available_sparse_.Emplace(sparse_.size());
@@ -241,7 +238,9 @@ SparseId Archetype::PushSparseDenseBuffer() {
 }
 
 Archetype::Route Archetype::GetSparseRoute(SparseId sparse_id) {
-  const auto capacity = sparse_[0].capacity();
+  const auto capacity = sparse_[0].capacity() != 0
+                            ? sparse_[0].capacity()
+                            : (kMaxBufferSize / SparseBuffer::kUnitSize);
   const auto id = sparse_id / capacity;
   const auto offset = static_cast<uint16_t>(sparse_id - id * capacity);
 
@@ -280,7 +279,12 @@ DenseId Archetype::TakeDenseIdFromSparse(SparseId sparse_id) {
   auto rv = sparse_buffer.Remove(route.offset);
 
   if (sparse_buffer.size() == 0) {
-    sparse_buffer = SparseBuffer();
+    if (sparse_.size() > 1) {
+      sparse_buffer = SparseBuffer();
+    } else {
+      sparse_.Clear();
+      available_sparse_.Clear();
+    }
   }
 
   return rv;
