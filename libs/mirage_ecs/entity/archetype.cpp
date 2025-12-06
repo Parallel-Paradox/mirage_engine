@@ -136,7 +136,7 @@ void Archetype::EnsureNotFullSparse() {
         AlignedBuffer{SparseBuffer::kUnitSize, SparseBuffer::kAlign});
     return;
   }
-  if (sparse_.size() == 1) {
+  if (sparse_.size() == 1 && sparse_[0].buffer().size() < kMaxBufferSize) {
     const auto new_byte_size = sparse_[0].buffer().size() * 2;
     if (new_byte_size <= kMaxBufferSize &&
         kMaxBufferSize - new_byte_size >= SparseBuffer::kUnitSize) {
@@ -245,7 +245,9 @@ Archetype::Route Archetype::GetSparseRoute(SparseId sparse_id) {
   const auto offset = static_cast<uint16_t>(sparse_id - id * capacity);
 
   MIRAGE_DCHECK(sparse_.size() > id);
-  MIRAGE_DCHECK(sparse_[id].capacity() > offset);
+  if (sparse_[id].capacity() <= offset) {
+    MIRAGE_DCHECK(sparse_[id].capacity() > offset);
+  }
   return {id, offset};
 }
 
@@ -284,6 +286,15 @@ DenseId Archetype::TakeDenseIdFromSparse(SparseId sparse_id) {
     } else {
       sparse_.Clear();
       available_sparse_.Clear();
+    }
+    for (int64_t i = sparse_.size() - 1; i >= 0; --i) {
+      if (sparse_[i].size() != 0) break;
+      sparse_.RemoveTail();
+      for (auto j = 0; j < available_sparse_.size(); ++j) {
+        if (available_sparse_[j] != i) continue;
+        available_sparse_.SwapRemove(j);
+        break;
+      }
     }
   }
 

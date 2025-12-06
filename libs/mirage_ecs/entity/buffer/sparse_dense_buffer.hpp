@@ -39,10 +39,10 @@ class MIRAGE_ECS DenseBuffer {
   void RemoveTail();
   void Reserve(size_t byte_size);
 
-  const Buffer& buffer() const;
-  uint16_t size() const;
-  uint16_t capacity() const;
-  bool is_full() const;
+  [[nodiscard]] const Buffer& buffer() const;
+  [[nodiscard]] uint16_t size() const;
+  [[nodiscard]] uint16_t capacity() const;
+  [[nodiscard]] bool is_full() const;
 
  private:
   Buffer buffer_;
@@ -74,10 +74,10 @@ class MIRAGE_ECS SparseBuffer {
   DenseId Remove(uint16_t index);
   void Reserve(size_t byte_size);
 
-  const Buffer& buffer() const;
-  uint16_t size() const;
-  uint16_t hole_cnt() const;
-  uint16_t capacity() const;
+  [[nodiscard]] const Buffer& buffer() const;
+  [[nodiscard]] uint16_t size() const;
+  [[nodiscard]] uint16_t hole_cnt() const;
+  [[nodiscard]] uint16_t capacity() const;
 
  private:
   Buffer buffer_;
