@@ -1,5 +1,5 @@
-#ifndef MIRAGE_ECS_ENTITY_ENTITY_ID
-#define MIRAGE_ECS_ENTITY_ENTITY_ID
+#ifndef MIRAGE_ECS_ENTITY_GENERATION_ID
+#define MIRAGE_ECS_ENTITY_GENERATION_ID
 
 #include <cstddef>
 #include <cstdint>
@@ -8,20 +8,20 @@
 
 namespace mirage::ecs {
 
-class MIRAGE_ECS EntityId {
+class MIRAGE_ECS GenerationId {
  public:
   constexpr static size_t kInvalidIndex = SIZE_MAX;
   constexpr static size_t kTombGeneration = SIZE_MAX;
 
-  EntityId() = default;
-  EntityId(const size_t index, const size_t generation)
+  GenerationId() = default;
+  GenerationId(const size_t index, const size_t generation)
       : index_(index), generation_(generation) {}
-  ~EntityId() { Reset(); }
+  ~GenerationId() { Reset(); }
 
-  EntityId(const EntityId &) = default;
-  EntityId &operator=(const EntityId &) = default;
+  GenerationId(const GenerationId &) = default;
+  GenerationId &operator=(const GenerationId &) = default;
 
-  bool operator==(const EntityId &other) const {
+  bool operator==(const GenerationId &other) const {
     return index_ == other.index_ && generation_ == other.generation_;
   }
 
@@ -43,6 +43,9 @@ class MIRAGE_ECS EntityId {
   size_t generation_{0};
 };
 
+using EntityId = GenerationId;
+using ArchetypeId = GenerationId;
+
 }  // namespace mirage::ecs
 
-#endif  // MIRAGE_ECS_ENTITY_ENTITY_ID
+#endif  // MIRAGE_ECS_ENTITY_GENERATION_ID

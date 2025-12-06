@@ -7,7 +7,7 @@
 #include "mirage_ecs/entity/archetype_descriptor.hpp"
 #include "mirage_ecs/entity/buffer/archetype_data_buffer.hpp"
 #include "mirage_ecs/entity/buffer/sparse_dense_buffer.hpp"
-#include "mirage_ecs/entity/entity_id.hpp"
+#include "mirage_ecs/entity/generation_id.hpp"
 
 namespace mirage::ecs {
 

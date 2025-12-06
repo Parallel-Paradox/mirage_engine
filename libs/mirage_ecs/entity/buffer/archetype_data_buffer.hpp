@@ -8,7 +8,7 @@
 #include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/define/export.hpp"
 #include "mirage_ecs/entity/archetype_descriptor.hpp"
-#include "mirage_ecs/entity/entity_id.hpp"
+#include "mirage_ecs/entity/generation_id.hpp"
 
 namespace mirage::ecs {
 
