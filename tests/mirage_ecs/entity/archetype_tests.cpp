@@ -40,9 +40,7 @@ class ArchetypeTests : public ::testing::Test {
     archetype_ = Archetype(desc_.Clone());
 
     bundle_ = ComponentBundle();
-    bundle_.Add(Bool{true});
-    bundle_.Add(Int32{42});
-    bundle_.Add(Int64{123456789});
+    bundle_.AddMany(Bool{true}, Int32{42}, Int64{123456789});
   }
 
   void TearDown() override {}
@@ -117,9 +115,8 @@ TEST_F(ArchetypeTests, TakeMany) {
   Array<Archetype::Index> indices;
   for (uint32_t i = 0; i < 2048; ++i) {
     ComponentBundle bundle;
-    bundle.Add(Bool{i % 2 == 0});
-    bundle.Add(Int32{static_cast<int32_t>(i)});
-    bundle.Add(Int64{i * 10});
+    bundle.AddMany(Bool{i % 2 == 0}, Int32{static_cast<int32_t>(i)},
+                   Int64{i * 10});
     indices.Push(archetype_.Push(EntityId{i, 0}, bundle));
   }
   EXPECT_EQ(archetype_.size(), 2048);

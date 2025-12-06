@@ -28,8 +28,11 @@ class ComponentBundle {
   MIRAGE_ECS ComponentBundle &operator=(ComponentBundle &&) = default;
 
   template <IsComponent T>
-  Optional<T> Add(T components);
+  Optional<T> Add(T component);
   MIRAGE_ECS Optional<BoxComponent> Add(BoxComponent component);
+
+  template <IsComponent... Ts>
+  void AddMany(Ts... components);
 
   template <IsComponent T>
   Optional<T> Remove();
@@ -52,6 +55,11 @@ base::Optional<T> ComponentBundle::Add(T component) {
     return Optional<T>::None();
   }
   return Optional<T>::New(old_component_opt.Unwrap().Unwrap<T>());
+}
+
+template <IsComponent... Ts>
+void ComponentBundle::AddMany(Ts... components) {
+  (Add(std::move(components)), ...);
 }
 
 template <IsComponent T>
