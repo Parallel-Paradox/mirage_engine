@@ -3,7 +3,7 @@
 #include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/entity/archetype_descriptor.hpp"
 #include "mirage_ecs/entity/buffer/archetype_data_buffer.hpp"
-#include "mirage_ecs/entity/entity_id.hpp"
+#include "mirage_ecs/entity/generation_id.hpp"
 
 using namespace mirage::base;
 using namespace mirage::ecs;

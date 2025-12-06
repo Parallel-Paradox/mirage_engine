@@ -4,7 +4,7 @@
 
 #include "mirage_ecs/component/component_bundle.hpp"
 #include "mirage_ecs/entity/archetype.hpp"
-#include "mirage_ecs/entity/entity_id.hpp"
+#include "mirage_ecs/entity/generation_id.hpp"
 #include "mirage_ecs/util/marker.hpp"
 
 using namespace mirage::ecs;

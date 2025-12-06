@@ -8,7 +8,7 @@
 #include "mirage_base/util/constant.hpp"
 #include "mirage_ecs/entity/buffer/archetype_data_buffer.hpp"
 #include "mirage_ecs/entity/buffer/sparse_dense_buffer.hpp"
-#include "mirage_ecs/entity/entity_id.hpp"
+#include "mirage_ecs/entity/generation_id.hpp"
 
 using namespace mirage::base;
 using namespace mirage::ecs;

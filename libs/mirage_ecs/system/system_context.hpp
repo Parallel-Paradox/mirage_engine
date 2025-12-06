@@ -3,7 +3,7 @@
 
 #include "mirage_base/container/array.hpp"
 #include "mirage_ecs/define/export.hpp"
-#include "mirage_ecs/entity/archetype_id.hpp"
+#include "mirage_ecs/entity/generation_id.hpp"
 
 namespace mirage::ecs {
 
